@@ -210,7 +210,7 @@ watchEffect(() => {
     getSiteList()
     getSubscribeInfo()
   }
-})
+})()
 </script>
 
 <template>

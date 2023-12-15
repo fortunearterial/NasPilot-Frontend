@@ -43,6 +43,8 @@ function getIcon() {
     return 'mdi-movie'
   else if (props.media?.type === '电视剧')
     return 'mdi-television-classic'
+  else if (props.media?.type === '游戏')
+    return 'mdi-gamepad-variant-outline'
   else
     return 'mdi-help-circle'
 }

@@ -130,7 +130,19 @@ async function handleSiteUpdate() {
 // 打开资源浏览弹窗
 async function handleResourceBrowse() {
   resourceDialog.value = true
-  getResourceList()
+  getResourceList('browse')
+}
+
+// 打开资源RSS弹窗
+async function handleResourceRSS() {
+  resourceDialog.value = true
+  getResourceList('rss')
+}
+
+// 打开资源搜索弹窗
+async function handleResourceSearch() {
+  resourceDialog.value = true
+  getResourceList('search')
 }
 
 // 调用API，更新站点Cookie UA
@@ -182,10 +194,10 @@ function getVolumeFactorClass(downloadVolume: number, uploadVolume: number) {
 }
 
 // 调用API，查询站点资源
-async function getResourceList() {
+async function getResourceList(type: string) {
   resourceLoading.value = true
   try {
-    resourceDataList.value = await api.get(`site/resource/${cardProps.site?.id}`)
+    resourceDataList.value = await api.get(`site/resource/${cardProps.site?.id}/${type}`)
     resourceLoading.value = false
   }
   catch (error) {
@@ -262,6 +274,35 @@ onMounted(() => {
       </VTooltip>
 
       <VTooltip
+        v-if="cardProps.site?.feed?.method === 'RSS'"
+        text="RSS"
+      >
+        <template #activator="{ props }">
+          <VIcon
+            color="primary"
+            class="me-2"
+            v-bind="props"
+            icon="mdi-rss"
+          />
+        </template>
+      </VTooltip>
+
+      <VTooltip
+        v-if="cardProps.site?.search?.path !== ''"
+        text="搜索"
+      >
+        <template #activator="{ props }">
+          <VIcon
+            color="primary"
+            class="me-2"
+            v-bind="props"
+            icon="mdi-search"
+            @click.stop="handleResourceSearch"
+          />
+        </template>
+      </VTooltip>
+
+      <VTooltip
         v-if="cardProps.site?.limit_interval"
         text="流控"
       >
@@ -315,9 +356,21 @@ onMounted(() => {
         </template>
         {{ testButtonText }}
       </VBtn>
-      <VBtn @click.stop="handleResourceBrowse">
+      <VBtn
+        v-if="cardProps.site?.feed?.method === 'GET'"
+        @click.stop="handleResourceBrowse"
+      >
         <template #prepend>
           <VIcon icon="mdi-web" />
+        </template>
+        浏览
+      </VBtn>
+      <VBtn
+        v-if="cardProps.site?.feed?.method === 'RSS'"
+        @click.stop="handleResourceRSS"
+      >
+        <template #prepend>
+          <VIcon icon="mdi-rss" />
         </template>
         浏览
       </VBtn>
@@ -472,7 +525,6 @@ onMounted(() => {
                       <VListItemTitle>查看详情</VListItemTitle>
                     </VListItem>
                     <VListItem
-                      v-if="item.raw.enclosure?.startsWith('http')"
                       variant="plain"
                       @click="downloadTorrentFile(item.raw.enclosure)"
                     >

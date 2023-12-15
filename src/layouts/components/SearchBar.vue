@@ -53,7 +53,7 @@ function openSearchDialog() {
               <VTextField
                 ref="searchWordInput"
                 v-model="searchWord"
-                label="电影、电视剧名称"
+                label="电影、电视剧、游戏名称"
                 @keydown.enter="search"
               />
             </VCol>
@@ -87,7 +87,7 @@ function openSearchDialog() {
       class="d-none d-lg-block text-disabled"
       density="compact"
       variant="solo"
-      label="搜索电影、电视剧"
+      label="搜索电影、电视剧、游戏"
       append-inner-icon="mdi-magnify"
       single-line
       hide-details

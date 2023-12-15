@@ -8,6 +8,7 @@ import { doneNProgress, startNProgress } from '@/api/nprogress'
 import type { MediaInfo, NotExistMediaInfo, Subscribe, TmdbSeason } from '@/api/types'
 import router from '@/router'
 import noImage from '@images/no-image.jpeg'
+import { getMediaid } from '@/util'
 
 // 输入参数
 const props = defineProps({
@@ -181,9 +182,7 @@ async function removeSubscribe() {
   // 开始处理
   startNProgress()
   try {
-    const mediaid = props.media?.tmdb_id
-      ? `tmdb:${props.media?.tmdb_id}`
-      : `douban:${props.media?.douban_id}`
+    const mediaid = getMediaid(props.media)
 
     const result: { [key: string]: any } = await api.delete(
       `subscribe/media/${mediaid}`,
@@ -244,9 +243,7 @@ async function handleCheckExists() {
 // 调用API检查是否已订阅，电视剧需要指定季
 async function checkSubscribe(season = 0) {
   try {
-    const mediaid = props.media?.tmdb_id
-      ? `tmdb:${props.media?.tmdb_id}`
-      : `douban:${props.media?.douban_id}`
+    const mediaid = getMediaid(props.media)
 
     const result: Subscribe = await api.get(`subscribe/media/${mediaid}`, {
       params: {
@@ -343,11 +340,7 @@ function goMediaDetail() {
   router.push({
     path: '/media',
     query: {
-      mediaid: `${
-        props.media?.tmdb_id
-          ? `tmdb:${props.media?.tmdb_id}`
-          : `douban:${props.media?.douban_id}`
-      }`,
+      mediaid: getMediaid(props.media),
       type: props.media?.type,
     },
   })
@@ -358,11 +351,7 @@ function handleSearch() {
   router.push({
     path: '/resource',
     query: {
-      keyword: `${
-        props.media?.tmdb_id
-          ? `tmdb:${props.media?.tmdb_id}`
-          : `douban:${props.media?.douban_id}`
-      }`,
+      keyword: getMediaid(props.media),
       type: props.media?.type,
       area: 'title',
     },
@@ -385,6 +374,11 @@ const getImgUrl: Ref<string> = computed(() => {
     return `${import.meta.env.VITE_API_BASE_URL}douban/img/${encodeURIComponent(url)}`
 
   return url
+})
+
+// 计算大小
+const isGame: Ref<boolean> = computed(() => {
+  return props.media?.type === '游戏'
 })
 
 // 拼装季图片地址
@@ -422,19 +416,32 @@ function getYear(airDate: string) {
           'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
           'ring-1': isImageLoaded,
         }"
+        :style="{
+          'grid-column-end': isGame ? 'span 2' : '',
+        }"
       >
+        <!-- aspect-ratio="2/3" -->
         <VImg
-          aspect-ratio="2/3"
           :src="getImgUrl"
-          class="object-cover aspect-w-2 aspect-h-3"
-          :class="hover.isHovering ? 'on-hover' : ''"
+          class="object-cover"
+          :class="{
+            'on-hover': hover.isHovering,
+            'aspect-w-8 aspect-h-3': isGame,
+            'aspect-w-2 aspect-h-3': !isGame,
+          }"
           cover
           @load="isImageLoaded = true"
           @error="imageLoadError = true"
         >
           <template #placeholder>
             <div class="w-full h-full">
-              <VSkeletonLoader class="object-cover aspect-w-2 aspect-h-3" />
+              <VSkeletonLoader
+                class="object-cover"
+                :class="{
+                  'aspect-w-8 aspect-h-3': isGame,
+                  'aspect-w-2 aspect-h-3': !isGame,
+                }"
+              />
             </div>
           </template>
           <!-- 类型角标 -->

@@ -106,6 +106,13 @@ const superUser = store.state.auth.superUser
       />
       <VerticalNavLink
         :item="{
+          title: '游戏',
+          icon: 'mdi-gamepad-variant-outline',
+          to: '/subscribe-game',
+        }"
+      />
+      <VerticalNavLink
+        :item="{
           title: '日历',
           icon: 'mdi-calendar',
           to: '/calendar',

@@ -99,7 +99,7 @@ export interface TransferHistory {
   // 转移模式link/copy/move/softlink/rclone_copy/rclone_move
   mode?: string
 
-  // 类型：电影、电视剧
+  // 类型：电影、电视剧、游戏
   type?: string
 
   // 二级分类
@@ -148,7 +148,7 @@ export interface TransferHistory {
 // 媒体信息
 export interface MediaInfo {
 
-  // 类型 电影、电视剧
+  // 类型 电影、电视剧、游戏
   type?: string
 
   // 媒体标题
@@ -174,6 +174,9 @@ export interface MediaInfo {
 
   // 豆瓣ID
   douban_id?: string
+
+  // STEAM ID
+  steam_id?: string
 
   // 媒体原语种
   original_language?: string
@@ -431,11 +434,20 @@ export interface Site {
   // 站点地址
   url: string
 
+  // 适用类型
+  types?: string[]
+
   // 站点优先级
   pri?: number
 
-  // RSS地址
-  rss?: string
+  // FEED地址
+  feed?: { [key: string]: string }
+
+  // SEARCH地址
+  search?: { [key: string]: string }
+
+  // XPATH
+  xpath?: string
 
   // Cookie
   cookie?: string
@@ -665,7 +677,7 @@ export interface MetaInfo {
   // 副标题
   subtitle?: string
 
-  // 类型 电影、电视剧
+  // 类型 电影、电视剧、游戏
   type: string
 
   // 识别的中文名

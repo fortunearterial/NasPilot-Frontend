@@ -9,6 +9,7 @@ import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
 import SubscribeEditForm from '@/components/form/SubscribeEditForm.vue'
+import { getMediaid } from '@/util'
 
 // 输入参数
 const mediaProps = defineProps({
@@ -55,15 +56,19 @@ async function getMediaDetail() {
       },
     })
     isRefreshed.value = true
-    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id)
+    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id)
       return
 
     // 检查存在状态
-    if (mediaDetail.value.type === '电影')
+    if (mediaDetail.value.type === '游戏')
+      checkGameExists()
+    else if (mediaDetail.value.type === '电影')
       checkMovieExists()
     else
       checkSeasonsNotExists()
     // 检查订阅状态
+    if (mediaDetail.value.type === '游戏')
+      checkGameSubscribed()
     if (mediaDetail.value.type === '电影')
       checkMovieSubscribed()
     else
@@ -79,6 +84,27 @@ async function loadSeasonEpisodes(season: number) {
   try {
     const result: TmdbEpisode[] = await api.get(`tmdb/${mediaDetail.value.tmdb_id}/${season}`)
     seasonEpisodesInfo.value[season] = result || []
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
+
+// 查询当前游戏是否已入库
+async function checkGameExists() {
+  try {
+    const result: { [key: string]: any } = await api.get('media/exists', {
+      params: {
+        steam_id: mediaDetail.value.steam_id,
+        title: mediaDetail.value.title,
+        year: mediaDetail.value.year,
+        season: mediaDetail.value.season,
+        mtype: mediaDetail.value.type,
+      },
+    })
+
+    if (result.success)
+      isExists.value = true
   }
   catch (error) {
     console.error(error)
@@ -109,7 +135,7 @@ async function checkMovieExists() {
 // 查询当前媒体是否已订阅
 async function checkSubscribe(season = 0) {
   try {
-    const mediaid = mediaDetail.value.tmdb_id ? `tmdb:${mediaDetail.value.tmdb_id}` : `douban:${mediaDetail.value.douban_id}`
+    const mediaid = getMediaid(mediaDetail.value)
 
     const result: Subscribe = await api.get(`subscribe/media/${mediaid}`, {
       params: {
@@ -156,6 +182,13 @@ async function checkSeasonsNotExists() {
   }
 }
 
+// 检查游戏订阅状态
+async function checkGameSubscribed() {
+  if (mediaDetail.value.type !== '游戏')
+    return
+  isSubscribed.value = await checkSubscribe()
+}
+
 // 检查电影订阅状态
 async function checkMovieSubscribed() {
   if (mediaDetail.value.type !== '电影')
@@ -199,6 +232,7 @@ async function addSubscribe(season = 0) {
       year: mediaDetail.value?.year,
       tmdbid: mediaDetail.value?.tmdb_id,
       doubanid: mediaDetail.value?.douban_id,
+      steamid: mediaDetail.value?.steam_id,
       season,
       best_version,
     })
@@ -254,9 +288,7 @@ async function removeSubscribe(season: number) {
   // 开始处理
   startNProgress()
   try {
-    const mediaid = mediaDetail.value?.tmdb_id
-      ? `tmdb:${mediaDetail.value?.tmdb_id}`
-      : `douban:${mediaDetail.value?.douban_id}`
+    const mediaid = getMediaid(mediaDetail.value)
 
     const result: { [key: string]: any } = await api.delete(
       `subscribe/media/${mediaid}`,
@@ -305,6 +337,11 @@ function getTheMovieDbLink() {
 // 拼装豆瓣地址
 function getDoubanLink() {
   return `https://movie.douban.com/subject/${mediaDetail.value.douban_id}`
+}
+
+// 拼装STEAM地址
+function getSteamLink() {
+  return `https://store.steampowered.com/app/${mediaDetail.value.steam_id}`
 }
 
 // 拼装IMDB地址
@@ -392,7 +429,7 @@ function joinArray(arr: string[]) {
 
 // 开始搜索
 function handleSearch(area: string) {
-  const keyword = mediaDetail.value.tmdb_id ? `tmdb:${mediaDetail.value.tmdb_id}` : `douban:${mediaDetail.value.douban_id}`
+  const keyword = getMediaid(mediaDetail.value)
   router.push({
     path: '/resource',
     query: {
@@ -419,7 +456,12 @@ onBeforeMount(() => {
       color="primary"
     />
   </div>
-  <div v-if="mediaDetail.tmdb_id || mediaDetail.douban_id" class="max-w-8xl mx-auto px-4">
+  <div
+    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id" class="max-w-8xl mx-auto px-4"
+    :class="{
+      'media-type-game': mediaDetail.steam_id,
+    }"
+  >
     <template v-if="mediaDetail.backdrop_path || mediaDetail.poster_path">
       <div class="vue-media-back absolute left-0 top-0 w-full h-96">
         <VImg class="h-96" :src="mediaDetail.backdrop_path || mediaDetail.poster_path" cover />
@@ -429,10 +471,21 @@ onBeforeMount(() => {
     <div class="media-page">
       <div class="media-header">
         <div class="media-poster">
-          <VImg :src="getW500Image(mediaDetail.poster_path)" cover class="object-cover aspect-w-2 aspect-h-3 ring-1 ring-gray-500">
+          <VImg
+            :src="getW500Image(mediaDetail.poster_path)" cover class="object-cover ring-1 ring-gray-500"
+            :class="{
+              'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
+              'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
+            }"
+          >
             <template #placeholder>
               <div class="w-full h-full">
-                <VSkeletonLoader class="object-cover aspect-w-2 aspect-h-3" />
+                <VSkeletonLoader
+                  class="object-cover" :class="{
+                    'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
+                    'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
+                  }"
+                />
               </div>
             </template>
           </VImg>
@@ -458,7 +511,7 @@ onBeforeMount(() => {
           </span>
         </div>
         <div class="media-actions">
-          <VBtn v-if="mediaDetail.tmdb_id || mediaDetail.douban_id" variant="tonal" color="info">
+          <VBtn v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id" variant="tonal" color="info">
             <template #prepend>
               <VIcon icon="mdi-magnify" />
             </template>
@@ -484,7 +537,7 @@ onBeforeMount(() => {
               </VList>
             </VMenu>
           </VBtn>
-          <VBtn v-if="mediaDetail.type === '电影' || mediaDetail.douban_id" class="ms-2" :color="getSubscribeColor" variant="tonal" @click="handleSubscribe(0)">
+          <VBtn v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id" class="ms-2" :color="getSubscribeColor" variant="tonal" @click="handleSubscribe(0)">
             <template #prepend>
               <VIcon :icon="getSubscribeIcon" />
             </template>
@@ -500,7 +553,7 @@ onBeforeMount(() => {
           <h2 v-if="mediaDetail.overview">
             简介
           </h2>
-          <p>{{ mediaDetail.overview }}</p>
+          <p v-html="mediaDetail.overview" />
           <ul v-if="mediaDetail.tmdb_id" class="media-crew">
             <li v-for="director in mediaDetail.directors" :key="director.id">
               <span>{{ director.job }}</span>
@@ -511,6 +564,12 @@ onBeforeMount(() => {
             <li v-for="director in mediaDetail.directors" :key="director.id">
               <span>{{ joinArray(director.roles) }}</span>
               <a class="crew-name" :href="`${director.url}`" target="_blank">{{ director.name }}</a>
+            </li>
+          </ul>
+          <ul v-if="mediaDetail.steam_id" class="media-crew">
+            <li v-for="director in mediaDetail.directors" :key="director.id">
+              <span>{{ director.job }}</span>
+              <a class="crew-name" :href="`person?personid=${director.id}`" target="_blank">{{ director.name }}</a>
             </li>
           </ul>
           <div class="mt-6">
@@ -536,6 +595,12 @@ onBeforeMount(() => {
               <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">TheTvDb</span>
+              </div>
+            </a>
+            <a v-if="mediaDetail.steam_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getSteamLink()" target="_blank">
+              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+                <VIcon icon="mdi-link" />
+                <span class="ms-1">STEAM</span>
               </div>
             </a>
           </div>
@@ -698,6 +763,49 @@ onBeforeMount(() => {
             </div>
           </div>
         </div>
+        <div v-if="mediaDetail.steam_id" class="media-overview-right">
+          <div class="media-facts">
+            <div v-if="mediaDetail.vote_average" class="media-ratings">
+              <VRating
+                v-model="mediaDetail.vote_average"
+                density="compact"
+                length="10"
+                class="ma-2"
+                readonly
+              />
+            </div>
+            <div v-if="mediaDetail.steam_id" class="media-fact">
+              <span>ID</span>
+              <span class="media-fact-value">{{ mediaDetail.steam_id }}</span>
+            </div>
+            <div v-if="mediaDetail.original_title || mediaDetail.original_name" class="media-fact">
+              <span>原始标题</span>
+              <span class="media-fact-value">{{ mediaDetail.original_title || mediaDetail.original_name }}</span>
+            </div>
+            <div v-if="mediaDetail.status" class="media-fact">
+              <span>状态</span>
+              <span class="media-fact-value">{{ mediaDetail.status }}</span>
+            </div>
+            <div v-if="mediaDetail.release_date || mediaDetail.first_air_date" class="media-fact">
+              <span>发行日期</span>
+              <span class="media-fact-value">
+                <span class="flex items-center justify-end">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                  </svg>
+                  <span class="ml-1.5">{{ mediaDetail.release_date || mediaDetail.first_air_date }}</span>
+                </span>
+              </span>
+            </div>
+            <div v-if="mediaDetail.production_countries" class="media-fact">
+              <span>支持语言</span>
+              <span class="media-fact-value">
+                <span v-for="country in getProductionCountries" :key="country" class="flex items-center justify-end text-end">
+                  {{ country }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
       <div v-if="mediaDetail.tmdb_id">
         <PersonCardSlideView
@@ -739,7 +847,7 @@ onBeforeMount(() => {
     </div>
   </div>
   <NoDataFound
-    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && isRefreshed"
+    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.steam_id && isRefreshed"
     error-code="500"
     error-title="出错啦！"
     error-description="未识别到媒体信息。"
@@ -814,6 +922,12 @@ onBeforeMount(() => {
   --tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.media-type-game {
+  .media-poster {
+    width: 20.375rem;
+  }
 }
 
 @media (min-width: 1280px) {

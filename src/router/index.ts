@@ -57,6 +57,13 @@ const router = createRouter({
           },
         },
         {
+          path: 'subscribe-game',
+          component: () => import('../pages/subscribe-game.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
           path: 'calendar',
           component: () => import('../pages/calendar.vue'),
           meta: {

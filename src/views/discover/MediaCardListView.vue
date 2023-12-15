@@ -148,7 +148,7 @@ async function fetchData({ done }: { done: any }) {
     >
       <MediaCard
         v-for="data in dataList"
-        :key="data.tmdb_id || data.douban_id"
+        :key="data.tmdb_id || data.douban_id || data.steam_id"
         :media="data"
       />
     </div>
@@ -164,5 +164,6 @@ async function fetchData({ done }: { done: any }) {
 <style lang="scss">
 .grid-media-card {
   grid-template-columns: repeat(auto-fill, minmax(9.375rem, 1fr));
+  align-items: flex-start;
 }
 </style>
