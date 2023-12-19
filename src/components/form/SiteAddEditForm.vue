@@ -314,7 +314,7 @@ async function updateSiteInfo() {
               md="4"
             >
               <VTextField
-                v-model="siteForm.limit_seconds"
+                v-model="siteForm.limit_count"
                 label="访问次数"
                 :rules="[numberValidator]"
               />
