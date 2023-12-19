@@ -36,7 +36,7 @@ const superUser = store.state.auth.superUser
         <!-- 👉 Github -->
         <IconBtn
           class="me-2"
-          href="https://github.com/jxxghp/MoviePilot"
+          href="https://github.com/fortunearterial/NasPilot-Backend"
           target="_blank"
           rel="noopener noreferrer"
         >

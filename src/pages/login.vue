@@ -135,7 +135,7 @@ onMounted(() => {
           </template>
 
           <VCardTitle class="font-weight-semibold text-2xl text-uppercase">
-            MoviePilot
+            NasPilot
           </VCardTitle>
         </VCardItem>
 

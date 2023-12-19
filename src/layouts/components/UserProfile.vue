@@ -145,7 +145,7 @@ const avatar = store.state.auth.avatar
 
         <!-- 👉 FAQ -->
         <VListItem
-          href="https://github.com/jxxghp/MoviePilot/blob/main/README.md"
+          href="https://github.com/fortunearterial/NasPilot-Backend/blob/main/README.md"
           target="_blank"
         >
           <template #prepend>

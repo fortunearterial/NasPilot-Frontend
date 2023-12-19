@@ -1,6 +1,6 @@
-# MoviePilot-Frontend
+# NasPilot-Frontend
 
-[MoviePilot](https://github.com/jxxghp/MoviePilot) 的前端项目。
+[NasPilot](https://github.com/fortunearterial/NasPilot-Backend) 的前端项目。
 
 ## 推荐的IDE设置
 

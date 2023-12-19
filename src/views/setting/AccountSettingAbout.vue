@@ -76,7 +76,7 @@ onMounted(() => {
     <div class="section">
       <div>
         <h3 class="heading">
-          关于 MoviePilot
+          关于 NasPilot
         </h3>
       </div>
       <div class="section border-t border-gray-800">
@@ -89,7 +89,7 @@ onMounted(() => {
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow flex flex-row items-center truncate">
                   <code class="truncate">{{ systemEnv.VERSION }}</code>
-                  <a v-if="latestRelease === systemEnv.VERSION" href="https://github.com/jxxghp/MoviePilot/releases" target="_blank" rel="noopener noreferrer">
+                  <a v-if="latestRelease === systemEnv.VERSION" href="https://github.com/fortunearterial/NasPilot-Backend/releases" target="_blank" rel="noopener noreferrer">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap bg-green-500 bg-opacity-80 border border-green-500 !text-green-100 ml-2 !cursor-pointer transition hover:bg-green-400">
                       最新
                     </span>
@@ -138,7 +138,7 @@ onMounted(() => {
                 数据目录
               </dt>
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
-                <span class="flex-grow undefined"><code>/moviepilot</code></span>
+                <span class="flex-grow undefined"><code>/naspilot</code></span>
               </dd>
             </div>
           </div>
@@ -171,8 +171,8 @@ onMounted(() => {
                 文档
               </dt><dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow undefined">
-                  <a href="https://github.com/jxxghp/MoviePilot/blob/main/README.md" target="_blank" rel="noreferrer" class="text-indigo-500 transition duration-300 hover:underline">
-                    https://github.com/jxxghp/MoviePilot/blob/main/README.md
+                  <a href="https://github.com/fortunearterial/NasPilot-Backend/blob/main/README.md" target="_blank" rel="noreferrer" class="text-indigo-500 transition duration-300 hover:underline">
+                    https://github.com/fortunearterial/NasPilot-Backend/blob/main/README.md
                   </a>
                 </span>
               </dd>
@@ -183,8 +183,8 @@ onMounted(() => {
                 问题反馈
               </dt><dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow undefined">
-                  <a href="https://github.com/jxxghp/MoviePilot/issues/new/choose" target="_blank" rel="noreferrer" class="text-indigo-500 transition duration-300 hover:underline">
-                    https://github.com/jxxghp/MoviePilot/issues/new/choose
+                  <a href="https://github.com/fortunearterial/NasPilot-Backend/issues/new/choose" target="_blank" rel="noreferrer" class="text-indigo-500 transition duration-300 hover:underline">
+                    https://github.com/fortunearterial/NasPilot-Backend/issues/new/choose
                   </a>
                 </span>
               </dd>
