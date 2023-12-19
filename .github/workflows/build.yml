@@ -1,4 +1,4 @@
-name: Build Moviepilot-Frontend
+name: Build Naspilot-Frontend
 
 on:
   workflow_dispatch:

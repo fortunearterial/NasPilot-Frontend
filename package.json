@@ -1,6 +1,6 @@
 {
-  "name": "moviepilot",
-  "version": "1.5.2",
+  "name": "naspilot",
+  "version": "1.1.0",
   "private": true,
   "bin": "dist/service.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "lint": "eslint . -c .eslintrc.js --fix --ext .ts,.js,.vue,.tsx,.jsx",
     "build:icons": "tsc -b src/@iconify && node src/@iconify/build-icons.js",
     "postinstall": "npm run build:icons",
-    "pkg": "pkg . -t node18-win-x64 -o MoviePilot-Frontend.exe"
+    "pkg": "pkg . -t node18-win-x64 -o NasPilot-Frontend.exe"
   },
   "pkg": {
     "assets": [
