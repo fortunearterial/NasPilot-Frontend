@@ -1,6 +1,6 @@
 {
   "name": "naspilot",
-  "version": "1.1.0",
+  "version": "LY1.1.0",
   "private": true,
   "bin": "dist/service.js",
   "scripts": {
