@@ -178,6 +178,9 @@ export interface MediaInfo {
   // STEAM ID
   steam_id?: string
 
+  // JavDb ID
+  javdb_id?: string
+
   // 媒体原语种
   original_language?: string
 

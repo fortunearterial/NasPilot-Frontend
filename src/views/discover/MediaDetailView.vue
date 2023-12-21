@@ -56,12 +56,14 @@ async function getMediaDetail() {
       },
     })
     isRefreshed.value = true
-    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id)
+    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id && !mediaDetail.value.javdb_id)
       return
 
     // 检查存在状态
     if (mediaDetail.value.type === '游戏')
       checkGameExists()
+    else if (mediaDetail.value.type === 'Jav')
+      checkJavExists()
     else if (mediaDetail.value.type === '电影')
       checkMovieExists()
     else
@@ -96,6 +98,27 @@ async function checkGameExists() {
     const result: { [key: string]: any } = await api.get('media/exists', {
       params: {
         steam_id: mediaDetail.value.steam_id,
+        title: mediaDetail.value.title,
+        year: mediaDetail.value.year,
+        season: mediaDetail.value.season,
+        mtype: mediaDetail.value.type,
+      },
+    })
+
+    if (result.success)
+      isExists.value = true
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
+
+// 查询当前游戏是否已入库
+async function checkJavExists() {
+  try {
+    const result: { [key: string]: any } = await api.get('media/exists', {
+      params: {
+        javdb_id: mediaDetail.value.javdb_id,
         title: mediaDetail.value.title,
         year: mediaDetail.value.year,
         season: mediaDetail.value.season,
@@ -233,6 +256,7 @@ async function addSubscribe(season = 0) {
       tmdbid: mediaDetail.value?.tmdb_id,
       doubanid: mediaDetail.value?.douban_id,
       steamid: mediaDetail.value?.steam_id,
+      javdbid: mediaDetail.value?.javdb_id,
       season,
       best_version,
     })
@@ -342,6 +366,11 @@ function getDoubanLink() {
 // 拼装STEAM地址
 function getSteamLink() {
   return `https://store.steampowered.com/app/${mediaDetail.value.steam_id}`
+}
+
+// 拼装JavDB地址
+function getJavDBLink() {
+  return `https://javdb.com/v/${mediaDetail.value.javdb_id}`
 }
 
 // 拼装IMDB地址
@@ -457,9 +486,10 @@ onBeforeMount(() => {
     />
   </div>
   <div
-    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id" class="max-w-8xl mx-auto px-4"
+    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="max-w-8xl mx-auto px-4"
     :class="{
       'media-type-game': mediaDetail.steam_id,
+      'media-type-jav': mediaDetail.javdb_id,
     }"
   >
     <template v-if="mediaDetail.backdrop_path || mediaDetail.poster_path">
@@ -475,6 +505,7 @@ onBeforeMount(() => {
             :src="getW500Image(mediaDetail.poster_path)" cover class="object-cover ring-1 ring-gray-500"
             :class="{
               'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
+              'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
               'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
             }"
           >
@@ -483,6 +514,7 @@ onBeforeMount(() => {
                 <VSkeletonLoader
                   class="object-cover" :class="{
                     'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
+                    'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
                     'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
                   }"
                 />
@@ -511,7 +543,7 @@ onBeforeMount(() => {
           </span>
         </div>
         <div class="media-actions">
-          <VBtn v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id" variant="tonal" color="info">
+          <VBtn v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" variant="tonal" color="info">
             <template #prepend>
               <VIcon icon="mdi-magnify" />
             </template>
@@ -537,7 +569,7 @@ onBeforeMount(() => {
               </VList>
             </VMenu>
           </VBtn>
-          <VBtn v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id" class="ms-2" :color="getSubscribeColor" variant="tonal" @click="handleSubscribe(0)">
+          <VBtn v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="ms-2" :color="getSubscribeColor" variant="tonal" @click="handleSubscribe(0)">
             <template #prepend>
               <VIcon :icon="getSubscribeIcon" />
             </template>
@@ -601,6 +633,12 @@ onBeforeMount(() => {
               <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">STEAM</span>
+              </div>
+            </a>
+            <a v-if="mediaDetail.javdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getJavDBLink()" target="_blank">
+              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+                <VIcon icon="mdi-link" />
+                <span class="ms-1">JavDB</span>
               </div>
             </a>
           </div>
@@ -847,7 +885,7 @@ onBeforeMount(() => {
     </div>
   </div>
   <NoDataFound
-    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.steam_id && isRefreshed"
+    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.steam_id && !mediaDetail.javdb_id && isRefreshed"
     error-code="500"
     error-title="出错啦！"
     error-description="未识别到媒体信息。"
@@ -925,6 +963,12 @@ onBeforeMount(() => {
 }
 
 .media-type-game {
+  .media-poster {
+    width: 20.375rem;
+  }
+}
+
+.media-type-jav {
   .media-poster {
     width: 20.375rem;
   }

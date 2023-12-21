@@ -8,6 +8,8 @@ export function getMediaid(media: MediaInfo | undefined) {
     mediaid = `douban:${media?.douban_id}`
   else if (media?.steam_id)
     mediaid = `steam:${media?.steam_id}`
+  else if (media?.javdb_id)
+    mediaid = `javdb:${media?.javdb_id}`
 
   return mediaid
 }

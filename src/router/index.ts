@@ -64,6 +64,13 @@ const router = createRouter({
           },
         },
         {
+          path: 'subscribe-jav',
+          component: () => import('../pages/subscribe-jav.vue'),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
           path: 'calendar',
           component: () => import('../pages/calendar.vue'),
           meta: {

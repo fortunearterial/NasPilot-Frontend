@@ -113,6 +113,13 @@ const superUser = store.state.auth.superUser
       />
       <VerticalNavLink
         :item="{
+          title: 'Jav',
+          icon: 'mdi-car-3-plus',
+          to: '/subscribe-jav',
+        }"
+      />
+      <VerticalNavLink
+        :item="{
           title: '日历',
           icon: 'mdi-calendar',
           to: '/calendar',

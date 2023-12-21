@@ -148,7 +148,7 @@ async function fetchData({ done }: { done: any }) {
     >
       <MediaCard
         v-for="data in dataList"
-        :key="data.tmdb_id || data.douban_id || data.steam_id"
+        :key="data.tmdb_id || data.douban_id || data.steam_id || data.javdb_id"
         :media="data"
       />
     </div>
