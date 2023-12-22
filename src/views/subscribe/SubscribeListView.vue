@@ -8,6 +8,7 @@ import SubscribeCard from '@/components/cards/SubscribeCard.vue'
 // 输入参数
 const props = defineProps({
   type: String,
+  keyword: String,
 })
 
 // 是否刷新过
@@ -19,7 +20,7 @@ const dataList = ref<Subscribe[]>([])
 // 获取订阅列表数据
 async function fetchData() {
   try {
-    dataList.value = await api.get(`subscribe/?type_in=${props.type}`)
+    dataList.value = await api.get(`subscribe/?type_in=${props.type}&keyword_in=${props.keyword || ''}`)
     isRefreshed.value = true
   }
   catch (error) {

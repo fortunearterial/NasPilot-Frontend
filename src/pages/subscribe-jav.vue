@@ -49,7 +49,7 @@ onBeforeMount(fetchData)
 
       <VWindowItem v-for="item in tabs" :key="item" :value="item">
         <transition name="fade-slide" appear>
-          <SubscribeListView :type="`Jav/${item}`" />
+          <SubscribeListView type="Jav" :keyword="item" />
         </transition>
       </VWindowItem>
     </VWindow>
