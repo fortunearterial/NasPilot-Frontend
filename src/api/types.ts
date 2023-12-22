@@ -440,6 +440,9 @@ export interface Site {
   // 适用类型
   types?: string[]
 
+  // 下载器
+  downloader?: string
+
   // 站点优先级
   pri?: number
 

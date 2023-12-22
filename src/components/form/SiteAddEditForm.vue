@@ -83,6 +83,13 @@ const mediaTypeItems = [
   { title: '游戏', value: 'GAME' },
 ]
 
+// 下载器下拉框选项
+const downloaderItems = [
+  { title: 'qBittorrent', value: 'qbittorrent' },
+  { title: 'Transmission', value: 'transmission' },
+  { title: 'Aria2', value: 'aria2' },
+]
+
 // 监控输入参数
 watchEffect(async () => {
   if (props.siteid)
@@ -226,14 +233,25 @@ async function updateSiteInfo() {
               />
             </VCol>
             <VCol
-              cols="12"
-              md="6"
+              cols="6"
+              md="3"
             >
               <VSelect
                 v-model="siteForm.types"
                 label="适用类型"
                 multiple
                 :items="mediaTypeItems"
+                :rules="[requiredValidator]"
+              />
+            </VCol>
+            <VCol
+              cols="6"
+              md="3"
+            >
+              <VSelect
+                v-model="siteForm.downloader"
+                label="下载器"
+                :items="downloaderItems"
                 :rules="[requiredValidator]"
               />
             </VCol>
