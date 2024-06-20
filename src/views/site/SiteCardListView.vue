@@ -1,9 +1,10 @@
 <script lang="ts" setup>
+import draggable from 'vuedraggable'
 import api from '@/api'
 import type { Site } from '@/api/types'
 import SiteCard from '@/components/cards/SiteCard.vue'
 import NoDataFound from '@/components/NoDataFound.vue'
-import SiteAddEditForm from '@/components/form/SiteAddEditForm.vue'
+import SiteAddEditDialog from '@/components/dialog/SiteAddEditDialog.vue'
 
 // 数据列表
 const dataList = ref<Site[]>([])
@@ -19,8 +20,21 @@ async function fetchData() {
   try {
     dataList.value = await api.get('site/')
     isRefreshed.value = true
+  } catch (error) {
+    console.error(error)
   }
-  catch (error) {
+}
+
+// 保存站点排序
+async function savaSitesPriority() {
+  // 重新排序
+  const priorities = dataList.value.map((site, index) => ({ id: site.id, pri: index + 1 }))
+  try {
+    const result: { [key: string]: any } = await api.post('site/priorities', priorities)
+    if (result.success) {
+      fetchData()
+    }
+  } catch (error) {
     console.error(error)
   }
 }
@@ -30,28 +44,21 @@ onBeforeMount(fetchData)
 </script>
 
 <template>
-  <div
-    v-if="!isRefreshed"
-    class="mt-12 w-full text-center text-gray-500 text-sm flex flex-col items-center"
-  >
-    <VProgressCircular
-      v-if="!isRefreshed"
-      size="48"
-      indeterminate
-      color="primary"
-    />
-  </div>
-  <div
-    v-if="dataList.length > 0"
-    class="grid gap-3 grid-site-card"
-  >
-    <SiteCard
-      v-for="data in dataList"
-      :key="data.id"
-      :site="data"
-      @remove="fetchData"
-      @update="fetchData"
-    />
+  <LoadingBanner v-if="!isRefreshed" class="mt-12" />
+  <div>
+    <draggable
+      v-if="dataList.length > 0"
+      v-model="dataList"
+      @end="savaSitesPriority"
+      handle=".cursor-move"
+      item-key="id"
+      tag="div"
+      :component-data="{ 'class': 'grid gap-3 grid-site-card' }"
+    >
+      <template #item="{ element }">
+        <SiteCard :site="element" @remove="fetchData" @update="fetchData" />
+      </template>
+    </draggable>
   </div>
   <NoDataFound
     v-if="dataList.length === 0 && isRefreshed"
@@ -60,24 +67,18 @@ onBeforeMount(fetchData)
     error-description="已添加并支持的站点将会在这里显示。"
   />
   <!-- 新增站点按钮 -->
-  <VBtn
-    icon="mdi-plus"
-    size="x-large"
-    class="fixed right-5 bottom-5"
-    oper="add"
-    @click="siteAddDialog = true"
-  />
-  <SiteAddEditForm
+  <VFab icon="mdi-plus" location="bottom" size="x-large" fixed app appear @click="siteAddDialog = true" />
+  <!-- 新增站点弹窗 -->
+  <SiteAddEditDialog
+    v-if="siteAddDialog"
     v-model="siteAddDialog"
     oper="add"
-    @save="siteAddDialog = false; fetchData()"
+    @save="
+      () => {
+        siteAddDialog = false
+        fetchData()
+      }
+    "
     @close="siteAddDialog = false"
   />
 </template>
-
-<style lang="scss">
-.grid-site-card {
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  padding-block-end: 1rem;
-}
-</style>

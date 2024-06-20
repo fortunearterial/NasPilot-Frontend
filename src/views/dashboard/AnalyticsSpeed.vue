@@ -4,7 +4,7 @@ import api from '@/api'
 import type { DownloaderInfo } from '@/api/types'
 
 // 定时器
-let refreshTimer: NodeJS.Timer | null = null
+let refreshTimer: NodeJS.Timeout | null = null
 
 // 下载器信息
 const downloadInfo = ref<DownloaderInfo>({
@@ -56,8 +56,7 @@ async function loadDownloaderInfo() {
         amount: formatFileSize(res.free_space),
       },
     ]
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
@@ -81,47 +80,44 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <VCard>
-    <VCardItem>
-      <VCardTitle>实时速率</VCardTitle>
-    </VCardItem>
-
-    <VCardText class="pt-4">
-      <div>
-        <p class="text-h5 me-2">
-          ↑{{ formatFileSize(downloadInfo.upload_speed) }}/s
-        </p>
-        <p class="text-h4 me-2">
-          ↓{{ formatFileSize(downloadInfo.download_speed) }}/s
-        </p>
-      </div>
-      <VList class="card-list mt-9">
-        <VListItem
-          v-for="item in infoItems"
-          :key="item.title"
-        >
-          <template #prepend>
-            <VIcon
-              rounded
-              :icon="item.avatar"
-            />
-          </template>
-
-          <VListItemTitle class="text-sm font-weight-medium mb-1">
-            {{ item.title }}
-          </VListItemTitle>
-
+  <VHover>
+    <template #default="hover">
+      <VCard v-bind="hover.props">
+        <VCardItem>
           <template #append>
-            <div>
-              <h6 class="text-sm font-weight-medium mb-2">
-                {{ item.amount }}
-              </h6>
-            </div>
+            <VIcon class="cursor-move" v-if="hover.isHovering">mdi-drag</VIcon>
           </template>
-        </VListItem>
-      </VList>
-    </VCardText>
-  </VCard>
+          <VCardTitle>实时速率</VCardTitle>
+        </VCardItem>
+
+        <VCardText class="pt-4">
+          <div>
+            <p class="text-h5 me-2">↑{{ formatFileSize(downloadInfo.upload_speed) }}/s</p>
+            <p class="text-h4 me-2">↓{{ formatFileSize(downloadInfo.download_speed) }}/s</p>
+          </div>
+          <VList class="card-list mt-9">
+            <VListItem v-for="item in infoItems" :key="item.title">
+              <template #prepend>
+                <VIcon rounded :icon="item.avatar" />
+              </template>
+
+              <VListItemTitle class="text-sm font-weight-medium mb-1">
+                {{ item.title }}
+              </VListItemTitle>
+
+              <template #append>
+                <div>
+                  <h6 class="text-sm font-weight-medium mb-2">
+                    {{ item.amount }}
+                  </h6>
+                </div>
+              </template>
+            </VListItem>
+          </VList>
+        </VCardText>
+      </VCard>
+    </template>
+  </VHover>
 </template>
 
 <style lang="scss" scoped>

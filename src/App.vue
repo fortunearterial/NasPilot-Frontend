@@ -1,38 +1,49 @@
 <script lang="ts" setup>
-import { useToast } from 'vue-toast-notification'
 import { useTheme } from 'vuetify'
-import store from './store'
+import { checkPrefersColorSchemeIsDark } from '@/@core/utils'
 
-// 第一时间应用主题
 const { global: globalTheme } = useTheme()
-globalTheme.name.value = localStorage.getItem('theme') || 'light'
 
-// 提示框
-const $toast = useToast()
+// 生效主题
+async function setTheme() {
+  let themeValue = localStorage.getItem('theme') || 'light'
+  const autoTheme = checkPrefersColorSchemeIsDark() ? 'dark' : 'light'
+  globalTheme.name.value = themeValue === 'auto' ? autoTheme : themeValue
+}
 
-// SSE持续接收消息
-function startSSEMessager() {
-  const token = store.state.auth.token
-  if (token) {
-    const eventSource = new EventSource(
-      `${import.meta.env.VITE_API_BASE_URL}system/message?token=${token}`,
-    )
+// ApexCharts 全局配置
+declare global {
+  interface Window {
+    Apex: any
+  }
+}
 
-    eventSource.addEventListener('message', (event) => {
-      const message = event.data
-      if (message)
-        $toast.info(message)
-    })
-
-    onBeforeUnmount(() => {
-      eventSource.close()
-    })
+if (window.Apex) {
+  // 数据标签
+  window.Apex.dataLabels = {
+    formatter: function (_: number, { seriesIndex, w }: { seriesIndex: number; w: any }) {
+      // 如果有小数点，保留两位小数，否则保留整数
+      const data = w.config.series[seriesIndex]
+      return data.toFixed(data % 1 === 0 ? 0 : 1)
+    },
+  }
+  // 图例
+  window.Apex.legend = {
+    labels: {
+      useSeriesColors: true,
+    },
+  }
+  // 标题
+  window.Apex.title = {
+    style: {
+      color: 'rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity))',
+    },
   }
 }
 
 // 页面加载时，加载当前用户数据
 onBeforeMount(async () => {
-  startSSEMessager()
+  setTheme()
 })
 </script>
 

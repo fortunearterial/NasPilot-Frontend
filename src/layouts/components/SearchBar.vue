@@ -1,100 +1,39 @@
 <script lang="ts" setup>
-// 路由
-const router = useRouter()
+import * as Mousetrap from 'mousetrap'
+import SearchBarView from '@/views/system/SearchBarView.vue'
 
-// 搜索词
-const searchWord = ref<string>('')
-
-// 搜索弹窗
 const searchDialog = ref(false)
 
-// ref
-const searchWordInput = ref<HTMLElement | null>(null)
-
-// Search
-function search() {
-  if (!searchWord.value)
-    return
-
-  searchDialog.value = false
-  router.push({
-    path: '/browse/media/search',
-    query: {
-      title: searchWord.value,
-    },
-  })
-}
+// 注册快捷键
+Mousetrap.bind(['command+k', 'ctrl+k'], openSearchDialog)
 
 // 打开搜索弹窗
 function openSearchDialog() {
   searchDialog.value = true
-  nextTick(() => {
-    searchWordInput.value?.focus()
-  })
+  return false
 }
 </script>
 
 <template>
-  <!-- 👉 Search Button -->
-  <div
-    class="d-flex align-center cursor-pointer"
-    style="user-select: none;"
-  >
-    <VDialog
-      v-model="searchDialog"
-      max-width="50rem"
-      transition="dialog-top-transition"
-    >
-      <!-- Dialog Content -->
-      <VCard title="搜索">
-        <VCardText>
-          <VRow>
-            <VCol cols="12">
-              <VTextField
-                ref="searchWordInput"
-                v-model="searchWord"
-                label="电影、电视剧、游戏名称"
-                @keydown.enter="search"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            variant="tonal"
-            @click="search"
-          >
-            搜索
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-  </div>
   <!-- 👉 Search Icon -->
-  <IconBtn
-    class="d-lg-none"
-    @click="openSearchDialog"
-  >
-    <VIcon icon="mdi-magnify" />
-  </IconBtn>
-  <!-- 👉 Search Textfield -->
-  <span class="w-1/5">
-    <VTextField
-      key="search_navbar"
-      v-model="searchWord"
-      class="d-none d-lg-block text-disabled"
-      density="compact"
-      variant="solo"
-      label="搜索电影、电视剧、游戏"
-      append-inner-icon="mdi-magnify"
-      single-line
-      hide-details
-      flat
-      rounded
-      @click:append-inner="search"
-      @keydown.enter="search"
-    />
-  </span>
+  <div class="d-flex align-center cursor-pointer ms-lg-n2" style="user-select: none">
+    <IconBtn @click="openSearchDialog">
+      <VIcon icon="ri-search-line" />
+    </IconBtn>
+    <span class="d-none d-md-flex align-center text-disabled ms-2" @click="openSearchDialog">
+      <span class="me-3">搜索</span>
+      <span class="meta-key">⌘K</span>
+    </span>
+  </div>
+  <!-- 搜索弹窗 -->
+  <SearchBarView v-model="searchDialog" v-if="searchDialog" @close="searchDialog = false" />
 </template>
+<style type="scss" scoped>
+.meta-key {
+  border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 6px;
+  block-size: 1.75rem;
+  padding-block: 0.1rem;
+  padding-inline: 0.25rem;
+}
+</style>

@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { debounce } from 'lodash'
 import { VForm } from 'vuetify/components/VForm'
 import { useStore } from 'vuex'
 import { requiredValidator } from '@/@validators'
 import api from '@/api'
 import router from '@/router'
 import logo from '@images/logo.png'
+import { useTheme } from 'vuetify'
+import { checkPrefersColorSchemeIsDark } from '@/@core/utils'
+import { urlBase64ToUint8Array } from '@/@core/utils/navigator'
+
+const { global: globalTheme } = useTheme()
 
 // Vuex Store
 const store = useStore()
@@ -13,6 +19,7 @@ const store = useStore()
 const form = ref({
   username: '',
   password: '',
+  otp_password: '',
   remember: true,
 })
 
@@ -30,6 +37,12 @@ const backgroundImageUrl = ref('')
 // 背景图片加载状态
 const isImageLoaded = ref(false)
 
+// 是否开启双重验证
+const isOTP = ref(false)
+
+// 用户名称输入框
+const usernameInput = ref()
+
 // 获取背景图片
 async function fetchBackgroundImage() {
   api
@@ -41,20 +54,92 @@ async function fetchBackgroundImage() {
       console.log(error)
     })
 }
+// 查询是否开启双重验证
+const fetchOTP = debounce(async () => {
+  const userid = usernameInput.value?.value
+  if (!userid) {
+    isOTP.value = false
+    return
+  }
+  api
+    .get(`/user/otp/${userid}`)
+    .then((response: any) => {
+      isOTP.value = response.success
+    })
+    .catch((error: any) => {
+      console.log(error)
+    })
+}, 500)
+
+// 获取用户主题配置
+async function fetchThemeConfig() {
+  const response = await api.get('/user/config/theme')
+  if (response && response.data && response.data.value) {
+    return response.data.value
+  }
+  return null
+}
+
+// 生效主题
+async function setTheme() {
+  let themeValue = (await fetchThemeConfig()) || localStorage.getItem('theme') || 'light'
+  const autoTheme = checkPrefersColorSchemeIsDark() ? 'dark' : 'light'
+  globalTheme.name.value = themeValue === 'auto' ? autoTheme : themeValue
+  // 存储主题到本地
+  localStorage.setItem('theme', themeValue)
+  localStorage.setItem('materio-initial-loader-bg', globalTheme.current.value.colors.background)
+}
+
+// 订阅推送通知
+async function subscribeForPushNotifications() {
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    const registration = await navigator.serviceWorker.ready
+    // 获取订阅信息
+    const subscription = await registration.pushManager.getSubscription().then(function (subscription) {
+      if (subscription === null) {
+        const convertedVapidKey = urlBase64ToUint8Array(import.meta.env.VITE_PUBLIC_VAPID_KEY)
+        return registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey,
+        })
+      } else {
+        return subscription
+      }
+    })
+    // 发送订阅请求
+    try {
+      await api.post('/message/webpush/subscribe', subscription)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+}
+
+// 登录后处理
+async function afterLogin() {
+  // 生效主题配置
+  await setTheme()
+  // 跳转到首页或回原始页面
+  router.push(store.state.auth.originalPath ?? '/')
+  // 订阅推送通知
+  await subscribeForPushNotifications()
+}
 
 // 登录获取token事件
 function login() {
   errorMessage.value = ''
 
   // 进行表单校验
-  if (!form.value.username || !form.value.password)
+  if (!form.value.username || !form.value.password || (isOTP.value && !form.value.otp_password)) {
+    errorMessage.value = '请输入完整信息'
     return
-
+  }
   // 用户名密码
   const formData = new FormData()
 
   formData.append('username', form.value.username)
   formData.append('password', form.value.password)
+  formData.append('otp_password', form.value.otp_password)
 
   // 请求token
   api
@@ -77,21 +162,16 @@ function login() {
       store.dispatch('auth/updateUserName', username)
       store.dispatch('auth/updateAvatar', avatar)
 
-      // 跳转到首页
-      router.push('/')
+      // 登录后处理
+      afterLogin()
     })
     .catch((error: any) => {
       // 登录失败，显示错误提示
-      if (!error.response)
-        errorMessage.value = '登录失败，请检查网络连接'
-      else if (error.response.status === 401)
-        errorMessage.value = '登录失败，请检查用户名和密码是否正确'
-      else if (error.response.status === 403)
-        errorMessage.value = '登录失败，您没有权限访问'
-      else if (error.response.status === 500)
-        errorMessage.value = '登录失败，服务器错误'
-      else
-        errorMessage.value = `登录失败 ${error.response.status}，请检查用户名和密码是否正确`
+      if (!error.response) errorMessage.value = '登录失败，请检查网络连接'
+      else if (error.response.status === 401) errorMessage.value = '登录失败，请检查用户名、密码或双重验证是否正确'
+      else if (error.response.status === 403) errorMessage.value = '登录失败，您没有权限访问'
+      else if (error.response.status === 500) errorMessage.value = '登录失败，服务器错误'
+      else errorMessage.value = `登录失败 ${error.response.status}，请检查用户名、密码或双重验证码是否正确`
     })
 }
 
@@ -104,8 +184,7 @@ onMounted(() => {
   // 如果token存在，且保持登录状态为true，则跳转到首页
   if (token && remember) {
     router.push('/')
-  }
-  else {
+  } else {
     // 获取背景图片
     fetchBackgroundImage()
   }
@@ -134,64 +213,47 @@ onMounted(() => {
             </div>
           </template>
 
-          <VCardTitle class="font-weight-semibold text-2xl text-uppercase">
-            NasPilot
-          </VCardTitle>
+          <VCardTitle class="font-weight-semibold text-2xl text-uppercase"> NasPilot </VCardTitle>
         </VCardItem>
 
         <VCardText>
-          <VForm
-            ref="refForm"
-            @submit.prevent="() => {}"
-          >
+          <VForm ref="refForm" @submit.prevent="() => {}">
             <VRow>
               <!-- username -->
               <VCol cols="12">
                 <VTextField
+                  ref="usernameInput"
                   v-model="form.username"
                   label="用户名"
                   type="text"
                   :rules="[requiredValidator]"
+                  @input="fetchOTP"
                 />
               </VCol>
-
               <!-- password -->
               <VCol cols="12">
                 <VTextField
                   v-model="form.password"
                   label="密码"
                   :type="isPasswordVisible ? 'text' : 'password'"
-                  :append-inner-icon="
-                    isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
-                  "
+                  :append-inner-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                   :rules="[requiredValidator]"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
-
-                <div
-                  v-if="errorMessage"
-                  class="text-error mt-1"
-                >
+              </VCol>
+              <VCol cols="12">
+                <VTextField v-if="isOTP" v-model="form.otp_password" label="双重验证码" type="input" />
+                <!-- remember me checkbox -->
+                <div class="d-flex align-center justify-space-between flex-wrap">
+                  <VCheckbox v-model="form.remember" label="保持登录" required />
+                </div>
+              </VCol>
+              <VCol cols="12">
+                <!-- login button -->
+                <VBtn block type="submit" @click="login"> 登录 </VBtn>
+                <div v-if="errorMessage" class="text-error mt-2 text-shadow">
                   {{ errorMessage }}
                 </div>
-
-                <!-- remember me checkbox -->
-                <div class="d-flex align-center justify-space-between flex-wrap mt-1 mb-4">
-                  <VCheckbox
-                    v-model="form.remember"
-                    label="保持登录"
-                    required
-                  />
-                </div>
-
-                <!-- login button -->
-                <VBtn
-                  block
-                  type="submit"
-                  @click="login"
-                >
-                  登录
-                </VBtn>
               </VCol>
             </VRow>
           </VForm>
@@ -202,7 +264,7 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
-@use "@core/scss/pages/page-auth.scss";
+@use '@core/scss/pages/page-auth.scss';
 
 .v-card-item__prepend {
   padding-inline-end: 0 !important;

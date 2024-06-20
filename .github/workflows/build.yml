@@ -24,7 +24,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'yarn'
 
       - name: Download Icons
@@ -39,6 +39,7 @@ jobs:
         run: |
           yarn
           yarn build
+          echo "$frontend_version" > dist/version.txt
           zip -r dist.zip dist
 
       - name: Generate Release

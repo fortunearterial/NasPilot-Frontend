@@ -25,10 +25,25 @@ app.use(
   })
 );
 
+// 配置代理中间件将CookieCloud请求转发给后端API
+app.use(
+  '/cookiecloud',
+  proxy(`${proxyConfig.URL}:${proxyConfig.PORT}`, {
+    // 路径加上 /cookiecloud 前缀
+    proxyReqPathResolver: (req) => {
+      return `/cookiecloud${req.url}`
+    }
+  })
+);
 
 // 处理根路径的请求
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html')) // 指向你的前端入口文件
+  res.sendFile(path.join(__dirname, 'index.html'))
+})
+
+// 处理所有其他请求，重定向到前端入口文件
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 app.listen(port, () => {

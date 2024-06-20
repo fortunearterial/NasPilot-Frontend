@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
 import type { Context } from '@/api/types'
 import TorrentItem from '@/components/cards/TorrentItem.vue'
 
@@ -26,6 +25,9 @@ const filterForm = reactive({
   // 分辨率
   resolution: [] as string[],
 })
+
+// 排序字段
+const sortField = ref('default')
 
 // 数据列表
 const dataList = ref<Array<Context>>([])
@@ -60,6 +62,20 @@ function initOptions(data: Context) {
   optionValue(resolutionFilterOptions.value, meta_info?.resource_pix)
 }
 
+// 排序
+watchEffect(() => {
+  const list = dataList.value
+  if (sortField.value === 'default') {
+    dataList.value = list.sort((a, b) => b.torrent_info.pri_order - a.torrent_info.pri_order)
+  } else if (sortField.value === 'site') {
+    dataList.value = list.sort((a, b) => (a.torrent_info.site_name || '').localeCompare(b.torrent_info.site_name || ''))
+  } else if (sortField.value === 'size') {
+    dataList.value = list.sort((a, b) => b.torrent_info.size - a.torrent_info.size)
+  } else if (sortField.value === 'seeder') {
+    dataList.value = list.sort((a, b) => b.torrent_info.seeders - a.torrent_info.seeders)
+  }
+})
+
 // 计算过滤后的列表
 watchEffect(() => {
   // 清空列表
@@ -68,23 +84,23 @@ watchEffect(() => {
   const match = (filter: Array<string>, value: string | undefined) =>
     filter.length === 0 || (value && filter.includes(value))
 
-  props.items?.forEach((data) => {
+  props.items?.forEach(data => {
     const { meta_info, torrent_info } = data
     if (
       // 站点过滤
-      match(filterForm.site, torrent_info.site_name)
+      match(filterForm.site, torrent_info.site_name) &&
       // 促销状态过滤
-      && match(filterForm.freeState, torrent_info.volume_factor)
+      match(filterForm.freeState, torrent_info.volume_factor) &&
       // 季过滤
-      && match(filterForm.season, meta_info.season_episode)
+      match(filterForm.season, meta_info.season_episode) &&
       // 制作组过滤
-      && match(filterForm.releaseGroup, meta_info.resource_team)
+      match(filterForm.releaseGroup, meta_info.resource_team) &&
       // 视频编码过滤
-      && match(filterForm.videoCode, meta_info.video_encode)
+      match(filterForm.videoCode, meta_info.video_encode) &&
       // 分辨率过滤
-      && match(filterForm.resolution, meta_info.resource_pix)
+      match(filterForm.resolution, meta_info.resource_pix) &&
       // 质量过滤
-      && match(filterForm.edition, meta_info.edition)
+      match(filterForm.edition, meta_info.edition)
     )
       dataList.value.push(data)
   })
@@ -92,7 +108,7 @@ watchEffect(() => {
 
 // 初始化过滤选项
 onMounted(() => {
-  props.items?.forEach((item) => {
+  props.items?.forEach(item => {
     initOptions(item)
   })
 })
@@ -101,22 +117,37 @@ onMounted(() => {
 <template>
   <VRow>
     <VCol>
-      <VList v-if="dataList.length === 0" lines="three" class="rounded">
+      <VList v-if="dataList.length === 0" lines="three" class="rounded p-0 shadow-lg">
         <VListItem>
           <VListItemTitle>没有附合当前过滤条件的资源。</VListItemTitle>
         </VListItem>
       </VList>
-      <v-virtual-scroll lines="three" class="rounded" :items="dataList" height="calc(100vh - 156px)">
-        <template #default="{ item }">
-          <TorrentItem :torrent="item" />
-        </template>
-      </v-virtual-scroll>
+      <VList v-if="dataList.length !== 0" lines="three" class="rounded p-0 torrent-list-vscroll shadow-lg">
+        <VVirtualScroll :items="dataList">
+          <template #default="{ item }">
+            <TorrentItem :torrent="item" :key="`${item.torrent_info.title}_${item.torrent_info.site}`" />
+          </template>
+        </VVirtualScroll>
+      </VList>
     </VCol>
     <VCol xl="2" md="3" class="d-none d-md-block">
-      <VList lines="one" class="rounded" height="calc(100vh - 156px)">
-        <VListSubheader v-if="siteFilterOptions.length > 0">
-          站点
-        </VListSubheader>
+      <VList lines="one" class="rounded torrent-list-vscroll shadow-lg">
+        <VListSubheader> 排序 </VListSubheader>
+        <VListItem>
+          <VChipGroup column v-model="sortField">
+            <VChip :color="sortField == 'default' ? 'primary' : ''" filter variant="outlined" value="default">
+              默认
+            </VChip>
+            <VChip :color="sortField == 'site' ? 'primary' : ''" filter variant="outlined" value="site"> 站点 </VChip>
+            <VChip :color="sortField == 'size' ? 'primary' : ''" filter variant="outlined" value="size">
+              文件大小
+            </VChip>
+            <VChip :color="sortField == 'seeder' ? 'primary' : ''" filter variant="outlined" value="seeder">
+              做种数
+            </VChip>
+          </VChipGroup>
+        </VListItem>
+        <VListSubheader v-if="siteFilterOptions.length > 0"> 站点 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.site" column multiple>
             <VChip
@@ -131,9 +162,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="editionFilterOptions.length > 0">
-          质量
-        </VListSubheader>
+        <VListSubheader v-if="editionFilterOptions.length > 0"> 质量 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.edition" column multiple>
             <VChip
@@ -148,9 +177,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="resolutionFilterOptions.length > 0">
-          分辨率
-        </VListSubheader>
+        <VListSubheader v-if="resolutionFilterOptions.length > 0"> 分辨率 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.resolution" column multiple>
             <VChip
@@ -165,9 +192,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="releaseGroupFilterOptions.length > 0">
-          制作组
-        </VListSubheader>
+        <VListSubheader v-if="releaseGroupFilterOptions.length > 0"> 制作组 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.releaseGroup" column multiple>
             <VChip
@@ -182,9 +207,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="videoCodeFilterOptions.length > 0">
-          视频编码
-        </VListSubheader>
+        <VListSubheader v-if="videoCodeFilterOptions.length > 0"> 视频编码 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.videoCode" column multiple>
             <VChip
@@ -199,9 +222,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="freeStateFilterOptions.length > 0">
-          促销状态
-        </VListSubheader>
+        <VListSubheader v-if="freeStateFilterOptions.length > 0"> 促销状态 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.freeState" column multiple>
             <VChip
@@ -216,9 +237,7 @@ onMounted(() => {
             </VChip>
           </VChipGroup>
         </VListItem>
-        <VListSubheader v-if="seasonFilterOptions.length > 0">
-          季集
-        </VListSubheader>
+        <VListSubheader v-if="seasonFilterOptions.length > 0"> 季集 </VListSubheader>
         <VListItem>
           <VChipGroup v-model="filterForm.season" column multiple>
             <VChip
@@ -237,3 +256,15 @@ onMounted(() => {
     </VCol>
   </VRow>
 </template>
+<style lang="scss">
+.torrent-list-vscroll {
+  block-size: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+@media (width <= 768px) {
+  .orrent-list-vscroll {
+    block-size: calc(100vh - 10rem);
+  }
+}
+</style>

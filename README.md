@@ -1,6 +1,6 @@
 # NasPilot-Frontend
 
-[NasPilot](https://github.com/fortunearterial/NasPilot-Backend) 的前端项目。
+[NasPilot](https://github.com/fortunearterial/NasPilot-Backend) 的前端项目，NodeJS版本：>= `v20.12.1`。
 
 ## 推荐的IDE设置
 

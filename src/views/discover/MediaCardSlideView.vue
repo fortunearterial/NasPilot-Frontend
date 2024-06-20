@@ -11,6 +11,8 @@ const props = defineProps({
   title: String,
 })
 
+provide('rankingPropsKey', reactive({...props}))
+
 // 组件加载完成
 const componentLoaded = ref(false)
 
@@ -39,12 +41,11 @@ onMounted(fetchData)
 <template>
   <SlideView
     v-if="componentLoaded"
-    v-bind="props"
   >
     <template #content>
       <template
         v-for="data in dataList"
-        :key="data.tmdb_id || data.douban_id"
+        :key="data.tmdb_id || data.douban_id || data.bangumi_id"
       >
         <MediaCard
           :media="data"

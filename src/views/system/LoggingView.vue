@@ -4,11 +4,14 @@ import store from '@/store'
 // 日志列表
 const logs = ref<string[]>([])
 
+// SSE消息对象
+let eventSource: EventSource | null = null
+
 // SSE持续获取日志
 function startSSELogging() {
   const token = store.state.auth.token
   if (token) {
-    const eventSource = new EventSource(
+    eventSource = new EventSource(
       `${import.meta.env.VITE_API_BASE_URL}system/logging?token=${token}`,
     )
 
@@ -16,10 +19,6 @@ function startSSELogging() {
       const message = event.data
       if (message)
         logs.value.push(message)
-    })
-
-    onBeforeUnmount(() => {
-      eventSource.close()
     })
   }
 }
@@ -34,7 +33,7 @@ function extractLogDetailsFromLogs(logs: string[]): { level: string; time: strin
     const matches = RegExp(logPattern).exec(log)
     if (matches && matches.length === 5) {
       const [_, level, time, program, content] = matches
-      logDetails.push({ level, time, program, content })
+      logDetails.unshift({ level, time, program, content })
     }
   }
 
@@ -64,6 +63,11 @@ const extractLogDetails = computed(() => {
 
 onMounted(() => {
   startSSELogging()
+})
+
+onBeforeUnmount(() => {
+  if (eventSource)
+    eventSource.close()
 })
 </script>
 

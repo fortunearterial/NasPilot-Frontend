@@ -1,8 +1,5 @@
 <script lang="ts" setup>
 import _ from 'lodash'
-import type { Ref } from 'vue'
-import { ref } from 'vue'
-import { useDefer } from '@/util'
 import type { Context } from '@/api/types'
 import TorrentCard from '@/components/cards/TorrentCard.vue'
 
@@ -70,12 +67,47 @@ function initOptions(data: Context) {
   optionValue(resolutionFilterOptions.value, meta_info?.resource_pix)
 }
 
+// 对季过滤选项进行排序
+const sortSeasonFilterOptions = computed(() => {
+  return seasonFilterOptions.value.sort((a, b) => {
+    // 按季,集降序排序
+    const parseSeasonEpisode = (str: string) => {
+      const seasonRangeMatch = str.match(/S(\d+)(?:-S(\d+))?/)
+      const episodeRangeMatch = str.match(/E(\d+)(?:-E(\d+))?/)
+      return {
+        seasonStart: seasonRangeMatch?.[1] ? parseInt(seasonRangeMatch[1]) : 0,
+        seasonEnd: seasonRangeMatch?.[2] ? parseInt(seasonRangeMatch[2]) : 0,
+        episodeStart: episodeRangeMatch?.[1] ? parseInt(episodeRangeMatch[1]) : 0,
+        episodeEnd: episodeRangeMatch?.[2] ? parseInt(episodeRangeMatch[2]) : 0,
+      }
+    }
+    const parsedA = parseSeasonEpisode(a)
+    const parsedB = parseSeasonEpisode(b)
+    // 先按季降序排序
+    if (parsedB.seasonStart !== parsedA.seasonStart) {
+      return parsedB.seasonStart - parsedA.seasonStart
+    }
+    if (parsedB.seasonEnd !== parsedA.seasonEnd) {
+      return parsedB.seasonEnd - parsedA.seasonEnd
+    }
+    // 按集降序排序
+    if (parsedB.episodeStart !== parsedA.episodeStart) {
+      return parsedB.episodeStart - parsedA.episodeStart
+    }
+    if (parsedB.episodeEnd !== parsedA.episodeEnd) {
+      return parsedB.episodeEnd - parsedA.episodeEnd
+    }
+    // 兜底
+    return b.localeCompare(a)
+  })
+})
+
 // 计算分组后的列表
 onMounted(() => {
   // 数据分组
   const groupMap = new Map<string, Context[]>()
   // 遍历数据
-  props.items?.forEach((item) => {
+  props.items?.forEach(item => {
     const { torrent_info } = item
     // init options
     initOptions(item)
@@ -85,8 +117,7 @@ onMounted(() => {
       // 已入库相同标题和大小的分组，将当前上下文信息添加到分组中
       const group = groupMap.get(key)
       group?.push(item)
-    }
-    else {
+    } else {
       // 创建新的分组，并将当前上下文信息添加到分组中
       groupMap.set(key, [item])
     }
@@ -94,48 +125,44 @@ onMounted(() => {
   groupedDataList.value = groupMap
 })
 
-const defer: Ref<Function> = ref(() => true)
-
 // 计算过滤后的列表
 watchEffect(() => {
   // 清空列表
   dataList.value = []
-  // 匹配过滤函数
-  const match = (filter: Array<string>, value: string | undefined) =>
-    filter.length === 0 || (value && filter.includes(value))
+  // 匹配过滤函数，filter中有任一值包含value则返回true
+  const match = (filter: Array<string>, value: string | undefined): boolean =>
+    filter.length === 0 || filter.includes(value ?? '') || filter.some(v => value?.includes(v) ?? false)
 
-  groupedDataList.value?.forEach((value) => {
+  groupedDataList.value?.forEach(value => {
     if (value.length > 0) {
-      const matchData = value.filter((data) => {
+      const matchData = value.filter(data => {
         const { meta_info, torrent_info } = data
         // 季、制作组、视频编码
         return (
           // 站点过滤
-          match(filterForm.site, torrent_info.site_name)
+          match(filterForm.site, torrent_info.site_name) &&
           // 促销状态过滤
-          && match(filterForm.freeState, torrent_info.volume_factor)
+          match(filterForm.freeState, torrent_info.volume_factor) &&
           // 季过滤
-          && match(filterForm.season, meta_info.season_episode)
+          match(filterForm.season, meta_info.season_episode) &&
           // 制作组过滤
-          && match(filterForm.releaseGroup, meta_info.resource_team)
+          match(filterForm.releaseGroup, meta_info.resource_team) &&
           // 视频编码过滤
-          && match(filterForm.videoCode, meta_info.video_encode)
+          match(filterForm.videoCode, meta_info.video_encode) &&
           // 分辨率过滤
-          && match(filterForm.resolution, meta_info.resource_pix)
+          match(filterForm.resolution, meta_info.resource_pix) &&
           // 质量过滤
-          && match(filterForm.edition, meta_info.edition)
+          match(filterForm.edition, meta_info.edition)
         )
       })
       if (matchData.length > 0) {
         const firstData = _.cloneDeepWith(matchData[0]) as SearchTorrent
-        if (matchData.length > 1)
-          firstData.more = matchData.slice(1)
+        if (matchData.length > 1) firstData.more = matchData.slice(1)
 
         dataList.value.push(firstData)
       }
     }
   })
-  defer.value = useDefer(dataList.value.length)
 })
 </script>
 
@@ -156,7 +183,7 @@ watchEffect(() => {
       <VCol v-if="seasonFilterOptions.length > 0" cols="6" md="">
         <VSelect
           v-model="filterForm.season"
-          :items="seasonFilterOptions"
+          :items="sortSeasonFilterOptions"
           size="small"
           density="compact"
           chips
@@ -223,14 +250,7 @@ watchEffect(() => {
   </VCard>
   <div class="grid gap-3 grid-torrent-card items-start">
     <div v-for="(item, index) in dataList" :key="`${index}_${item.torrent_info.title}_${item.torrent_info.site}`">
-      <TorrentCard v-if="defer(index)" :torrent="item" :more="item.more" />
+      <TorrentCard :torrent="item" :more="item.more" />
     </div>
   </div>
 </template>
-
-<style lang="scss">
-.grid-torrent-card {
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  padding-block-end: 1rem;
-}
-</style>

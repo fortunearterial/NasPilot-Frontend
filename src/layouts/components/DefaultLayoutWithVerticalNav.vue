@@ -2,17 +2,23 @@
 import VerticalNavSectionTitle from '@/@layouts/components/VerticalNavSectionTitle.vue'
 import VerticalNavLayout from '@layouts/components/VerticalNavLayout.vue'
 import VerticalNavLink from '@layouts/components/VerticalNavLink.vue'
-
-// Components
 import Footer from '@/layouts/components/Footer.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
+import UserNofification from '@/layouts/components/UserNotification.vue'
 import SearchBar from '@/layouts/components/SearchBar.vue'
 import ShortcutBar from '@/layouts/components/ShortcutBar.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import store from '@/store'
+import { SystemNavMenus } from '@/router/menu'
+import { NavMenu } from '@/@layouts/types'
 
 // 从Vuex Store中获取superuser信息
 const superUser = store.state.auth.superUser
+
+// 根据分类获取菜单列表
+const getMenuList = (header: string) => {
+  return SystemNavMenus.filter((item: NavMenu) => item.header === header && (!item.admin || superUser))
+}
 </script>
 
 <template>
@@ -21,140 +27,47 @@ const superUser = store.state.auth.superUser
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center mx-1">
         <!-- 👉 Vertical Nav Toggle -->
-        <IconBtn
-          class="ms-n2 d-lg-none"
-          @click="toggleVerticalOverlayNavActive(true)"
-        >
+        <IconBtn class="ms-n2 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
           <VIcon icon="mdi-menu" />
         </IconBtn>
-
         <!-- 👉 Search Bar -->
         <SearchBar />
-
+        <!-- 👉 Spacer -->
         <VSpacer />
-
-        <!-- 👉 Github -->
-        <IconBtn
-          class="me-2"
-          href="https://github.com/fortunearterial/NasPilot-Backend"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <VIcon icon="mdi-github" />
-        </IconBtn>
-
         <!-- 👉 Shortcuts -->
-        <ShortcutBar />
-
+        <ShortcutBar v-if="superUser" />
         <!-- 👉 Theme -->
-        <NavbarThemeSwitcher class="me-2" />
-
+        <NavbarThemeSwitcher />
+        <!-- 👉 Notification -->
+        <UserNofification />
         <!-- 👉 UserProfile -->
         <UserProfile />
       </div>
     </template>
 
     <template #vertical-nav-content>
-      <VerticalNavLink
-        :item="{
-          title: '仪表板',
-          icon: 'mdi-home-outline',
-          to: '/dashboard',
-        }"
-      />
-
+      <VerticalNavLink v-for="item in getMenuList('开始')" :item="item" />
       <!-- 👉 发现 -->
       <VerticalNavSectionTitle
         :item="{
           heading: '发现',
         }"
       />
-      <VerticalNavLink
-        :item="{
-          title: '推荐',
-          icon: 'mdi-table-star',
-          to: '/ranking',
-        }"
-      />
-      <VerticalNavLink
-        :item="{
-          title: '资源搜索',
-          icon: 'mdi-magnify',
-          to: '/resource',
-        }"
-      />
-
+      <VerticalNavLink v-for="item in getMenuList('发现')" :item="item" />
       <!-- 👉 订阅 -->
       <VerticalNavSectionTitle
         :item="{
           heading: '订阅',
         }"
       />
-      <VerticalNavLink
-        :item="{
-          title: '电影',
-          icon: 'mdi-movie-check-outline',
-          to: '/subscribe-movie',
-        }"
-      />
-      <VerticalNavLink
-        :item="{
-          title: '电视剧',
-          icon: 'mdi-television-classic',
-          to: '/subscribe-tv',
-        }"
-      />
-      <VerticalNavLink
-        :item="{
-          title: '游戏',
-          icon: 'mdi-gamepad-variant-outline',
-          to: '/subscribe-game',
-        }"
-      />
-      <VerticalNavLink
-        :item="{
-          title: 'Jav',
-          icon: 'mdi-car-3-plus',
-          to: '/subscribe-jav',
-        }"
-      />
-      <VerticalNavLink
-        :item="{
-          title: '日历',
-          icon: 'mdi-calendar',
-          to: '/calendar',
-        }"
-      />
+      <VerticalNavLink v-for="item in getMenuList('订阅')" :item="item" />
       <!-- 👉 整理 -->
       <VerticalNavSectionTitle
         :item="{
           heading: '整理',
         }"
       />
-      <VerticalNavLink
-        :item="{
-          title: '正在下载',
-          icon: 'mdi-download-outline',
-          to: '/downloading',
-        }"
-      />
-      <VerticalNavLink
-        v-if="superUser"
-        :item="{
-          title: '历史记录',
-          icon: 'mdi-history',
-          to: '/history',
-        }"
-      />
-      <VerticalNavLink
-        v-if="superUser"
-        :item="{
-          title: '文件管理',
-          icon: 'mdi-folder-multiple-outline',
-          to: '/filemanager',
-        }"
-      />
-
+      <VerticalNavLink v-for="item in getMenuList('整理')" :item="item" />
       <!-- 👉 系统 -->
       <VerticalNavSectionTitle
         v-if="superUser"
@@ -162,37 +75,12 @@ const superUser = store.state.auth.superUser
           heading: '系统',
         }"
       />
-      <VerticalNavLink
-        v-if="superUser"
-        :item="{
-          title: '插件',
-          icon: 'mdi-apps',
-          to: '/plugins',
-        }"
-      />
-      <VerticalNavLink
-        v-if="superUser"
-        :item="{
-          title: '站点管理',
-          icon: 'mdi-web',
-          to: '/site',
-        }"
-      />
-      <VerticalNavLink
-        v-if="superUser"
-        :item="{
-          title: '设定',
-          icon: 'mdi-cog',
-          to: '/setting',
-        }"
-      />
+      <VerticalNavLink v-for="item in getMenuList('系统')" :item="item" />
     </template>
 
     <template #after-vertical-nav-items />
-
     <!-- 👉 Pages -->
     <slot />
-
     <!-- 👉 Footer -->
     <template #footer>
       <Footer />

@@ -8,7 +8,8 @@ import NoDataFound from '@/components/NoDataFound.vue'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
-import SubscribeEditForm from '@/components/form/SubscribeEditForm.vue'
+import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
+import { isNullOrEmptyObject } from '@/@core/utils'
 import { getMediaid } from '@/util'
 
 // 输入参数
@@ -16,6 +17,8 @@ const mediaProps = defineProps({
   mediaid: String,
   type: String,
 })
+
+const store = useStore()
 
 // 提示框
 const $toast = useToast()
@@ -26,8 +29,8 @@ const mediaDetail = ref<MediaInfo>({} as MediaInfo)
 // 订阅编辑弹窗
 const subscribeEditDialog = ref(false)
 
-// 本地是否存在
-const isExists = ref(false)
+// 本地是否存在，存在则包括Item信息
+const existsItemId = ref('')
 
 // 是否已订阅
 const isSubscribed = ref(false)
@@ -38,6 +41,9 @@ const isRefreshed = ref(false)
 // 存储每一季的集信息
 const seasonEpisodesInfo = ref({} as { [key: number]: TmdbEpisode[] })
 
+// 存储存在的季集
+const existsEpisodes = ref({} as { [key: number]: number[] })
+
 // 各季缺失状态：0-已入库 1-部分缺失 2-全部缺失，没有数据也是已入库
 const seasonsNotExisted = ref<{ [key: number]: number }>({})
 
@@ -46,6 +52,15 @@ const seasonsSubscribed = ref<{ [key: number]: boolean }>({})
 
 // 订阅编号
 const subscribeId = ref<number>()
+
+// 获得mediaid
+function getMediaId() {
+  return mediaDetail.value?.tmdb_id
+    ? `tmdb:${mediaDetail.value?.tmdb_id}`
+    : mediaDetail.value?.douban_id
+    ? `douban:${mediaDetail.value?.douban_id}`
+    : `bangumi:${mediaDetail.value?.bangumi_id}`
+}
 
 // 调用API查询详情
 async function getMediaDetail() {
@@ -56,38 +71,45 @@ async function getMediaDetail() {
       },
     })
     isRefreshed.value = true
-    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id && !mediaDetail.value.javdb_id)
-      return
+    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id && !mediaDetail.value.javdb_id && !mediaDetail.value.bangumi_id) return
 
     // 检查存在状态
+    checkExists()
     if (mediaDetail.value.type === '游戏')
       checkGameExists()
     else if (mediaDetail.value.type === 'Jav')
       checkJavExists()
-    else if (mediaDetail.value.type === '电影')
-      checkMovieExists()
-    else
-      checkSeasonsNotExists()
+    else if (mediaDetail.value.type === '电视剧') checkSeasonsNotExists()
     // 检查订阅状态
     if (mediaDetail.value.type === '游戏')
       checkGameSubscribed()
-    if (mediaDetail.value.type === '电影')
-      checkMovieSubscribed()
-    else
-      checkSeasonsSubscribed()
+    if (mediaDetail.value.type === '电影') checkMovieSubscribed()
+    else checkSeasonsSubscribed()
   }
 }
 
-// 调用API加载季集信息
+// 调用API加载季集信息（TMDB）
 async function loadSeasonEpisodes(season: number) {
-  if (seasonEpisodesInfo.value[season])
-    return
-
+  // 加载季集存在信息
+  loadEpisodeExists()
+  // 加载季集信息
+  if (seasonEpisodesInfo.value[season]) return
   try {
     const result: TmdbEpisode[] = await api.get(`tmdb/${mediaDetail.value.tmdb_id}/${season}`)
     seasonEpisodesInfo.value[season] = result || []
+  } catch (error) {
+    console.error(error)
   }
-  catch (error) {
+}
+
+// 调用API加载季集存在信息（媒体服务器）
+async function loadEpisodeExists() {
+  // 查询季集存在状态
+  if (!isNullOrEmptyObject(existsEpisodes.value)) return
+  try {
+    const result: { [key: number]: number[] } = await api.post(`mediaserver/exists_remote`, mediaDetail.value)
+    existsEpisodes.value = result || {}
+  } catch (error) {
     console.error(error)
   }
 }
@@ -108,7 +130,16 @@ async function checkGameExists() {
     if (result.success)
       isExists.value = true
   }
-  catch (error) {
+}
+
+// 调用API加载季集存在信息（媒体服务器）
+async function loadEpisodeExists() {
+  // 查询季集存在状态
+  if (!isNullOrEmptyObject(existsEpisodes.value)) return
+  try {
+    const result: { [key: number]: number[] } = await api.post(`mediaserver/exists_remote`, mediaDetail.value)
+    existsEpisodes.value = result || {}
+  } catch (error) {
     console.error(error)
   }
 }
@@ -116,7 +147,7 @@ async function checkGameExists() {
 // 查询当前游戏是否已入库
 async function checkJavExists() {
   try {
-    const result: { [key: string]: any } = await api.get('media/exists', {
+    const result: { [key: string]: any } = await api.get('mediaserver/exists', {
       params: {
         javdb_id: mediaDetail.value.javdb_id,
         title: mediaDetail.value.title,
@@ -126,18 +157,16 @@ async function checkJavExists() {
       },
     })
 
-    if (result.success)
-      isExists.value = true
-  }
-  catch (error) {
+    if (result.success) existsItemId.value = result.data.item.id
+  } catch (error) {
     console.error(error)
   }
 }
 
-// 查询当前媒体是否已入库
-async function checkMovieExists() {
+// 查询当前媒体是否已入库（数据库）
+async function checkExists() {
   try {
-    const result: { [key: string]: any } = await api.get('media/exists', {
+    const result: { [key: string]: any } = await api.get('mediaserver/exists', {
       params: {
         tmdbid: mediaDetail.value.tmdb_id,
         title: mediaDetail.value.title,
@@ -147,10 +176,8 @@ async function checkMovieExists() {
       },
     })
 
-    if (result.success)
-      isExists.value = true
-  }
-  catch (error) {
+    if (result.success) existsItemId.value = result.data.item.id
+  } catch (error) {
     console.error(error)
   }
 }
@@ -167,10 +194,8 @@ async function checkSubscribe(season = 0) {
       },
     })
 
-    if (result.id)
-      return true
-  }
-  catch (error) {
+    if (result.id) return true
+  } catch (error) {
     console.error(error)
   }
 
@@ -179,28 +204,19 @@ async function checkSubscribe(season = 0) {
 
 // 检查所有季的缺失状态
 async function checkSeasonsNotExists() {
-  if (mediaDetail.value.type !== '电视剧')
-    return
+  if (mediaDetail.value.type !== '电视剧') return
   try {
-    const result: NotExistMediaInfo[] = await api.post('download/notexists', mediaDetail.value)
+    const result: NotExistMediaInfo[] = await api.post('mediaserver/notexists', mediaDetail.value)
     if (result) {
-      if (result.length === 0)
-        isExists.value = true
-
-      result.forEach((item) => {
+      result.forEach(item => {
         // 0-已入库 1-部分缺失 2-全部缺失
         let state = 0
-        if (item.episodes.length === 0)
-          state = 2
-        else if (item.episodes.length < item.total_episode)
-          state = 1
-        if (state !== 2)
-          isExists.value = true
+        if (item.episodes.length === 0) state = 2
+        else if (item.episodes.length < item.total_episode) state = 1
         seasonsNotExisted.value[item.season] = state
       })
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
 }
@@ -214,8 +230,7 @@ async function checkGameSubscribed() {
 
 // 检查电影订阅状态
 async function checkMovieSubscribed() {
-  if (mediaDetail.value.type !== '电影')
-    return
+  if (mediaDetail.value.type !== '电影') return
   isSubscribed.value = await checkSubscribe()
 }
 
@@ -226,14 +241,12 @@ const getMediaSeasons = computed(() => {
 
 // 检查所有季的订阅状态
 async function checkSeasonsSubscribed() {
-  if (mediaDetail.value.type !== '电视剧')
-    return
+  if (mediaDetail.value.type !== '电视剧') return
   try {
-    mediaDetail.value?.season_info?.forEach(async (item) => {
+    mediaDetail.value?.season_info?.forEach(async item => {
       seasonsSubscribed.value[item.season_number ?? 0] = await checkSubscribe(item.season_number)
     })
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
 }
@@ -244,7 +257,7 @@ async function addSubscribe(season = 0) {
   startNProgress()
   try {
     // 是否洗版
-    let best_version = isExists.value ? 1 : 0
+    let best_version = existsItemId.value ? 1 : 0
     if (season)
       // 全部存在时洗版
       best_version = !seasonsNotExisted.value[season] ? 1 : 0
@@ -255,6 +268,7 @@ async function addSubscribe(season = 0) {
       year: mediaDetail.value?.year,
       tmdbid: mediaDetail.value?.tmdb_id,
       doubanid: mediaDetail.value?.douban_id,
+      bangumiid: mediaDetail.value?.bangumi_id,
       steamid: mediaDetail.value?.steam_id,
       javdbid: mediaDetail.value?.javdb_id,
       season,
@@ -265,46 +279,34 @@ async function addSubscribe(season = 0) {
     if (result.success) {
       // 订阅成功
       isSubscribed.value = true
-      if (season)
-        seasonsSubscribed.value[season] = true
+      if (season) seasonsSubscribed.value[season] = true
     }
 
     // 提示
-    showSubscribeAddToast(
-      result.success,
-      mediaDetail.value?.title ?? '',
-      season,
-      result.message,
-      best_version,
-    )
+    showSubscribeAddToast(result.success, mediaDetail.value?.title ?? '', season, result.message, best_version)
 
     // 显示编辑弹窗
     if (result.success) {
-      subscribeId.value = result.data.id
-      subscribeEditDialog.value = true
+      const show_edit_dialog = await queryDefaultSubscribeConfig()
+      if (show_edit_dialog) {
+        subscribeId.value = result.data.id
+        subscribeEditDialog.value = true
+      }
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
   doneNProgress()
 }
 
 // 弹出添加订阅提示
-function showSubscribeAddToast(result: boolean,
-  title: string,
-  season: number,
-  message: string,
-  best_version: number) {
-  if (season)
-    title = `${title} ${formatSeason(season.toString())}`
+function showSubscribeAddToast(result: boolean, title: string, season: number, message: string, best_version: number) {
+  if (season) title = `${title} ${formatSeason(season.toString())}`
 
   let subname = '订阅'
-  if (best_version > 0)
-    subname = '洗版订阅'
+  if (best_version > 0) subname = '洗版订阅'
 
-  if (!result)
-    $toast.error(`${title} 添加${subname}失败：${message}！`)
+  if (!result) $toast.error(`${title} 添加${subname}失败：${message}！`)
 }
 
 // 调用API取消订阅
@@ -312,28 +314,24 @@ async function removeSubscribe(season: number) {
   // 开始处理
   startNProgress()
   try {
-    const mediaid = getMediaid(mediaDetail.value)
+    const mediaid = mediaDetail.value?.tmdb_id
+      ? `tmdb:${mediaDetail.value?.tmdb_id}`
+      : `douban:${mediaDetail.value?.douban_id}`
 
-    const result: { [key: string]: any } = await api.delete(
-      `subscribe/media/${mediaid}`,
-      {
-        params: {
-          season,
-        },
+    const result: { [key: string]: any } = await api.delete(`subscribe/media/${mediaid}`, {
+      params: {
+        season,
       },
-    )
+    })
 
     if (result.success) {
       isSubscribed.value = false
-      if (season)
-        seasonsSubscribed.value[season] = false
+      if (season) seasonsSubscribed.value[season] = false
       $toast.success(`${mediaDetail.value?.title} 已取消订阅！`)
-    }
-    else {
+    } else {
       $toast.error(`${mediaDetail.value?.title} 取消订阅失败：${result.message}！`)
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
   doneNProgress()
@@ -341,10 +339,8 @@ async function removeSubscribe(season: number) {
 
 // 订阅按钮响应
 function handleSubscribe(season = 0) {
-  if (isSubscribed.value)
-    removeSubscribe(season)
-  else
-    addSubscribe(season)
+  if (isSubscribed.value) removeSubscribe(season)
+  else addSubscribe(season)
 }
 
 // 从genres中获取name，使用、分隔
@@ -383,17 +379,20 @@ function getTvdbLink() {
   return `https://www.thetvdb.com/series/${mediaDetail.value.tvdb_id}`
 }
 
+// 拼装Bangumi地址
+function getBangumiLink() {
+  return `https://bgm.tv/subject/${mediaDetail.value.bangumi_id}`
+}
+
 // 拼装集图片地址
 function getEpisodeImage(stillPath: string) {
-  if (!stillPath)
-    return ''
+  if (!stillPath) return ''
   return `https://image.tmdb.org/t/p/w500${stillPath}`
 }
 
 // TMDB图片转换为w500大小
 function getW500Image(url = '') {
-  if (!url)
-    return ''
+  if (!url) return ''
   return url.replace('original', 'w500')
 }
 
@@ -410,45 +409,33 @@ const getProductionCompanies = computed(() => {
 // 计算存在状态的颜色
 function getExistColor(season: number) {
   const state = seasonsNotExisted.value[season]
-  if (!state)
-    return 'success'
+  if (!state) return 'success'
 
-  if (state === 1)
-    return 'warning'
-  else if (state === 2)
-    return 'error'
-  else
-    return 'success'
+  if (state === 1) return 'warning'
+  else if (state === 2) return 'error'
+  else return 'success'
 }
 
 // 计算存在状态的文本
 function getExistText(season: number) {
   const state = seasonsNotExisted.value[season]
-  if (!state)
-    return '已入库'
+  if (!state) return '已入库'
 
-  if (state === 1)
-    return '部分缺失'
-  else if (state === 2)
-    return '缺失'
-  else
-    return '已入库'
+  if (state === 1) return '部分缺失'
+  else if (state === 2) return '缺失'
+  else return '已入库'
 }
 
 // 计算订阅图标
 const getSubscribeIcon = computed(() => {
-  if (isSubscribed.value)
-    return 'mdi-heart'
-  else
-    return 'mdi-heart-outline'
+  if (isSubscribed.value) return 'mdi-heart'
+  else return 'mdi-heart-outline'
 })
 
 // 计算订阅按钮颜色
 const getSubscribeColor = computed(() => {
-  if (isSubscribed.value)
-    return 'error'
-  else
-    return 'warning'
+  if (isSubscribed.value) return 'error'
+  else return 'warning'
 })
 
 // 使用、拼装数组为字符串
@@ -465,8 +452,44 @@ function handleSearch(area: string) {
       keyword,
       type: mediaDetail.value.type,
       area,
+      season: mediaDetail.value.season,
     },
   })
+}
+
+// 跳转播放页面
+async function handlePlay() {
+  // 获取播放链接地址
+  try {
+    const result: { [key: string]: any } = await api.get(`mediaserver/play/${existsItemId.value}`)
+    if (result?.success) {
+      // 打开链接地址
+      setTimeout(() => {
+        window.open(result.data.url, '_blank')
+      }, 100)
+    } else {
+      $toast.error(`获取播放链接失败：${result.message}！`)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function queryDefaultSubscribeConfig() {
+  // 非管理员不显示
+  if (!store.state.auth.superUser) return false
+  try {
+    let subscribe_config_url = ''
+    if (mediaProps.type === '电影') subscribe_config_url = 'system/setting/DefaultMovieSubscribeConfig'
+    else subscribe_config_url = 'system/setting/DefaultTvSubscribeConfig'
+
+    const result: { [key: string]: any } = await api.get(subscribe_config_url)
+
+    if (result.data?.value) return result.data.value.show_edit_dialog
+  } catch (error) {
+    console.log(error)
+  }
+  return false
 }
 
 onBeforeMount(() => {
@@ -475,18 +498,9 @@ onBeforeMount(() => {
 </script>
 
 <template>
+  <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <div
-    v-if="!isRefreshed"
-    class="mt-12 w-full text-center text-gray-500 text-sm flex flex-col items-center"
-  >
-    <VProgressCircular
-      size="48"
-      indeterminate
-      color="primary"
-    />
-  </div>
-  <div
-    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="max-w-8xl mx-auto px-4"
+    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="max-w-8xl mx-auto px-4"
     :class="{
       'media-type-game': mediaDetail.steam_id,
       'media-type-jav': mediaDetail.javdb_id,
@@ -502,12 +516,16 @@ onBeforeMount(() => {
       <div class="media-header">
         <div class="media-poster">
           <VImg
-            :src="getW500Image(mediaDetail.poster_path)" cover class="object-cover ring-1 ring-gray-500"
+           
+            :src="getW500Image(mediaDetail.poster_path)"
+            cover
+            class="object-cover ring-1 ring-gray-500"
             :class="{
               'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
               'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
               'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
             }"
+          
           >
             <template #placeholder>
               <div class="w-full h-full">
@@ -523,8 +541,10 @@ onBeforeMount(() => {
           </VImg>
         </div>
         <div class="media-title">
-          <div v-if="isExists" class="media-status">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap transition !no-underline bg-green-500 bg-opacity-80 border border-green-500 !text-green-100 hover:bg-green-500 hover:bg-opacity-100 false overflow-hidden">
+          <div v-if="existsItemId" class="media-status">
+            <span
+              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap transition !no-underline bg-green-500 bg-opacity-80 border border-green-500 !text-green-100 hover:bg-green-500 hover:bg-opacity-100 false overflow-hidden"
+            >
               <div class="relative z-20 flex items-center false"><span>已入库</span></div>
             </span>
           </div>
@@ -537,43 +557,66 @@ onBeforeMount(() => {
             </div>
           </h1>
           <span class="media-attributes">
-            <span v-if="mediaDetail.runtime || mediaDetail.episode_run_time[0]">{{ mediaDetail.runtime || mediaDetail.episode_run_time[0] }} 分钟</span>
-            <span v-if="(mediaDetail.runtime || mediaDetail.episode_run_time[0]) && mediaDetail.genres" class="mx-1"> | </span>
+            <span v-if="mediaDetail.runtime || mediaDetail.episode_run_time[0]"
+              >{{ mediaDetail.runtime || mediaDetail.episode_run_time[0] }} 分钟</span
+            >
+            <span v-if="(mediaDetail.runtime || mediaDetail.episode_run_time[0]) && mediaDetail.genres" class="mx-1">
+              |
+            </span>
             <span v-if="mediaDetail.genres">{{ getGenresName(mediaDetail.genres || []) }}</span>
           </span>
         </div>
         <div class="media-actions">
-          <VBtn v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" variant="tonal" color="info">
+          <VBtn
+            v-if="(mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id || mediaDetail.bangumi_id) && mediaDetail.imdb_id"
+            variant="tonal"
+            color="info"
+            class="mb-2"
+          >
             <template #prepend>
               <VIcon icon="mdi-magnify" />
             </template>
             搜索资源
-            <VMenu
-              activator="parent"
-              close-on-content-click
-            >
+            <VMenu activator="parent" close-on-content-click>
               <VList>
-                <VListItem
-                  variant="plain"
-                  @click="handleSearch('title')"
-                >
+                <VListItem variant="plain" @click="handleSearch('title')">
                   <VListItemTitle>标题</VListItemTitle>
                 </VListItem>
-                <VListItem
-                  v-show="mediaDetail.imdb_id"
-                  variant="plain"
-                  @click="handleSearch('imdbid')"
-                >
+                <VListItem v-show="mediaDetail.imdb_id" variant="plain" @click="handleSearch('imdbid')">
                   <VListItemTitle>IMDB链接</VListItemTitle>
                 </VListItem>
               </VList>
             </VMenu>
           </VBtn>
-          <VBtn v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="ms-2" :color="getSubscribeColor" variant="tonal" @click="handleSubscribe(0)">
+          <VBtn
+            v-if="(mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id) && !mediaDetail.imdb_id"
+            variant="tonal"
+            color="info"
+            class="mb-2"
+            @click="handleSearch('title')"
+          >
+            <template #prepend>
+              <VIcon icon="mdi-magnify" />
+            </template>
+            搜索资源
+          </VBtn>
+          <VBtn
+            v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id || mediaDetail.bangumi_id"
+            class="ms-2 mb-2"
+            :color="getSubscribeColor"
+            variant="tonal"
+            @click="handleSubscribe(0)"
+          >
             <template #prepend>
               <VIcon :icon="getSubscribeIcon" />
             </template>
             {{ isSubscribed ? '已订阅' : '订阅' }}
+          </VBtn>
+          <VBtn v-if="existsItemId" class="ms-2 mb-2" variant="tonal" @click="handlePlay()">
+            <template #prepend>
+              <VIcon icon="mdi-play" />
+            </template>
+            在线播放
           </VBtn>
         </div>
       </div>
@@ -582,14 +625,14 @@ onBeforeMount(() => {
           <div v-if="mediaDetail.tagline" class="tagline">
             {{ mediaDetail.tagline }}
           </div>
-          <h2 v-if="mediaDetail.overview">
-            简介
-          </h2>
+          <h2 v-if="mediaDetail.overview">简介</h2>
           <p v-html="mediaDetail.overview" />
           <ul v-if="mediaDetail.tmdb_id" class="media-crew">
             <li v-for="director in mediaDetail.directors" :key="director.id">
               <span>{{ director.job }}</span>
-              <a class="crew-name" :href="`person?personid=${director.id}`" target="_blank">{{ director.name }}</a>
+              <RouterLink :to="`/person?personid=${director.id}`" class="crew-name" target="_blank">
+                {{ director.name }}
+              </RouterLink>
             </li>
           </ul>
           <ul v-if="!mediaDetail.tmdb_id && mediaDetail.douban_id" class="media-crew">
@@ -605,26 +648,44 @@ onBeforeMount(() => {
             </li>
           </ul>
           <div class="mt-6">
-            <a v-if="mediaDetail.tmdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getTheMovieDbLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+            <a
+              v-if="mediaDetail.tmdb_id"
+              class="mb-2 mr-2 inline-flex last:mr-0"
+              :href="getTheMovieDbLink()"
+              target="_blank"
+            >
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">TheMovieDb</span>
               </div>
             </a>
-            <a v-if="mediaDetail.douban_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getDoubanLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+            <a
+              v-if="mediaDetail.douban_id"
+              class="mb-2 mr-2 inline-flex last:mr-0"
+              :href="getDoubanLink()"
+              target="_blank"
+            >
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">豆瓣</span>
               </div>
             </a>
             <a v-if="mediaDetail.imdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getImdbLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">IMDb</span>
               </div>
             </a>
             <a v-if="mediaDetail.tvdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getTvdbLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">TheTvDb</span>
               </div>
@@ -641,10 +702,21 @@ onBeforeMount(() => {
                 <span class="ms-1">JavDB</span>
               </div>
             </a>
+            <a
+              v-if="mediaDetail.bangumi_id"
+              class="mb-2 mr-2 inline-flex last:mr-0"
+              :href="getBangumiLink()"
+              target="_blank"
+            >
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
+                <VIcon icon="mdi-link" />
+                <span class="ms-1">Bangumi</span>
+              </div>
+            </a>
           </div>
-          <h2 v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="py-4">
-            季
-          </h2>
+          <h2 v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="py-4">季</h2>
           <div v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="flex w-full flex-col space-y-2">
             <VExpansionPanels>
               <VExpansionPanel
@@ -656,22 +728,20 @@ onBeforeMount(() => {
                   <template #default>
                     <div class="flex flex-row items-center justify-between">
                       <span class="font-weight-bold">第 {{ season.season_number }} 季</span>
-                      <VChip size="small" class="ms-1">
-                        {{ season.episode_count }}集
-                      </VChip>
+                      <VChip size="small" class="ms-1"> {{ season.episode_count }}集 </VChip>
                       <div class="absolute right-12">
-                        <VChip
-                          v-if="seasonsNotExisted"
-                          :color="getExistColor(season.season_number || 0)"
-                          flat
-                        >
+                        <VChip v-if="seasonsNotExisted" :color="getExistColor(season.season_number || 0)" flat>
                           {{ getExistText(season.season_number || 0) }}
                         </VChip>
                         <IconBtn
-                          class="ms-1" :color="seasonsSubscribed[season.season_number || 0] ? 'error' : 'warning'" variant="text"
+                          class="ms-1"
+                          :color="seasonsSubscribed[season.season_number || 0] ? 'error' : 'warning'"
+                          variant="text"
                           @click.stop="handleSubscribe(season.season_number)"
                         >
-                          <VIcon :icon="seasonsSubscribed[season.season_number || 0] ? 'mdi-heart' : 'mdi-heart-outline'" />
+                          <VIcon
+                            :icon="seasonsSubscribed[season.season_number || 0] ? 'mdi-heart' : 'mdi-heart-outline'"
+                          />
                         </IconBtn>
                       </div>
                     </div>
@@ -679,32 +749,43 @@ onBeforeMount(() => {
                 </VExpansionPanelTitle>
                 <VExpansionPanelText>
                   <template #default>
-                    <div
-                      v-if="!seasonEpisodesInfo[season.season_number || 0]"
-                      class="mt-3 w-full text-center text-gray-500 text-sm flex flex-col items-center"
-                    >
-                      <VProgressCircular
-                        size="48"
-                        indeterminate
-                        color="primary"
-                      />
-                    </div>
+                    <LoadingBanner v-if="!seasonEpisodesInfo[season.season_number || 0]" class="mt-3" />
                     <div class="flex flex-col justify-center divide-y divide-gray-700">
-                      <div v-for="episode in seasonEpisodesInfo[season.season_number || 0]" :key="episode.episode_number" class="flex flex-col space-y-4 py-4 xl:flex-row xl:space-y-4 xl:space-x-4">
+                      <div
+                        v-for="episode in seasonEpisodesInfo[season.season_number || 0]"
+                        :key="episode.episode_number"
+                        class="flex flex-col space-y-4 py-4 xl:flex-row xl:space-y-4 xl:space-x-4"
+                      >
                         <div class="flex-1">
                           <div class="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-2">
-                            <h3 class="text-lg">
-                              {{ episode.episode_number }} - {{ episode.name }}
-                            </h3>
+                            <h3 class="text-lg">{{ episode.episode_number }} - {{ episode.name }}</h3>
                             <div class="flex items-center space-x-2">
-                              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap cursor-default bg-gray-700 !text-gray-300">
+                              <span
+                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap cursor-default bg-gray-700 !text-gray-300"
+                              >
                                 {{ episode.air_date }}
                               </span>
                             </div>
+                            <VIcon
+                              v-if="
+                                existsEpisodes[season.season_number || 0] &&
+                                existsEpisodes[season.season_number || 0].includes(episode.episode_number || 0)
+                              "
+                              color="success"
+                              icon="mdi-check-circle"
+                              class="ms-2"
+                              size="small"
+                            />
                           </div>
                           <p>{{ episode.overview }}</p>
                         </div>
-                        <VImg cover class="rounded-lg" max-width="15rem" :src="getEpisodeImage(episode.still_path || '')" alt="" />
+                        <VImg
+                          cover
+                          class="rounded-lg"
+                          max-width="15rem"
+                          :src="getEpisodeImage(episode.still_path || '')"
+                          alt=""
+                        />
                       </div>
                     </div>
                   </template>
@@ -716,13 +797,7 @@ onBeforeMount(() => {
         <div v-if="mediaDetail.tmdb_id" class="media-overview-right">
           <div class="media-facts">
             <div v-if="mediaDetail.vote_average" class="media-ratings">
-              <VRating
-                v-model="mediaDetail.vote_average"
-                density="compact"
-                length="10"
-                class="ma-2"
-                readonly
-              />
+              <VRating v-model="mediaDetail.vote_average" density="compact" length="10" class="ma-2" readonly />
             </div>
             <div v-if="mediaDetail.tmdb_id" class="media-fact">
               <span>ID</span>
@@ -740,7 +815,20 @@ onBeforeMount(() => {
               <span>上映日期</span>
               <span class="media-fact-value">
                 <span class="flex items-center justify-end">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                    class="h-4 w-4"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"
+                    />
                   </svg>
                   <span class="ml-1.5">{{ mediaDetail.release_date || mediaDetail.first_air_date }}</span>
                 </span>
@@ -753,7 +841,11 @@ onBeforeMount(() => {
             <div v-if="mediaDetail.production_countries" class="media-fact">
               <span>出品国家</span>
               <span class="media-fact-value">
-                <span v-for="country in getProductionCountries" :key="country" class="flex items-center justify-end text-end">
+                <span
+                  v-for="country in getProductionCountries"
+                  :key="country"
+                  class="flex items-center justify-end text-end"
+                >
                   {{ country }}
                 </span>
               </span>
@@ -769,13 +861,7 @@ onBeforeMount(() => {
         <div v-else-if="mediaDetail.douban_id" class="media-overview-right">
           <div class="media-facts">
             <div v-if="mediaDetail.vote_average" class="media-ratings">
-              <VRating
-                v-model="mediaDetail.vote_average"
-                density="compact"
-                length="10"
-                class="ma-2"
-                readonly
-              />
+              <VRating v-model="mediaDetail.vote_average" density="compact" length="10" class="ma-2" readonly />
             </div>
             <div v-if="mediaDetail.douban_id" class="media-fact">
               <span>豆瓣ID</span>
@@ -794,9 +880,34 @@ onBeforeMount(() => {
             <div v-if="mediaDetail.production_countries" class="media-fact border-b-0">
               <span>出品国家</span>
               <span class="media-fact-value">
-                <span v-for="country in getProductionCountries" :key="country" class="flex items-center justify-end text-end">
+                <span
+                  v-for="country in getProductionCountries"
+                  :key="country"
+                  class="flex items-center justify-end text-end"
+                >
                   {{ country }}
                 </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="mediaDetail.bangumi_id" class="media-overview-right">
+          <div class="media-facts">
+            <div v-if="mediaDetail.vote_average" class="media-ratings">
+              <VRating v-model="mediaDetail.vote_average" density="compact" length="10" class="ma-2" readonly />
+            </div>
+            <div v-if="mediaDetail.bangumi_id" class="media-fact">
+              <span>ID</span>
+              <span class="media-fact-value">{{ mediaDetail.bangumi_id }}</span>
+            </div>
+            <div v-if="mediaDetail.original_title" class="media-fact">
+              <span>原始标题</span>
+              <span class="media-fact-value">{{ mediaDetail.original_title }}</span>
+            </div>
+            <div v-if="mediaDetail.release_date" class="media-fact border-b-0">
+              <span>上映日期</span>
+              <span class="media-fact-value">
+                {{ mediaDetail.release_date }}
               </span>
             </div>
           </div>
@@ -861,6 +972,14 @@ onBeforeMount(() => {
           type="douban"
         />
       </div>
+      <div v-else-if="mediaDetail.bangumi_id">
+        <PersonCardSlideView
+          :apipath="`bangumi/credits/${mediaDetail.bangumi_id}`"
+          :linkurl="`/credits/bangumi/credits/${mediaDetail.bangumi_id}?title=演员阵容&type=bangumi`"
+          title="演员阵容"
+          type="bangumi"
+        />
+      </div>
       <div v-if="mediaDetail.tmdb_id">
         <MediaCardSlideView
           :apipath="`tmdb/recommend/${mediaDetail.tmdb_id}/${mediaProps.type}`"
@@ -875,6 +994,13 @@ onBeforeMount(() => {
           title="推荐"
         />
       </div>
+      <div v-else-if="mediaDetail.bangumi_id">
+        <MediaCardSlideView
+          :apipath="`bangumi/recommend/${mediaDetail.bangumi_id}`"
+          :linkurl="`/browse/bangumi/recommend/${mediaDetail.bangumi_id}?title=推荐`"
+          title="推荐"
+        />
+      </div>
       <div v-if="mediaDetail.tmdb_id">
         <MediaCardSlideView
           :apipath="`tmdb/similar/${mediaDetail.tmdb_id}/${mediaProps.type}`"
@@ -885,31 +1011,34 @@ onBeforeMount(() => {
     </div>
   </div>
   <NoDataFound
-    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.steam_id && !mediaDetail.javdb_id && isRefreshed"
+    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.bangumi_id && !mediaDetail.steam_id && !mediaDetail.javdb_id && isRefreshed"
     error-code="500"
     error-title="出错啦！"
     error-description="未识别到媒体信息。"
   />
   <!-- 订阅编辑弹窗 -->
-  <SubscribeEditForm
+  <SubscribeEditDialog
     v-model="subscribeEditDialog"
     :subid="subscribeId"
     @close="subscribeEditDialog = false"
     @save="subscribeEditDialog = false"
-    @remove="() => {
-      subscribeEditDialog = false;
-      if (mediaDetail.type === '电影')
-        checkMovieSubscribed()
-      else
-        checkSeasonsSubscribed();
-    }"
+    @remove="
+      () => {
+        subscribeEditDialog = false
+        if (mediaDetail.type === '电影') checkMovieSubscribed()
+        else checkSeasonsSubscribed()
+      }
+    "
   />
 </template>
 
 <style lang="scss">
 .vue-media-back {
-  background-image:
-    linear-gradient(180deg, rgba(var(--v-theme-background), 0) 50%, rgba(var(--v-theme-background), 1) 100%),
+  background-image: linear-gradient(
+      180deg,
+      rgba(var(--v-theme-background), 0) 50%,
+      rgba(var(--v-theme-background), 1) 100%
+    ),
     linear-gradient(90deg, rgba(var(--v-theme-background), 0) 50%, rgba(var(--v-theme-background), 1) 100%),
     linear-gradient(270deg, rgba(var(--v-theme-background), 0) 50%, rgba(var(--v-theme-background), 1) 100%);
   box-shadow: 0 0 0 2px rgb(var(--v-theme-background));
@@ -933,7 +1062,7 @@ onBeforeMount(() => {
   padding-block-start: 1rem;
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .media-header {
     flex-direction: row;
     align-items: flex-end;
@@ -943,23 +1072,23 @@ onBeforeMount(() => {
 .media-overview {
   display: flex;
   flex-direction: column;
-  padding-top: 2rem;
-  padding-bottom: 1rem;
+  padding-block: 2rem 1rem;
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .media-overview {
     flex-direction: row;
   }
 }
 
 .media-poster {
-  width: 8rem;
   overflow: hidden;
-  border-radius: .25rem;
-  --tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1);
-  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  border-radius: 0.25rem;
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  inline-size: 8rem;
+
+  --tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, 10%), 0 1px 2px -1px rgba(0, 0, 0, 10%);
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
 }
 
 .media-type-game {
@@ -974,121 +1103,122 @@ onBeforeMount(() => {
   }
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .media-poster {
-    margin-right: 1rem;
-    width: 13rem;
+    inline-size: 13rem;
+    margin-inline-end: 1rem;
   }
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .media-poster {
-    width: 11rem;
-    border-radius: .5rem;
-    --tw-shadow: 0 25px 50px -12px rgba(0, 0, 0, .25);
-    --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+    border-radius: 0.5rem;
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+    inline-size: 11rem;
+
+    --tw-shadow: 0 25px 50px -12px rgba(0, 0, 0, 25%);
+    --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
   }
 }
 
 .media-title {
-  margin-top: 1rem;
   display: flex;
   flex: 1 1 0%;
   flex-direction: column;
+  margin-block-start: 1rem;
   text-align: center;
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .media-title {
-    margin-right: 1rem;
-    margin-top: 0;
-    text-align: left;
+    margin-block-start: 0;
+    margin-inline-end: 1rem;
+    text-align: start;
   }
 }
 
-.media-title>h1 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
+.media-title > h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 2rem;
 }
 
-@media (min-width: 1280px) {
-  .media-title>h1 {
-      font-size: 2.25rem;
-      line-height: 2.5rem;
+@media (width >= 1280px) {
+  .media-title > h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
   }
 }
 
 ul.media-crew {
-    margin-top: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-block-start: 1.5rem;
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
   ul.media-crew {
-      grid-template-columns: repeat(3,minmax(0,1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-ul.media-crew>li {
-    grid-column: span 1/span 1;
-    display: flex;
-    flex-direction: column;
-    font-weight: 700;
+ul.media-crew > li {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  grid-column: span 1 / span 1;
 }
 
 a.crew-name {
-    font-weight: 400;
+  font-weight: 400;
 }
 
 .media-status {
-  margin-bottom: .5rem;
+  margin-block-end: 0.5rem;
 }
 
 .media-attributes {
-  margin-top: .25rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  margin-block-start: 0.25rem;
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .media-attributes {
-    margin-top: 0;
     justify-content: flex-start;
     font-size: 1rem;
     line-height: 1.5rem;
+    margin-block-start: 0;
   }
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
   .media-attributes {
-    font-size: .875rem;
+    font-size: 0.875rem;
     line-height: 1.25rem;
   }
 }
 
 .media-actions {
   position: relative;
-  margin-top: 1rem;
   display: flex;
   flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  margin-block-start: 1rem;
 }
 
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .media-actions {
-    margin-top: 0;
+    margin-block-start: 0;
   }
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
   .media-actions {
     flex-wrap: nowrap;
     justify-content: flex-end;
@@ -1099,83 +1229,85 @@ a.crew-name {
   flex: 1 1 0%;
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .media-overview-left {
-    margin-right: 2rem;
+    margin-inline-end: 2rem;
   }
 }
 
 .media-overview-right {
-  margin-top: 2rem;
-  width: 100%;
+  inline-size: 100%;
+  margin-block-start: 2rem;
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .media-overview-right {
-    margin-top: 0;
-    width: 20rem;
+    inline-size: 20rem;
+    margin-block-start: 0;
   }
 }
 
 .media-facts {
-    border-radius: 0.5rem;
-    border-width: 1px;
-    --tw-border-opacity: 1;
-    border-color: rgb(55 65 81/var(--tw-border-opacity));
-    --tw-bg-opacity: 1;
-    font-size: .875rem;
-    line-height: 1.25rem;
-    font-weight: 700;
-    --tw-text-opacity: 1;
+  border-width: 1px;
+  border-color: rgb(55 65 81 / var(--tw-border-opacity));
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+
+  --tw-border-opacity: 1;
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
 }
 
 .media-ratings {
-    border-bottom-width: 1px;
-    --tw-border-opacity: 1;
-    border-color: rgb(55 65 81/var(--tw-border-opacity));
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-}
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: rgb(55 65 81 / var(--tw-border-opacity));
+  border-block-end-width: 1px;
+  font-weight: 500;
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
 
-.media-ratings {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  --tw-border-opacity: 1;
 }
 
 .media-fact {
-    display: flex;
-    justify-content: space-between;
-    border-bottom-width: 1px;
-    --tw-border-opacity: 1;
-    border-color: rgb(55 65 81/var(--tw-border-opacity));
-    padding: 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  border-color: rgb(55 65 81 / var(--tw-border-opacity));
+  border-block-end-width: 1px;
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+
+  --tw-border-opacity: 1;
 }
 
 .media-overview h2 {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-    font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.75rem;
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
   .media-overview h2 {
-      font-size: 1.5rem;
-      line-height: 2rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 }
 
 .tagline {
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-    font-style: italic;
+  font-size: 1.25rem;
+  font-style: italic;
+  line-height: 1.75rem;
+  margin-block-end: 1rem;
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .tagline {
-      font-size: 1.5rem;
-      line-height: 2rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 }
 </style>
