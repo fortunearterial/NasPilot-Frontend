@@ -10,7 +10,6 @@ import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
 import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'
-import { getMediaid } from '@/util'
 
 // 输入参数
 const mediaProps = defineProps({
@@ -54,12 +53,12 @@ const seasonsSubscribed = ref<{ [key: number]: boolean }>({})
 const subscribeId = ref<number>()
 
 // 获得mediaid
-function getMediaId() {
-  return mediaDetail.value?.tmdb_id
-    ? `tmdb:${mediaDetail.value?.tmdb_id}`
-    : mediaDetail.value?.douban_id
-    ? `douban:${mediaDetail.value?.douban_id}`
-    : `bangumi:${mediaDetail.value?.bangumi_id}`
+function getMediaId(media: MediaInfo) {
+  return media?.tmdb_id
+    ? `tmdb:${media?.tmdb_id}`
+    : media?.douban_id
+    ? `douban:${media?.douban_id}`
+    : `bangumi:${media?.bangumi_id}`
 }
 
 // 调用API查询详情
@@ -71,18 +70,22 @@ async function getMediaDetail() {
       },
     })
     isRefreshed.value = true
-    if (!mediaDetail.value.tmdb_id && !mediaDetail.value.douban_id && !mediaDetail.value.steam_id && !mediaDetail.value.javdb_id && !mediaDetail.value.bangumi_id) return
+    if (
+      !mediaDetail.value.tmdb_id &&
+      !mediaDetail.value.douban_id &&
+      !mediaDetail.value.steam_id &&
+      !mediaDetail.value.javdb_id &&
+      !mediaDetail.value.bangumi_id
+    )
+      return
 
     // 检查存在状态
     checkExists()
-    if (mediaDetail.value.type === '游戏')
-      checkGameExists()
-    else if (mediaDetail.value.type === 'Jav')
-      checkJavExists()
+    if (mediaDetail.value.type === '游戏') checkGameExists()
+    else if (mediaDetail.value.type === 'Jav') checkJavExists()
     else if (mediaDetail.value.type === '电视剧') checkSeasonsNotExists()
     // 检查订阅状态
-    if (mediaDetail.value.type === '游戏')
-      checkGameSubscribed()
+    if (mediaDetail.value.type === '游戏') checkGameSubscribed()
     if (mediaDetail.value.type === '电影') checkMovieSubscribed()
     else checkSeasonsSubscribed()
   }
@@ -127,18 +130,7 @@ async function checkGameExists() {
       },
     })
 
-    if (result.success)
-      isExists.value = true
-  }
-}
-
-// 调用API加载季集存在信息（媒体服务器）
-async function loadEpisodeExists() {
-  // 查询季集存在状态
-  if (!isNullOrEmptyObject(existsEpisodes.value)) return
-  try {
-    const result: { [key: number]: number[] } = await api.post(`mediaserver/exists_remote`, mediaDetail.value)
-    existsEpisodes.value = result || {}
+    if (result.success) isExists.value = true
   } catch (error) {
     console.error(error)
   }
@@ -223,8 +215,7 @@ async function checkSeasonsNotExists() {
 
 // 检查游戏订阅状态
 async function checkGameSubscribed() {
-  if (mediaDetail.value.type !== '游戏')
-    return
+  if (mediaDetail.value.type !== '游戏') return
   isSubscribed.value = await checkSubscribe()
 }
 
@@ -500,7 +491,14 @@ onBeforeMount(() => {
 <template>
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <div
-    v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id || mediaDetail.steam_id || mediaDetail.javdb_id" class="max-w-8xl mx-auto px-4"
+    v-if="
+      mediaDetail.tmdb_id ||
+      mediaDetail.douban_id ||
+      mediaDetail.bangumi_id ||
+      mediaDetail.steam_id ||
+      mediaDetail.javdb_id
+    "
+    class="max-w-8xl mx-auto px-4"
     :class="{
       'media-type-game': mediaDetail.steam_id,
       'media-type-jav': mediaDetail.javdb_id,
@@ -516,7 +514,6 @@ onBeforeMount(() => {
       <div class="media-header">
         <div class="media-poster">
           <VImg
-           
             :src="getW500Image(mediaDetail.poster_path)"
             cover
             class="object-cover ring-1 ring-gray-500"
@@ -525,12 +522,12 @@ onBeforeMount(() => {
               'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
               'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
             }"
-          
           >
             <template #placeholder>
               <div class="w-full h-full">
                 <VSkeletonLoader
-                  class="object-cover" :class="{
+                  class="object-cover"
+                  :class="{
                     'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
                     'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
                     'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
@@ -568,7 +565,14 @@ onBeforeMount(() => {
         </div>
         <div class="media-actions">
           <VBtn
-            v-if="(mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id || mediaDetail.bangumi_id) && mediaDetail.imdb_id"
+            v-if="
+              (mediaDetail.tmdb_id ||
+                mediaDetail.douban_id ||
+                mediaDetail.steam_id ||
+                mediaDetail.javdb_id ||
+                mediaDetail.bangumi_id) &&
+              mediaDetail.imdb_id
+            "
             variant="tonal"
             color="info"
             class="mb-2"
@@ -601,7 +605,13 @@ onBeforeMount(() => {
             搜索资源
           </VBtn>
           <VBtn
-            v-if="mediaDetail.type === '电影' || mediaDetail.douban_id || mediaDetail.steam_id || mediaDetail.javdb_id || mediaDetail.bangumi_id"
+            v-if="
+              mediaDetail.type === '电影' ||
+              mediaDetail.douban_id ||
+              mediaDetail.steam_id ||
+              mediaDetail.javdb_id ||
+              mediaDetail.bangumi_id
+            "
             class="ms-2 mb-2"
             :color="getSubscribeColor"
             variant="tonal"
@@ -690,14 +700,28 @@ onBeforeMount(() => {
                 <span class="ms-1">TheTvDb</span>
               </div>
             </a>
-            <a v-if="mediaDetail.steam_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getSteamLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+            <a
+              v-if="mediaDetail.steam_id"
+              class="mb-2 mr-2 inline-flex last:mr-0"
+              :href="getSteamLink()"
+              target="_blank"
+            >
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">STEAM</span>
               </div>
             </a>
-            <a v-if="mediaDetail.javdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getJavDBLink()" target="_blank">
-              <div class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700">
+            <a
+              v-if="mediaDetail.javdb_id"
+              class="mb-2 mr-2 inline-flex last:mr-0"
+              :href="getJavDBLink()"
+              target="_blank"
+            >
+              <div
+                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+              >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">JavDB</span>
               </div>
@@ -915,13 +939,7 @@ onBeforeMount(() => {
         <div v-if="mediaDetail.steam_id" class="media-overview-right">
           <div class="media-facts">
             <div v-if="mediaDetail.vote_average" class="media-ratings">
-              <VRating
-                v-model="mediaDetail.vote_average"
-                density="compact"
-                length="10"
-                class="ma-2"
-                readonly
-              />
+              <VRating v-model="mediaDetail.vote_average" density="compact" length="10" class="ma-2" readonly />
             </div>
             <div v-if="mediaDetail.steam_id" class="media-fact">
               <span>ID</span>
@@ -939,7 +957,20 @@ onBeforeMount(() => {
               <span>发行日期</span>
               <span class="media-fact-value">
                 <span class="flex items-center justify-end">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                    class="h-4 w-4"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"
+                    />
                   </svg>
                   <span class="ml-1.5">{{ mediaDetail.release_date || mediaDetail.first_air_date }}</span>
                 </span>
@@ -948,7 +979,11 @@ onBeforeMount(() => {
             <div v-if="mediaDetail.production_countries" class="media-fact">
               <span>支持语言</span>
               <span class="media-fact-value">
-                <span v-for="country in getProductionCountries" :key="country" class="flex items-center justify-end text-end">
+                <span
+                  v-for="country in getProductionCountries"
+                  :key="country"
+                  class="flex items-center justify-end text-end"
+                >
                   {{ country }}
                 </span>
               </span>
@@ -1011,7 +1046,14 @@ onBeforeMount(() => {
     </div>
   </div>
   <NoDataFound
-    v-if="!mediaDetail.tmdb_id && !mediaDetail.douban_id && !mediaDetail.bangumi_id && !mediaDetail.steam_id && !mediaDetail.javdb_id && isRefreshed"
+    v-if="
+      !mediaDetail.tmdb_id &&
+      !mediaDetail.douban_id &&
+      !mediaDetail.bangumi_id &&
+      !mediaDetail.steam_id &&
+      !mediaDetail.javdb_id &&
+      isRefreshed
+    "
     error-code="500"
     error-title="出错啦！"
     error-description="未识别到媒体信息。"
@@ -1093,13 +1135,13 @@ onBeforeMount(() => {
 
 .media-type-game {
   .media-poster {
-    width: 20.375rem;
+    inline-size: 20.375rem;
   }
 }
 
 .media-type-jav {
   .media-poster {
-    width: 20.375rem;
+    inline-size: 20.375rem;
   }
 }
 

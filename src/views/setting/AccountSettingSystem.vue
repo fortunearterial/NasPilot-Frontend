@@ -252,7 +252,7 @@ onMounted(() => {
                 <VTextField
                   v-model="downloaderSettings.TORRENT_TAG"
                   label="下载器种子标签"
-                  hint="MoviePilot添加的下载任务标签"
+                  hint="NasPilot添加的下载任务标签"
                   persistent-hint
                 />
               </VCol>
@@ -405,7 +405,7 @@ onMounted(() => {
                   v-model="mediaServerSettings.MEDIASERVER_SYNC_INTERVAL"
                   :items="syncIntervalItems"
                   label="同步周期"
-                  hint="同步媒体库数据到MoviePilot的时间间隔"
+                  hint="同步媒体库数据到NasPilot的时间间隔"
                   persistent-hint
                 />
               </VCol>

@@ -199,12 +199,12 @@ onMounted(() => {
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow undefined">
                   <a
-                    href="https://t.me/moviepilot_channel"
+                    href="https://t.me/NasPilot_channel"
                     target="_blank"
                     rel="noreferrer"
                     class="text-indigo-500 transition duration-300 hover:underline"
                   >
-                    https://t.me/moviepilot_channel
+                    https://t.me/NasPilot_channel
                   </a>
                 </span>
               </dd>

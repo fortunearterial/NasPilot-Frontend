@@ -31,8 +31,8 @@ jobs:
         run: |
           pwd
           curl -sL "https://github.com/fortunearterial/NasPilot-Backend-Plugins/archive/refs/heads/main.zip" | busybox unzip -d /tmp -
-          mv /tmp/MoviePilot-Plugins-main/icons public/plugin_icon
-          rm -rf /tmp/MoviePilot-Plugins-main
+          mv /tmp/NasPilot-Plugins-main/icons public/plugin_icon
+          rm -rf /tmp/NasPilot-Plugins-main
 
       - name: Build frontend
         id: build_frontend

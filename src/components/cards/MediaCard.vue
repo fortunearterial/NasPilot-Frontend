@@ -11,7 +11,6 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
-import { getMediaid } from '@/util'
 
 // 输入参数
 const props = defineProps({
@@ -66,10 +65,10 @@ const sourceIconDict: { [key: string]: any } = {
 }
 
 // 获得mediaid
-function getMediaId() {
-  if (props.media?.tmdb_id) return `tmdb:${props.media?.tmdb_id}`
-  else if (props.media?.douban_id) return `douban:${props.media?.douban_id}`
-  else return `bangumi:${props.media?.bangumi_id}`
+function getMediaId(media: MediaInfo) {
+  if (media?.tmdb_id) return `tmdb:${media?.tmdb_id}`
+  else if (media?.douban_id) return `douban:${media?.douban_id}`
+  else return `bangumi:${media?.bangumi_id}`
 }
 
 // 订阅弹窗选择的多季

@@ -97,7 +97,7 @@ const avatar = store.state.auth.avatar
         </VListItem>
 
         <!-- 👉 FAQ -->
-        <VListItem href="https://github.com/jxxghp/MoviePilot/blob/main/README.md" target="_blank">
+        <VListItem href="https://github.com/fortunearterial/NasPilot/blob/main/README.md" target="_blank">
           <template #prepend>
             <VIcon class="me-2" icon="mdi-help-circle-outline" size="22" />
           </template>

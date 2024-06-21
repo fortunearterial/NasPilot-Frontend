@@ -44,8 +44,8 @@ export default defineConfig({
         type: 'module',
       },
       manifest: {
-        'name': 'MoviePilot',
-        'short_name': 'MoviePilot',
+        'name': 'NasPilot',
+        'short_name': 'NasPilot',
         'start_url': './',
         'display': 'standalone',
         'icons': [
