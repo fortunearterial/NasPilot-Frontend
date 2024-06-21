@@ -10,7 +10,7 @@ import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
 import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'
-import getMediaId from '@utils/media'
+import getMediaid from '@utils/media'
 
 // 输入参数
 const mediaProps = defineProps({
@@ -296,7 +296,7 @@ async function removeSubscribe(season: number) {
   // 开始处理
   startNProgress()
   try {
-    const mediaid = getMediaId(mediaDetail.value)
+    const mediaid = getMediaid(mediaDetail.value)
 
     const result: { [key: string]: any } = await api.delete(`subscribe/media/${mediaid}`, {
       params: {

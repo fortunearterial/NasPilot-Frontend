@@ -11,7 +11,7 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
-import getMediaId from '@utils/media'
+import getMediaid from '@utils/media'
 
 // 输入参数
 const props = defineProps({
@@ -330,7 +330,7 @@ function goMediaDetail(isHovering = false) {
     router.push({
       path: '/media',
       query: {
-        mediaid: getMediaId(props.media),
+        mediaid: getMediaid(props.media),
         type: props.media?.type,
       },
     })
