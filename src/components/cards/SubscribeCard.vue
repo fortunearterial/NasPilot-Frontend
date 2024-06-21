@@ -38,8 +38,8 @@ function imageLoadHandler() {
 
 // 根据 type 返回不同的图标
 function getIcon() {
-  if (props.media?.type === '电影') return 'mdi-movie'
-  else if (props.media?.type === '电视剧') return 'mdi-television-classic'
+  if (props.media?.type === '电影') return 'mdi-movie-open'
+  else if (props.media?.type === '电视剧') return 'mdi-television-play'
   else if (props.media?.type === '游戏') return 'mdi-gamepad-variant-outline'
   else return 'mdi-help-circle'
 }
@@ -51,16 +51,6 @@ function getPercentage() {
   return Math.round(
     (((props.media?.total_episode ?? 0) - (props.media?.lack_episode ?? 0)) / (props.media?.total_episode ?? 1)) * 100,
   )
-}
-
-// 计算文本颜色
-function getTextColor() {
-  return imageLoaded.value ? 'white' : ''
-}
-
-// 计算文本类
-function getTextClass() {
-  return imageLoaded.value ? 'text-white' : ''
 }
 
 // 删除订阅
@@ -101,8 +91,10 @@ async function resetSubscribe() {
     // 重置
     const result: { [key: string]: any } = await api.get(`subscribe/reset/${props.media?.id}`)
     // 提示
-    if (result.success) $toast.success(`${props.media?.name} 重置成功！`)
-    else $toast.error(`${props.media?.name} 重置失败：${result.message}`)
+    if (result.success) {
+      $toast.success(`${props.media?.name} 重置成功！`)
+      emit('save')
+    } else $toast.error(`${props.media?.name} 重置失败：${result.message}`)
   } catch (e) {
     console.log(e)
   }
@@ -111,6 +103,17 @@ async function resetSubscribe() {
 // 编辑订阅响应
 async function editSubscribeDialog() {
   subscribeEditDialog.value = true
+}
+
+// 查看详情
+async function viewMediaDetail() {
+  router.push({
+    path: '/media',
+    query: {
+      mediaid: `${props.media?.tmdbid ? `tmdb:${props.media?.tmdbid}` : `douban:${props.media?.doubanid}`}`,
+      type: props.media?.type,
+    },
+  })
 }
 
 // 弹出菜单
@@ -136,15 +139,7 @@ const dropdownItems = ref([
     value: 3,
     props: {
       prependIcon: 'mdi-open-in-new',
-      click: () => {
-        router.push({
-          path: '/media',
-          query: {
-            mediaid: `${props.media?.tmdbid ? `tmdb:${props.media?.tmdbid}` : `douban:${props.media?.doubanid}`}`,
-            type: props.media?.type,
-          },
-        })
-      },
+      click: viewMediaDetail,
     },
   },
   {
@@ -183,84 +178,102 @@ watch(
       <VCard
         v-bind="hover.props"
         :key="props.media?.id"
-        class="flex flex-col"
+        class="flex flex-col rounded-lg"
         :class="{
-          'outline-dashed outline-1': props.media?.best_version,
+          'outline-dashed outline-1': props.media?.best_version && imageLoaded,
           'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
         }"
         @click="editSubscribeDialog"
       >
+        <div class="me-n3 absolute top-1 right-2">
+          <IconBtn>
+            <VIcon icon="mdi-dots-vertical" color="white" />
+            <VMenu activator="parent" close-on-content-click>
+              <VList>
+                <template v-for="(item, i) in dropdownItems" :key="i">
+                  <VListItem
+                    v-if="item.show !== false"
+                    variant="plain"
+                    :base-color="item.props.color"
+                    @click="item.props.click"
+                  >
+                    <template #prepend>
+                      <VIcon :icon="item.props.prependIcon" />
+                    </template>
+                    <VListItemTitle v-text="item.title" />
+                  </VListItem>
+                </template>
+              </VList>
+            </VMenu>
+          </IconBtn>
+        </div>
         <template #image>
           <VImg
             :src="props.media?.backdrop || props.media?.poster"
-            aspect-ratio="2/3"
+            aspect-ratio="3/2"
             cover
-            class="brightness-50"
             @load="imageLoadHandler"
-          />
+            position="top"
+          >
+            <template #placeholder>
+              <div class="w-full h-full">
+                <VSkeletonLoader class="object-cover aspect-w-3 aspect-h-2" />
+              </div>
+            </template>
+            <div class="absolute inset-0 subscribe-card-background"></div>
+          </VImg>
         </template>
-        <VCardItem>
-          <template #prepend>
-            <VIcon size="1.9rem" :color="getTextColor()" :icon="getIcon()" />
-          </template>
-          <VCardTitle :class="getTextClass()">
-            {{ props.media?.name }}
-            {{ formatSeason(props.media?.season ? props.media?.season.toString() : '') }}
-          </VCardTitle>
-          <template #append>
-            <div class="me-n3">
-              <IconBtn>
-                <VIcon icon="mdi-dots-vertical" :color="getTextColor()" />
-                <VMenu activator="parent" close-on-content-click>
-                  <VList>
-                    <template v-for="(item, i) in dropdownItems" :key="i">
-                      <VListItem
-                        v-if="item.show !== false"
-                        variant="plain"
-                        :base-color="item.props.color"
-                        @click="item.props.click"
-                      >
-                        <template #prepend>
-                          <VIcon :icon="item.props.prependIcon" />
-                        </template>
-                        <VListItemTitle v-text="item.title" />
-                      </VListItem>
-                    </template>
-                  </VList>
-                </VMenu>
-              </IconBtn>
+        <div v-if="imageLoaded">
+          <VCardText class="flex items-center">
+            <div class="h-auto w-12 flex-shrink-0 overflow-hidden rounded-md shadow-lg">
+              <VImg :src="props.media?.poster" aspect-ratio="2/3" cover @click.stop="viewMediaDetail">
+                <template #placeholder>
+                  <div class="w-full h-full">
+                    <VSkeletonLoader class="object-cover aspect-w-2 aspect-h-3" />
+                  </div>
+                </template>
+              </VImg>
             </div>
-          </template>
-        </VCardItem>
-        <VCardText>
-          <p class="clamp-text mb-0" :class="getTextClass()">
-            {{ props.media?.description }}
-          </p>
-        </VCardText>
-        <VCardText class="d-flex justify-space-between align-center flex-wrap">
-          <div class="d-flex align-center">
-            <IconBtn
-              v-if="props.media?.total_episode"
-              v-bind="props"
-              icon="mdi-progress-clock"
-              :color="getTextColor()"
-              class="me-1"
+            <div class="flex flex-col justify-center overflow-hidden pl-2 xl:pl-4">
+              <div class="text-sm font-medium text-white sm:pt-1">{{ props.media?.year }}</div>
+              <div class="mr-2 min-w-0 text-lg font-bold text-white">
+                {{ props.media?.name }}
+                {{ formatSeason(props.media?.season ? props.media?.season.toString() : '') }}
+              </div>
+            </div>
+          </VCardText>
+          <VCardText class="flex justify-space-between align-center flex-wrap">
+            <div class="flex align-center">
+              <IconBtn
+                v-if="props.media?.total_episode"
+                v-bind="props"
+                icon="mdi-progress-download"
+                color="white"
+                class="me-1"
+              />
+              <div v-if="props.media?.season" class="text-subtitle-2 me-4 text-white">
+                {{ (props.media?.total_episode || 0) - (props.media?.lack_episode || 0) }} /
+                {{ props.media?.total_episode }}
+              </div>
+              <IconBtn v-if="props.media?.username" icon="mdi-account" color="white" class="me-1" />
+              <span v-if="props.media?.username" class="text-subtitle-2 me-4 text-white">
+                {{ props.media?.username }}
+              </span>
+            </div>
+          </VCardText>
+          <VCardText v-if="lastUpdateText" class="absolute right-0 bottom-0 d-flex align-center p-2 text-gray-300">
+            <VIcon icon="mdi-download" class="me-1" />
+            {{ lastUpdateText }}
+          </VCardText>
+          <div class="w-full absolute bottom-0">
+            <VProgressLinear
+              v-if="getPercentage() > 0"
+              :model-value="getPercentage()"
+              bg-color="success"
+              color="success"
             />
-            <span v-if="props.media?.season" class="text-subtitle-2 me-4" :class="getTextClass()"
-              >{{ (props.media?.total_episode || 0) - (props.media?.lack_episode || 0) }} /
-              {{ props.media?.total_episode }}</span
-            >
-            <IconBtn v-if="props.media?.username" icon="mdi-account" :color="getTextColor()" class="me-1" />
-            <span v-if="props.media?.username" class="text-subtitle-2 me-4" :class="getTextClass()">
-              {{ props.media?.username }}
-            </span>
           </div>
-        </VCardText>
-        <VCardText v-if="lastUpdateText" class="absolute right-0 bottom-0 d-flex align-center p-2 text-gray-300">
-          <VIcon icon="mdi-download" class="me-1" />
-          {{ lastUpdateText }}
-        </VCardText>
-        <VProgressLinear v-if="getPercentage() > 0" :model-value="getPercentage()" bg-color="success" color="success" />
+        </div>
       </VCard>
     </template>
   </VHover>
@@ -284,3 +297,8 @@ watch(
     @close="subscribeEditDialog = false"
   />
 </template>
+<style lang="scss">
+.subscribe-card-background {
+  background-image: linear-gradient(90deg, rgba(31, 41, 55, 47%) 0%, rgb(31, 41, 55) 100%);
+}
+</style>

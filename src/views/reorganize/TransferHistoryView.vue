@@ -7,6 +7,15 @@ import ReorganizeDialog from '@/components/dialog/ReorganizeDialog.vue'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
+import { useDisplay } from 'vuetify'
+
+// 显示器宽度
+const display = useDisplay()
+
+// APP
+const appMode = computed(() => {
+  return localStorage.getItem('MP_APPMODE') != '0' && display.mdAndDown.value
+})
 
 // 提示框
 const $toast = useToast()
@@ -338,7 +347,7 @@ function reloadPage() {
 function ensureNumber(value: any, defaultValue: number = 0) {
   value = Number(value)
   // 如果不是数字
-  if (value !== value) {
+  if (Number.isNaN(value)) {
     value = defaultValue
   }
   return value
@@ -384,8 +393,12 @@ onMounted(fetchData)
       fixed-header
       show-select
       loading-text="加载中..."
-      class="data-table-div"
       hover
+      :style="
+        appMode
+          ? 'height: calc(100vh - 15.5rem - env(safe-area-inset-bottom) - 3.5rem)'
+          : 'height: calc(100vh - 14.5rem - env(safe-area-inset-bottom)'
+      "
     >
       <template #item.title="{ item }">
         <div class="d-flex align-center">
@@ -473,10 +486,11 @@ onMounted(fetchData)
       app
       appear
       @click="removeHistoryBatch"
+      :class="{ 'mb-12': appMode }"
     />
     <VFab
       v-if="selected.length > 0"
-      class="mb-16"
+      :class="appMode ? 'mb-28' : 'mb-16'"
       icon="mdi-redo-variant"
       location="bottom"
       size="x-large"
@@ -520,15 +534,5 @@ onMounted(fetchData)
 <style lang="scss">
 .v-table th {
   white-space: nowrap;
-}
-
-.data-table-div {
-  block-size: calc(100vh - 14rem);
-}
-
-@media (width <= 768px) {
-  .data-table-div {
-    block-size: calc(100vh - 17rem);
-  }
 }
 </style>

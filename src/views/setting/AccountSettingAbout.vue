@@ -170,7 +170,7 @@ onMounted(() => {
                     rel="noreferrer"
                     class="text-indigo-500 transition duration-300 hover:underline"
                   >
-                    https://github.com/fortunearterial/NasPilot-Backend/blob/main/README.md
+                    https://wiki.movie-pilot.org
                   </a>
                 </span>
               </dd>

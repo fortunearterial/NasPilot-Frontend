@@ -1,5 +1,9 @@
 <script lang="ts" setup>
 import SlideViewTitle from '@/components/slide/SlideViewTitle.vue'
+import { useDisplay } from 'vuetify'
+
+// 显示器宽度
+const display = useDisplay()
 
 // 元素
 const slideview_content = ref()
@@ -27,12 +31,10 @@ function slideNext(next: boolean) {
     if (run_to_left_px >= slideview_content.value.scrollWidth - slideview_content.value.clientWidth)
       run_to_left_px = slideview_content.value.scrollWidth - slideview_content.value.clientWidth
     // console.log(`最多显示: ${card_max} 当前起点: ${card_current} 目标起点: ${card_index} 卡片宽度: ${card_width}`)
-  }
-  else {
+  } else {
     const card_index = card_current - card_max
     run_to_left_px = card_index * card_width
-    if (run_to_left_px <= 0)
-      run_to_left_px = 0
+    if (run_to_left_px <= 0) run_to_left_px = 0
     // console.log(`最多显示: ${card_max} 当前起点: ${card_current} 目标起点: ${card_index} 卡片宽度: ${card_width}`)
   }
   slideview_content.value.scrollTo({
@@ -46,7 +48,7 @@ function slideNext(next: boolean) {
 function countMaxNumber() {
   slide_card_length = slideview_content.value.children.length
   card_width = slideview_content.value.firstElementChild.getBoundingClientRect().width
-  slide_gap_px = (slideview_content.value.scrollWidth / slide_card_length) - card_width
+  slide_gap_px = slideview_content.value.scrollWidth / slide_card_length - card_width
   card_width += slide_gap_px
   card_max = Math.trunc(slideview_content.value.clientWidth / card_width)
   countDisabled()
@@ -55,16 +57,18 @@ function countMaxNumber() {
 // 修改分页切换按钮状态
 function countDisabled() {
   slideview_scrollLeft.value = slideview_content.value.scrollLeft
-  card_current = slideview_content.value.scrollLeft === 0 ? 0 : Math.trunc((slideview_content.value.scrollLeft + card_width / 2) / card_width)
-  if (slide_card_length * card_width <= slideview_content.value.clientWidth)
-    disabled.value = 3
-  else if (slideview_content.value.scrollLeft === 0)
-    disabled.value = 0
-  else if (slideview_content.value.scrollLeft >= slideview_content.value.scrollWidth - slideview_content.value.clientWidth - 2)
+  card_current =
+    slideview_content.value.scrollLeft === 0
+      ? 0
+      : Math.trunc((slideview_content.value.scrollLeft + card_width / 2) / card_width)
+  if (slide_card_length * card_width <= slideview_content.value.clientWidth) disabled.value = 3
+  else if (slideview_content.value.scrollLeft === 0) disabled.value = 0
+  else if (
+    slideview_content.value.scrollLeft >=
+    slideview_content.value.scrollWidth - slideview_content.value.clientWidth - 2
+  )
     disabled.value = 2
-
-  else
-    disabled.value = 1
+  else disabled.value = 1
 }
 
 // 组件加载完成
@@ -91,7 +95,7 @@ onActivated(() => {
     <slot name="title">
       <SlideViewTitle />
     </slot>
-    <div v-if="disabled !== 3" class="me-1 d-none d-md-flex">
+    <div v-if="disabled !== 3 && display.mdAndUp.value" class="me-1 d-flex">
       <VBtn
         class="rounded-circle"
         variant="text"
@@ -122,9 +126,8 @@ onActivated(() => {
 
 <style lang="scss" scoped>
 .slideview_content {
+  overflow: scroll hidden !important;
   -ms-overflow-style: none !important;
-  overflow-x: scroll !important;
-  overflow-y: hidden !important;
   overscroll-behavior-x: contain !important;
   scrollbar-width: none !important;
 }

@@ -1,6 +1,15 @@
 <script lang="ts" setup>
 import type { Context } from '@/api/types'
 import TorrentItem from '@/components/cards/TorrentItem.vue'
+import { useDisplay } from 'vuetify'
+
+// 显示器宽度
+const display = useDisplay()
+
+// APP
+const appMode = computed(() => {
+  return localStorage.getItem('MP_APPMODE') != '0' && display.mdAndDown.value
+})
 
 // 定义输入参数
 const props = defineProps({
@@ -61,6 +70,41 @@ function initOptions(data: Context) {
   optionValue(editionFilterOptions.value, meta_info?.edition)
   optionValue(resolutionFilterOptions.value, meta_info?.resource_pix)
 }
+
+// 对季过滤选项进行排序
+const sortSeasonFilterOptions = computed(() => {
+  return seasonFilterOptions.value.sort((a, b) => {
+    // 按季,集降序排序
+    const parseSeasonEpisode = (str: string) => {
+      const seasonRangeMatch = str.match(/S(\d+)(?:-S(\d+))?/)
+      const episodeRangeMatch = str.match(/E(\d+)(?:-E(\d+))?/)
+      return {
+        seasonStart: seasonRangeMatch?.[1] ? parseInt(seasonRangeMatch[1]) : 0,
+        seasonEnd: seasonRangeMatch?.[2] ? parseInt(seasonRangeMatch[2]) : 0,
+        episodeStart: episodeRangeMatch?.[1] ? parseInt(episodeRangeMatch[1]) : 0,
+        episodeEnd: episodeRangeMatch?.[2] ? parseInt(episodeRangeMatch[2]) : 0,
+      }
+    }
+    const parsedA = parseSeasonEpisode(a)
+    const parsedB = parseSeasonEpisode(b)
+    // 先按季降序排序
+    if (parsedB.seasonStart !== parsedA.seasonStart) {
+      return parsedB.seasonStart - parsedA.seasonStart
+    }
+    if (parsedB.seasonEnd !== parsedA.seasonEnd) {
+      return parsedB.seasonEnd - parsedA.seasonEnd
+    }
+    // 按集降序排序
+    if (parsedB.episodeStart !== parsedA.episodeStart) {
+      return parsedB.episodeStart - parsedA.episodeStart
+    }
+    if (parsedB.episodeEnd !== parsedA.episodeEnd) {
+      return parsedB.episodeEnd - parsedA.episodeEnd
+    }
+    // 兜底
+    return b.localeCompare(a)
+  })
+})
 
 // 排序
 watchEffect(() => {
@@ -123,15 +167,26 @@ onMounted(() => {
         </VListItem>
       </VList>
       <VList v-if="dataList.length !== 0" lines="three" class="rounded p-0 torrent-list-vscroll shadow-lg">
-        <VVirtualScroll :items="dataList">
+        <VVirtualScroll
+          :items="dataList"
+          :style="
+            appMode
+              ? 'height: calc(100vh - 7.5rem - env(safe-area-inset-bottom) - 3.5rem)'
+              : 'height: calc(100vh - 6.5rem - env(safe-area-inset-bottom)'
+          "
+        >
           <template #default="{ item }">
-            <TorrentItem :torrent="item" :key="`${item.torrent_info.title}_${item.torrent_info.site}`" />
+            <TorrentItem :torrent="item" :key="`${item.torrent_info.page_url}`" />
           </template>
         </VVirtualScroll>
       </VList>
     </VCol>
-    <VCol xl="2" md="3" class="d-none d-md-block">
-      <VList lines="one" class="rounded torrent-list-vscroll shadow-lg">
+    <VCol xl="2" md="3" v-if="display.mdAndUp.value">
+      <VList
+        lines="one"
+        class="rounded shadow-lg"
+        style="block-size: calc(100vh - 6.5rem - env(safe-area-inset-bottom))"
+      >
         <VListSubheader> 排序 </VListSubheader>
         <VListItem>
           <VChipGroup column v-model="sortField">
@@ -241,7 +296,7 @@ onMounted(() => {
         <VListItem>
           <VChipGroup v-model="filterForm.season" column multiple>
             <VChip
-              v-for="season in seasonFilterOptions"
+              v-for="season in sortSeasonFilterOptions"
               :key="season"
               :color="filterForm.season.includes(season) ? 'primary' : ''"
               filter
@@ -256,15 +311,3 @@ onMounted(() => {
     </VCol>
   </VRow>
 </template>
-<style lang="scss">
-.torrent-list-vscroll {
-  block-size: calc(100vh - 6rem);
-  overflow-y: auto;
-}
-
-@media (width <= 768px) {
-  .orrent-list-vscroll {
-    block-size: calc(100vh - 10rem);
-  }
-}
-</style>

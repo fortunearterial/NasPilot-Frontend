@@ -13,7 +13,11 @@ const display = useDisplay()
 
 // 输入参数
 const props = defineProps({
-  path: String,
+  storage: {
+    type: String,
+    default: () => 'local',
+  },
+  paths: Array<string>,
   target: String,
   logids: Array<number>,
 })
@@ -50,8 +54,20 @@ const progressText = ref('请稍候 ...')
 // 整理进度
 const progressValue = ref(0)
 
-// 文件转移表单
+// 标题
+const dialogTitle = computed(() => {
+  if (props.paths) {
+    if (props.paths.length > 1) return `整理 - 共 ${props.paths.length} 项`
+    return `整理 - ${props.paths[0]}`
+  } else if (props.logids) {
+    return `整理 - 共 ${props.logids.length} 项`
+  }
+  return '手动整理'
+})
+
+// 表单
 const transferForm = reactive({
+  storage: props.storage,
   logid: 0,
   path: '',
   target: props.target ?? null,
@@ -75,12 +91,6 @@ const libraryDirectories = ref<MediaDirectory[]>([])
 const targetDirectories = computed(() => {
   const directories = libraryDirectories.value.map(item => item.path)
   return [...new Set(directories)]
-})
-
-// 监听输入变化
-watchEffect(() => {
-  transferForm.path = props.path ?? ''
-  transferForm.target = props.target ?? null
 })
 
 // 监听目的路径变化，自动查询目录的刮削配置
@@ -117,47 +127,25 @@ function stopLoadingProgress() {
 }
 
 // 整理文件
-// eslint-disable-next-line sonarjs/cognitive-complexity
 async function transfer() {
-  if (!props.logids && !props.path) return
+  if (!props.logids && !props.paths) return
 
   // 显示进度条
   progressDialog.value = true
   // 开始监听进度
   startLoadingProgress()
 
-  if (props.path) {
-    // 文件整理
-    try {
-      const result: { [key: string]: any } = await api.post(
-        'transfer/manual',
-        {},
-        {
-          params: transferForm,
-        },
-      )
-      // 显示结果
-      if (result.success) $toast.success(`${props.path} 整理完成！`)
-      else $toast.error(`${props.path} 整理失败：${result.message}！`)
-    } catch (e) {
-      console.log(e)
+  // 文件整理
+  if (props.paths) {
+    for (const path of props.paths) {
+      await handleTransfer(path)
     }
-  } else if (props.logids) {
-    // 日志整理
+  }
+
+  // 日志整理
+  if (props.logids) {
     for (const logid of props.logids) {
-      transferForm.logid = logid
-      try {
-        const result: { [key: string]: any } = await api.post(
-          'transfer/manual',
-          {},
-          {
-            params: transferForm,
-          },
-        )
-        if (!result.success) $toast.error(`历史记录 ${logid} 重新整理失败：${result.message}！`)
-      } catch (e) {
-        console.log(e)
-      }
+      await handleTransferLog(logid)
     }
   }
 
@@ -167,6 +155,28 @@ async function transfer() {
   progressDialog.value = false
   // 重新加载
   emit('done')
+}
+
+// 整理文件
+async function handleTransfer(path: string) {
+  transferForm.path = path
+  try {
+    const result: { [key: string]: any } = await api.post('transfer/manual', {}, { params: transferForm })
+    if (!result.success) $toast.error(`文件 ${path} 整理失败：${result.message}！`)
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+// 整理日志
+async function handleTransferLog(logid: number) {
+  transferForm.logid = logid
+  try {
+    const result: { [key: string]: any } = await api.post('transfer/manual', {}, { params: transferForm })
+    if (!result.success) $toast.error(`历史记录 ${logid} 重新整理失败：${result.message}！`)
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 // 调用API，加载当前系统环境设置
@@ -199,16 +209,13 @@ onMounted(() => {
 
 <template>
   <VDialog scrollable max-width="50rem" :fullscreen="!display.mdAndUp.value">
-    <VCard
-      :title="`${props.path ? `整理 - ${props.path}` : `整理 - 共 ${props.logids?.length} 条记录`}`"
-      class="rounded-t"
-    >
+    <VCard :title="dialogTitle" class="rounded-t">
       <DialogCloseBtn @click="emit('close')" />
       <VDivider />
       <VCardText>
         <VForm @submit.prevent="() => {}">
           <VRow>
-            <VCol cols="12" md="8">
+            <VCol v-if="props.storage == 'local'" cols="12" md="8">
               <VCombobox
                 v-model="transferForm.target"
                 :items="targetDirectories"
@@ -218,7 +225,7 @@ onMounted(() => {
                 persistent-hint
               />
             </VCol>
-            <VCol cols="12" md="4">
+            <VCol v-if="props.storage == 'local'" cols="12" md="4">
               <VSelect
                 v-model="transferForm.transfer_type"
                 label="整理方式"
@@ -336,7 +343,7 @@ onMounted(() => {
             </VCol>
           </VRow>
           <VRow>
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="6" v-if="props.storage == 'local'">
               <VSwitch
                 v-model="transferForm.scrape"
                 label="刮削元数据"

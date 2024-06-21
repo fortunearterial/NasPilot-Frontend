@@ -1,14 +1,28 @@
 <script lang="ts" setup>
-import type { Axios } from 'axios'
-import type { EndPoints } from '@/api/types'
+import type { Axios, AxiosRequestConfig } from 'axios'
+import type { EndPoints, FileItem } from '@/api/types'
+import { useDisplay } from 'vuetify'
+
+// 显示器宽度
+const display = useDisplay()
 
 // 输入参数
 const inProps = defineProps({
   storages: Array as PropType<any[]>,
   storage: String,
-  path: String,
+  item: {
+    type: Object as PropType<FileItem>,
+    required: true,
+  },
+  itemstack: {
+    type: Array as PropType<FileItem[]>,
+    required: true,
+  },
   endpoints: Object as PropType<EndPoints>,
-  axios: Object as PropType<Axios>,
+  axios: {
+    type: Object as PropType<Axios>,
+    required: true,
+  },
 })
 
 // 对外事件
@@ -25,10 +39,8 @@ const sort = ref('name')
 
 // 调整排序方式
 function changeSort() {
-  if (sort.value === 'name')
-    sort.value = 'time'
-  else
-    sort.value = 'name'
+  if (sort.value === 'name') sort.value = 'time'
+  else sort.value = 'name'
 
   emit('sortchanged', sort.value)
 }
@@ -36,18 +48,20 @@ function changeSort() {
 // 计算PATH面包屑
 const pathSegments = computed(() => {
   let path_str = ''
-  const isFolder = inProps.path?.endsWith('/')
-  const segments = inProps.path?.split('/').filter(item => item)
-
-  return segments?.map((item, index) => {
-    path_str += item + ((index < segments.length - 1 || isFolder) ? '/' : '')
-    return {
-      name: item,
-      path: path_str,
-    }
-  }) ?? []
+  const isFolder = inProps.item.path?.endsWith('/')
+  const segments = inProps.item.path?.split('/').filter(item => item)
+  return (
+    segments?.map((item, index) => {
+      path_str += item + (index < segments.length - 1 || isFolder ? '/' : '')
+      return {
+        name: item,
+        path: path_str,
+      }
+    }) ?? []
+  )
 })
 
+// 当前存储
 const storageObject = computed(() => {
   return inProps.storages?.find(item => item.code === inProps.storage)
 })
@@ -56,20 +70,19 @@ const storageObject = computed(() => {
 function changeStorage(code: string) {
   if (inProps.storage !== code) {
     emit('storagechanged', code)
-    emit('pathchanged', '')
   }
 }
 
 // 路径变化
-function changePath(_path: string) {
-  emit('pathchanged', _path)
+function changePath(item: FileItem) {
+  emit('pathchanged', item)
 }
 
 // 返回上一级
 function goUp() {
   const segments = pathSegments.value ?? []
-  const path = segments?.length === 1 ? '/' : segments[segments.length - 2].path
-  changePath(path)
+  const fileitem = inProps.itemstack[segments.length - 1]
+  changePath(fileitem)
 }
 
 // 创建目录
@@ -77,15 +90,16 @@ async function mkdir() {
   emit('loading', true)
   const url = inProps.endpoints?.mkdir.url
     .replace(/{storage}/g, inProps.storage)
-    .replace(/{path}/g, encodeURIComponent(inProps.path + newFolderName.value))
+    .replace(/{name}/g, newFolderName.value)
 
-  const config = {
+  const config: AxiosRequestConfig<FileItem> = {
     url,
     method: inProps.endpoints?.mkdir.method || 'post',
+    data: inProps.item,
   }
 
   // 调API
-  await inProps.axios?.request(config)
+  await inProps.axios.request(config)
 
   newFolderPopper.value = false
   newFolderName.value = ''
@@ -97,10 +111,8 @@ async function mkdir() {
 
 // 计算排序图标
 const sortIcon = computed(() => {
-  if (sort.value === 'time')
-    return 'mdi-sort-clock-ascending-outline'
-  else
-    return 'mdi-sort-alphabetical-ascending'
+  if (sort.value === 'time') return 'mdi-sort-clock-ascending-outline'
+  else return 'mdi-sort-alphabetical-ascending'
 })
 </script>
 
@@ -127,16 +139,17 @@ const sortIcon = computed(() => {
           </VListItem>
         </VList>
       </VMenu>
-      <VBtn variant="text" :input-value="path === '/'" class="px-1" @click="changePath('/')">
+      <VBtn variant="text" :input-value="item.path === '/'" class="px-1" @click="changePath(inProps.itemstack[0])">
         <VIcon :icon="storageObject?.icon" class="mr-2" />
         {{ storageObject?.name }}
       </VBtn>
       <template v-for="(segment, index) in pathSegments" :key="index">
         <VBtn
+          v-if="display.mdAndUp.value"
           variant="text"
           :input-value="index === pathSegments.length - 1"
-          class="px-1 d-none d-md-block"
-          @click="changePath(segment.path)"
+          class="px-1"
+          @click="changePath(inProps.itemstack[index + 1])"
         >
           <VIcon icon=" mdi-chevron-right" />
           {{ segment.name }}
@@ -158,10 +171,7 @@ const sortIcon = computed(() => {
         </IconBtn>
       </template>
     </VTooltip>
-    <VDialog
-      v-model="newFolderPopper"
-      max-width="50rem"
-    >
+    <VDialog v-model="newFolderPopper" max-width="50rem">
       <template #activator="{ props }">
         <IconBtn v-bind="props">
           <VTooltip text="新建文件夹">
@@ -172,20 +182,14 @@ const sortIcon = computed(() => {
         </IconBtn>
       </template>
       <VCard title="新建文件夹">
+        <DialogCloseBtn @click="newFolderPopper = false" />
+        <VDivider />
         <VCardText>
           <VTextField v-model="newFolderName" label="名称" />
         </VCardText>
         <VCardActions>
           <div class="flex-grow-1" />
-          <VBtn depressed @click="newFolderPopper = false">
-            取消
-          </VBtn>
-          <VBtn
-            :disabled="!newFolderName"
-            depressed
-            variant="tonal"
-            @click="mkdir"
-          >
+          <VBtn :disabled="!newFolderName" variant="elevated" @click="mkdir" prepend-icon="mdi-check" class="px-5 me-3">
             新建
           </VBtn>
         </VCardActions>

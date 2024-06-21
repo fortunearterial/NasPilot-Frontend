@@ -7,6 +7,15 @@ import SubscribeCard from '@/components/cards/SubscribeCard.vue'
 import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import SubscribeHistoryDialog from '@/components/dialog/SubscribeHistoryDialog.vue'
 import store from '@/store'
+import { useDisplay } from 'vuetify'
+
+// 显示器宽度
+const display = useDisplay()
+
+// APP
+const appMode = computed(() => {
+  return localStorage.getItem('MP_APPMODE') != '0' && display.mdAndDown.value
+})
 
 // 输入参数
 const props = defineProps({
@@ -15,7 +24,7 @@ const props = defineProps({
 })
 
 // 是否刷新过
-const isRefreshed = ref(false)
+let isRefreshed = ref(false)
 
 // 数据列表
 const dataList = ref<Subscribe[]>([])
@@ -29,7 +38,9 @@ const historyDialog = ref(false)
 // 获取订阅列表数据
 async function fetchData() {
   try {
+    loading.value = true
     dataList.value = await api.get(`subscribe/?type_in=${props.type}&keyword_in=${props.keyword || ''}`)
+    loading.value = false
     isRefreshed.value = true
   } catch (error) {
     console.error(error)
@@ -40,10 +51,9 @@ async function fetchData() {
 const loading = ref(false)
 
 // 下拉刷新
-function onRefresh() {
-  loading.value = true
-  fetchData()
-  loading.value = false
+async function onRefresh({ done }: { done: any }) {
+  await fetchData()
+  done('ok')
 }
 
 // 过滤数据，管理员用户显示全部，非管理员只显示自己的订阅
@@ -64,6 +74,12 @@ onMounted(async () => {
       // 打开编辑弹窗
       sub.page_open = true
     }
+  }
+})
+
+onActivated(async () => {
+  if (!loading.value) {
+    fetchData()
   }
 })
 </script>
@@ -97,13 +113,14 @@ onMounted(async () => {
     app
     appear
     @click="subscribeEditDialog = true"
+    :class="{ 'mb-12': appMode }"
   />
   <VFab
     v-if="store.state.auth.superUser"
     icon="mdi-history"
     color="info"
     location="bottom"
-    class="mb-16"
+    :class="appMode ? 'mb-28' : 'mb-16'"
     size="x-large"
     fixed
     app

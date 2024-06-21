@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import api from '@/api'
 import type { Plugin, Subscribe } from '@/api/types'
-import {
-  SystemNavMenus,
-  UserfulMenus,
-  SubscribeMovieTabs,
-  SubscribeTvTabs,
-  PluginTabs,
-  SettingTabs,
-} from '@/router/menu'
+import { SystemNavMenus, UserfulMenus, PluginTabs, SettingTabs } from '@/router/menu'
 import { NavMenu } from '@/@layouts/types'
 
 // 路由
@@ -54,14 +47,14 @@ function getMenus(): NavMenu[] {
     item =>
       item &&
       menus.push({
-        title: item.title,
+        title: item.full_title ?? item.title,
         icon: item.icon,
         to: item.to,
         header: item.header,
         admin: item.admin,
       }),
   )
-  // 各类标签页
+  // 设置标签页
   SettingTabs.forEach(
     item =>
       item &&
@@ -72,39 +65,6 @@ function getMenus(): NavMenu[] {
         header: '',
         admin: true,
         description: item.description,
-      }),
-  )
-  SubscribeMovieTabs.forEach(
-    item =>
-      item &&
-      menus.push({
-        title: '电影 -> ' + item.title,
-        icon: item.icon,
-        to: `/subscribe-movie?tab=${item.tab}`,
-        header: '',
-        admin: false,
-      }),
-  )
-  SubscribeTvTabs.forEach(
-    item =>
-      item &&
-      menus.push({
-        title: '电视剧 -> ' + item.title,
-        icon: item.icon,
-        to: `/subscribe-tv?tab=${item.tab}`,
-        header: '',
-        admin: false,
-      }),
-  )
-  PluginTabs.forEach(
-    item =>
-      item &&
-      menus.push({
-        title: '插件 -> ' + item.title,
-        icon: item.icon,
-        to: `/plugins?tab=${item.tab}`,
-        header: '',
-        admin: true,
       }),
   )
 
@@ -236,14 +196,14 @@ function goPage(to: string) {
 function goSubscribe(subscribe: Subscribe) {
   if (subscribe.type === '电影') {
     router.push({
-      path: '/subscribe-movie',
+      path: '/subscribe/movie',
       query: {
         id: subscribe.id,
       },
     })
   } else {
     router.push({
-      path: '/subscribe-tv',
+      path: '/subscribe/tv',
       query: {
         id: subscribe.id,
       },
@@ -282,7 +242,7 @@ onMounted(() => {
       <DialogCloseBtn inner-class="absolute right-3 top-5 text-high-emphasis" @click="emit('close')" />
       <VDivider />
       <VCardText class="p-0">
-        <VList lines="one" v-if="searchWord">
+        <VList lines="two" v-if="searchWord">
           <!-- 搜索结果 -->
           <VListSubheader v-if="searchWord"> 媒体 & 资源 </VListSubheader>
           <VHover>
@@ -294,7 +254,7 @@ onMounted(() => {
                 v-bind="hover.props"
                 @click="searchMedia('media')"
               >
-                <VListItemTitle>
+                <VListItemTitle class="break-words whitespace-break-spaces">
                   搜索 <span class="font-bold">{{ searchWord }} </span> 相关的【电影、电视剧】 ...
                 </VListItemTitle>
                 <template #append>
@@ -306,7 +266,7 @@ onMounted(() => {
           <VHover>
             <template #default="hover">
               <VListItem prepend-icon="mdi-account-search" link v-bind="hover.props" @click="searchMedia('person')">
-                <VListItemTitle>
+                <VListItemTitle class="break-words whitespace-break-spaces">
                   搜索 <span class="font-bold">{{ searchWord }}</span> 相关的【演职人员】 ...
                 </VListItemTitle>
                 <template #append>
@@ -318,7 +278,7 @@ onMounted(() => {
           <VHover>
             <template #default="hover">
               <VListItem prepend-icon="mdi-search-web" link v-bind="hover.props" @click="searchTorrent">
-                <VListItemTitle>
+                <VListItemTitle class="break-words whitespace-break-spaces">
                   搜索 <span class="font-bold">{{ searchWord }}</span> 相关的【站点资源】 ...
                 </VListItemTitle>
                 <template #append>
@@ -330,7 +290,7 @@ onMounted(() => {
           <VHover>
             <template #default="hover">
               <VListItem prepend-icon="mdi-history" link v-bind="hover.props" @click="searchHistory">
-                <VListItemTitle>
+                <VListItemTitle class="break-words whitespace-break-spaces">
                   搜索 <span class="font-bold">{{ searchWord }}</span> 相关的【历史记录】 ...
                 </VListItemTitle>
                 <template #append>
@@ -412,7 +372,7 @@ onMounted(() => {
                   <VChip
                     v-for="(word, index) in recentSearches"
                     :key="index"
-                    class="me-2"
+                    class="me-2 mb-1"
                     variant="tonal"
                     @click="searchWord = word"
                     label

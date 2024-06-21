@@ -9,7 +9,7 @@ export const SystemNavMenus = [
   },
   {
     title: '推荐',
-    icon: 'mdi-table-star',
+    icon: 'mdi-star-outline',
     to: '/ranking',
     header: '发现',
     admin: false,
@@ -23,20 +23,23 @@ export const SystemNavMenus = [
   },
   {
     title: '电影',
-    icon: 'mdi-movie-roll',
-    to: '/subscribe-movie?tab=mysub',
+    full_title: '电影订阅',
+    icon: 'mdi-movie-open-outline',
+    to: '/subscribe/movie',
     header: '订阅',
     admin: false,
   },
   {
     title: '电视剧',
-    icon: 'mdi-television-classic',
-    to: '/subscribe-tv?tab=mysub',
+    full_title: '电视剧订阅',
+    icon: 'mdi-television',
+    to: '/subscribe/tv',
     header: '订阅',
     admin: false,
   },
   {
     title: '日历',
+    full_title: '订阅日历',
     icon: 'mdi-calendar',
     to: '/calendar',
     header: '订阅',
@@ -66,7 +69,7 @@ export const SystemNavMenus = [
   {
     title: '插件',
     icon: 'mdi-apps',
-    to: '/plugins?tab=installed',
+    to: '/plugins',
     header: '系统',
     admin: true,
   },
@@ -183,12 +186,12 @@ export const SubscribeMovieTabs = [
   {
     title: '我的订阅',
     tab: 'mysub',
-    icon: 'mdi-movie-roll',
+    icon: 'mdi-movie-open-outline',
   },
   {
     title: '热门订阅',
     tab: 'popular',
-    icon: 'mdi-movie-roll',
+    icon: 'mdi-movie-open-outline',
   },
 ]
 
@@ -197,12 +200,12 @@ export const SubscribeTvTabs = [
   {
     title: '我的订阅',
     tab: 'mysub',
-    icon: 'mdi-television-classic',
+    icon: 'mdi-television',
   },
   {
     title: '热门订阅',
     tab: 'popular',
-    icon: 'mdi-television-classic',
+    icon: 'mdi-television',
   },
 ]
 

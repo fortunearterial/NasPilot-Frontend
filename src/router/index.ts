@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { configureNProgress, doneNProgress, startNProgress } from '@/api/nprogress'
+import { configureNProgress } from '@/api/nprogress'
 import store from '@/store'
 
 // Nprogress
@@ -23,6 +23,7 @@ const router = createRouter({
           path: '/dashboard',
           component: () => import('../pages/dashboard.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
@@ -42,17 +43,21 @@ const router = createRouter({
           },
         },
         {
-          path: '/subscribe-movie',
-          component: () => import('../pages/subscribe-movie.vue'),
+          path: '/subscribe/movie',
+          component: () => import('../pages/subscribe.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
+            subType: '电影',
           },
         },
         {
-          path: '/subscribe-tv',
-          component: () => import('../pages/subscribe-tv.vue'),
+          path: '/subscribe/tv',
+          component: () => import('../pages/subscribe.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
+            subType: '电视剧',
           },
         },
         {
@@ -73,6 +78,7 @@ const router = createRouter({
           path: '/calendar',
           component: () => import('../pages/calendar.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
@@ -94,6 +100,7 @@ const router = createRouter({
           path: '/site',
           component: () => import('../pages/site.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
@@ -101,6 +108,7 @@ const router = createRouter({
           path: '/plugins',
           component: () => import('../pages/plugin.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
@@ -134,6 +142,7 @@ const router = createRouter({
           component: () => import('../pages/person.vue'),
           props: true,
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
@@ -141,12 +150,21 @@ const router = createRouter({
           path: '/media',
           component: () => import('../pages/media.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
           },
         },
         {
           path: '/filemanager',
           component: () => import('../pages/filemanager.vue'),
+          meta: {
+            keepAlive: true,
+            requiresAuth: true,
+          },
+        },
+        {
+          path: '/apps',
+          component: () => import('../pages/appcenter.vue'),
           meta: {
             requiresAuth: true,
           },
@@ -175,17 +193,11 @@ router.beforeEach((to, from, next) => {
   // 总是记录非login路由
   if (to.fullPath != '/login') store.state.auth.originalPath = to.fullPath
   const isAuthenticated = store.state.auth.token !== null
-
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
   } else {
-    startNProgress()
     next()
   }
-})
-
-router.afterEach(() => {
-  doneNProgress()
 })
 
 export default router

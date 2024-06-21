@@ -6,6 +6,9 @@ import router from '@/router'
 import avatar1 from '@images/avatars/avatar-1.png'
 import api from '@/api'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'
+import { useDisplay } from 'vuetify'
+
+const display = useDisplay()
 
 // Vuex Store
 const store = useStore()
@@ -22,9 +25,7 @@ const progressDialog = ref(false)
 // 执行注销操作
 function logout() {
   // 清除登录状态信息
-  store.dispatch('auth/clearToken')
-  // 主动登出时清除路由标记
-  store.state.auth.originalPath = null
+  store.dispatch('auth/logout')
   // 重定向到登录页面或其他适当的页面
   router.push('/login')
 }
@@ -58,10 +59,20 @@ async function restart() {
   }
 }
 
+// 是否精简模式
+const isCompactMode = ref(localStorage.getItem('MP_APPMODE') != '0')
+
 // 从Vuex Store中获取信息
 const superUser = store.state.auth.superUser
 const userName = store.state.auth.userName
 const avatar = store.state.auth.avatar
+
+// 监听精简模式切换
+watch(isCompactMode, value => {
+  localStorage.setItem('MP_APPMODE', value ? '1' : '0')
+  //刷新页面
+  location.reload()
+})
 </script>
 
 <template>
@@ -86,6 +97,17 @@ const avatar = store.state.auth.avatar
           </VListItemTitle>
           <VListItemSubtitle>{{ userName }}</VListItemSubtitle>
         </VListItem>
+
+        <!-- Divider -->
+        <VDivider v-if="display.mdAndDown.value" class="my-2" />
+
+        <!-- 👉 AppMode -->
+        <VListItem v-if="display.mdAndDown.value">
+          <template #prepend>
+            <VSwitch class="me-2" v-model="isCompactMode"></VSwitch>
+          </template>
+          <VListItemTitle>App模式</VListItemTitle>
+        </VListItem>
         <VDivider class="my-2" />
 
         <!-- 👉 Profile -->
@@ -97,7 +119,7 @@ const avatar = store.state.auth.avatar
         </VListItem>
 
         <!-- 👉 FAQ -->
-        <VListItem href="https://github.com/fortunearterial/NasPilot/blob/main/README.md" target="_blank">
+        <VListItem href="https://wiki.movie-pilot.org" target="_blank">
           <template #prepend>
             <VIcon class="me-2" icon="mdi-help-circle-outline" size="22" />
           </template>
@@ -105,7 +127,7 @@ const avatar = store.state.auth.avatar
         </VListItem>
 
         <!-- Divider -->
-        <VDivider class="my-2" />
+        <VDivider v-if="superUser" class="my-2" />
 
         <!-- 👉 restart -->
         <VListItem v-if="superUser" @click="restart">
@@ -114,9 +136,6 @@ const avatar = store.state.auth.avatar
           </template>
           <VListItemTitle>重启</VListItemTitle>
         </VListItem>
-
-        <!-- Divider -->
-        <VDivider class="my-2" />
 
         <!-- 👉 Logout -->
         <VListItem @click="logout">
