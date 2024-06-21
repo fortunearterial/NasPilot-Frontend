@@ -67,7 +67,7 @@ async function getMediaDetail() {
       !mediaDetail.value.douban_id &&
       !mediaDetail.value.bangumi_id &&
       !mediaDetail.value.steam_id &&
-      !mediaDetail.value.javdb_idß
+      !mediaDetail.value.javdb_id
     )
       return
 
@@ -121,7 +121,7 @@ async function checkGameExists() {
       },
     })
 
-    if (result.success) isExists.value = true
+    if (result.success) existsItemId.value = result.data.item.id
   } catch (error) {
     console.error(error)
   }
