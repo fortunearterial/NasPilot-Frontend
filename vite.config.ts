@@ -151,14 +151,4 @@ export default defineConfig({
     exclude: ['vuetify'],
     entries: ['./src/**/*.vue'],
   },
-  server: {
-    host: '0.0.0.0', // 开发服务器的地址
-    port: 5173, // 开发服务器的端口号
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:3001', // 目标地址
-        changeOrigin: true, // 是否换源
-      },
-    },
-  },
 })

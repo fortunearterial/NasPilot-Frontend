@@ -10,7 +10,7 @@ import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
 import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'
-import getMediaid from '@utils/media'
+import { getMediaid } from '@/@core/utils/media'
 
 // 输入参数
 const mediaProps = defineProps({

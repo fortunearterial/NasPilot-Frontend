@@ -11,7 +11,7 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
-import getMediaid from '@utils/media'
+import {getMediaid} from '@/@core/utils/media'
 
 // 输入参数
 const props = defineProps({
