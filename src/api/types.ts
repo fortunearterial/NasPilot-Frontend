@@ -77,7 +77,6 @@ export interface TransferHistory {
   dest?: string
   // 转移模式link/copy/move/softlink/rclone_copy/rclone_move
   mode?: string
-
   // 类型：电影、电视剧、游戏
   type?: string
   // 二级分类
@@ -136,10 +135,8 @@ export interface MediaInfo {
   bangumi_id?: string
   // STEAM ID
   steam_id?: string
-
   // JavDb ID
   javdb_id?: string
-
   // 媒体原语种
   original_language?: string
   // 媒体原发行标题
@@ -321,25 +318,18 @@ export interface Site {
   domain: string
   // 站点地址
   url: string
-
   // 适用类型
   types?: string[]
-
   // 下载器
   downloader?: string
-
   // 站点优先级
   pri?: number
-
   // FEED地址
   feed?: { [key: string]: string }
-
   // SEARCH地址
   search?: { [key: string]: string }
-
   // XPATH
   xpath?: string
-
   // Cookie
   cookie?: string
   // ApiKey
@@ -566,7 +556,6 @@ export interface MetaInfo {
   title?: string
   // 副标题
   subtitle?: string
-
   // 类型 电影、电视剧、游戏
   type: string
   // 识别的中文名

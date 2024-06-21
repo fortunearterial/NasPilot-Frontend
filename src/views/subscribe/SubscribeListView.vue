@@ -39,7 +39,7 @@ const historyDialog = ref(false)
 async function fetchData() {
   try {
     loading.value = true
-    dataList.value = await api.get(`subscribe/?type_in=${props.type}&keyword_in=${props.keyword || ''}`)
+    dataList.value = await api.get('subscribe/')
     loading.value = false
     isRefreshed.value = true
   } catch (error) {
@@ -89,7 +89,7 @@ onActivated(async () => {
   <VPullToRefresh v-model="loading" @load="onRefresh">
     <div v-if="filteredDataList.length > 0" class="mx-3 grid gap-4 grid-subscribe-card p-1">
       <SubscribeCard
-        v-for="data in dataList"
+        v-for="data in filteredDataList"
         :key="data.id"
         :media="data"
         @remove="fetchData"
@@ -97,10 +97,10 @@ onActivated(async () => {
       />
     </div>
     <NoDataFound
-      v-if="dataList.length === 0 && isRefreshed"
+      v-if="filteredDataList.length === 0 && isRefreshed"
       error-code="404"
       error-title="没有订阅"
-      error-description="请通过搜索添加订阅。"
+      error-description="请通过搜索添加电影、电视剧、游戏订阅。"
     />
   </VPullToRefresh>
   <!-- 底部操作按钮 -->

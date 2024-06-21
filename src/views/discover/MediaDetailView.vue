@@ -10,6 +10,7 @@ import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
 import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'
+import getMediaId from '@utils/media'
 
 // 输入参数
 const mediaProps = defineProps({
@@ -52,15 +53,6 @@ const seasonsSubscribed = ref<{ [key: number]: boolean }>({})
 // 订阅编号
 const subscribeId = ref<number>()
 
-// 获得mediaid
-function getMediaId(media: MediaInfo) {
-  return media?.tmdb_id
-    ? `tmdb:${media?.tmdb_id}`
-    : media?.douban_id
-    ? `douban:${media?.douban_id}`
-    : `bangumi:${media?.bangumi_id}`
-}
-
 // 调用API查询详情
 async function getMediaDetail() {
   if (mediaProps.mediaid && mediaProps.type) {
@@ -73,9 +65,9 @@ async function getMediaDetail() {
     if (
       !mediaDetail.value.tmdb_id &&
       !mediaDetail.value.douban_id &&
+      !mediaDetail.value.bangumi_id &&
       !mediaDetail.value.steam_id &&
-      !mediaDetail.value.javdb_id &&
-      !mediaDetail.value.bangumi_id
+      !mediaDetail.value.javdb_idß
     )
       return
 
@@ -85,7 +77,6 @@ async function getMediaDetail() {
     else if (mediaDetail.value.type === 'Jav') checkJavExists()
     else if (mediaDetail.value.type === '电视剧') checkSeasonsNotExists()
     // 检查订阅状态
-    if (mediaDetail.value.type === '游戏') checkGameSubscribed()
     if (mediaDetail.value.type === '电影') checkMovieSubscribed()
     else checkSeasonsSubscribed()
   }
@@ -305,9 +296,7 @@ async function removeSubscribe(season: number) {
   // 开始处理
   startNProgress()
   try {
-    const mediaid = mediaDetail.value?.tmdb_id
-      ? `tmdb:${mediaDetail.value?.tmdb_id}`
-      : `douban:${mediaDetail.value?.douban_id}`
+    const mediaid = getMediaId(mediaDetail.value)
 
     const result: { [key: string]: any } = await api.delete(`subscribe/media/${mediaid}`, {
       params: {
@@ -498,17 +487,17 @@ onBeforeMount(() => {
       mediaDetail.steam_id ||
       mediaDetail.javdb_id
     "
-    class="max-w-8xl mx-auto px-4"
+    class="px-4 mx-auto max-w-8xl"
     :class="{
       'media-type-game': mediaDetail.steam_id,
       'media-type-jav': mediaDetail.javdb_id,
     }"
   >
     <template v-if="mediaDetail.backdrop_path || mediaDetail.poster_path">
-      <div class="vue-media-back absolute left-0 top-0 w-full h-96">
+      <div class="absolute top-0 left-0 w-full vue-media-back h-96">
         <VImg class="h-96" position="top" :src="mediaDetail.backdrop_path || mediaDetail.poster_path" cover />
       </div>
-      <div class="vue-media-back absolute left-0 top-0 w-full h-96" />
+      <div class="absolute top-0 left-0 w-full vue-media-back h-96" />
     </template>
     <div class="media-page">
       <div class="media-header">
@@ -545,7 +534,7 @@ onBeforeMount(() => {
               <div class="relative z-20 flex items-center false"><span>已入库</span></div>
             </span>
           </div>
-          <h1 class="d-flex flex-column flex-lg-row align-baseline justify-center justify-lg-start">
+          <h1 class="justify-center align-baseline d-flex flex-column flex-lg-row justify-lg-start">
             <div class="align-self-center align-self-lg-end">
               {{ mediaDetail.title }}
             </div>
@@ -568,9 +557,9 @@ onBeforeMount(() => {
             v-if="
               (mediaDetail.tmdb_id ||
                 mediaDetail.douban_id ||
+                mediaDetail.bangumi_id ||
                 mediaDetail.steam_id ||
-                mediaDetail.javdb_id ||
-                mediaDetail.bangumi_id) &&
+                mediaDetail.javdb_id) &&
               mediaDetail.imdb_id
             "
             variant="tonal"
@@ -608,11 +597,13 @@ onBeforeMount(() => {
             v-if="
               mediaDetail.type === '电影' ||
               mediaDetail.douban_id ||
+              mediaDetail.bangumi_id ||
+              mediaDetail.type === '游戏' ||
               mediaDetail.steam_id ||
-              mediaDetail.javdb_id ||
-              mediaDetail.bangumi_id
+              mediaDetail.type === 'Jav' ||
+              mediaDetail.javdb_id
             "
-            class="ms-2 mb-2"
+            class="mb-2 ms-2"
             :color="getSubscribeColor"
             variant="tonal"
             @click="handleSubscribe(0)"
@@ -622,7 +613,7 @@ onBeforeMount(() => {
             </template>
             {{ isSubscribed ? '已订阅' : '订阅' }}
           </VBtn>
-          <VBtn v-if="existsItemId" class="ms-2 mb-2" variant="tonal" @click="handlePlay()">
+          <VBtn v-if="existsItemId" class="mb-2 ms-2" variant="tonal" @click="handlePlay()">
             <template #prepend>
               <VIcon icon="mdi-play" />
             </template>
@@ -636,7 +627,7 @@ onBeforeMount(() => {
             {{ mediaDetail.tagline }}
           </div>
           <h2 v-if="mediaDetail.overview">简介</h2>
-          <p v-html="mediaDetail.overview" />
+          <p>{{ mediaDetail.overview }}</p>
           <ul v-if="mediaDetail.tmdb_id" class="media-crew">
             <li v-for="director in mediaDetail.directors" :key="director.id">
               <span>{{ director.job }}</span>
@@ -654,18 +645,18 @@ onBeforeMount(() => {
           <ul v-if="mediaDetail.steam_id" class="media-crew">
             <li v-for="director in mediaDetail.directors" :key="director.id">
               <span>{{ director.job }}</span>
-              <a class="crew-name" :href="`person?personid=${director.id}`" target="_blank">{{ director.name }}</a>
+              <a class="crew-name" :href="`${director.url}`" target="_blank">{{ director.name }}</a>
             </li>
           </ul>
           <div class="mt-6">
             <a
               v-if="mediaDetail.tmdb_id"
-              class="mb-2 mr-2 inline-flex last:mr-0"
+              class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getTheMovieDbLink()"
               target="_blank"
             >
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">TheMovieDb</span>
@@ -673,54 +664,54 @@ onBeforeMount(() => {
             </a>
             <a
               v-if="mediaDetail.douban_id"
-              class="mb-2 mr-2 inline-flex last:mr-0"
+              class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getDoubanLink()"
               target="_blank"
             >
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">豆瓣</span>
               </div>
             </a>
-            <a v-if="mediaDetail.imdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getImdbLink()" target="_blank">
+            <a v-if="mediaDetail.imdb_id" class="inline-flex mb-2 mr-2 last:mr-0" :href="getImdbLink()" target="_blank">
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">IMDb</span>
               </div>
             </a>
-            <a v-if="mediaDetail.tvdb_id" class="mb-2 mr-2 inline-flex last:mr-0" :href="getTvdbLink()" target="_blank">
+            <a v-if="mediaDetail.tvdb_id" class="inline-flex mb-2 mr-2 last:mr-0" :href="getTvdbLink()" target="_blank">
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">TheTvDb</span>
               </div>
             </a>
             <a
-              v-if="mediaDetail.steam_id"
-              class="mb-2 mr-2 inline-flex last:mr-0"
+              v-if="mediaDetail.tvdb_id"
+              class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getSteamLink()"
               target="_blank"
             >
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">STEAM</span>
               </div>
             </a>
             <a
-              v-if="mediaDetail.javdb_id"
-              class="mb-2 mr-2 inline-flex last:mr-0"
+              v-if="mediaDetail.tvdb_id"
+              class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getJavDBLink()"
               target="_blank"
             >
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">JavDB</span>
@@ -728,12 +719,12 @@ onBeforeMount(() => {
             </a>
             <a
               v-if="mediaDetail.bangumi_id"
-              class="mb-2 mr-2 inline-flex last:mr-0"
+              class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getBangumiLink()"
               target="_blank"
             >
               <div
-                class="inline-flex cursor-pointer items-center rounded-full bg-gray-600 px-2 py-1 text-sm text-gray-200 ring-1 ring-gray-500 transition hover:bg-gray-700"
+                class="inline-flex items-center px-2 py-1 text-sm text-gray-200 transition bg-gray-600 rounded-full cursor-pointer ring-1 ring-gray-500 hover:bg-gray-700"
               >
                 <VIcon icon="mdi-link" />
                 <span class="ms-1">Bangumi</span>
@@ -741,7 +732,7 @@ onBeforeMount(() => {
             </a>
           </div>
           <h2 v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="py-4">季</h2>
-          <div v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="flex w-full flex-col space-y-2">
+          <div v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="flex flex-col w-full space-y-2">
             <VExpansionPanels>
               <VExpansionPanel
                 v-for="season in getMediaSeasons"
@@ -778,7 +769,7 @@ onBeforeMount(() => {
                       <div
                         v-for="episode in seasonEpisodesInfo[season.season_number || 0]"
                         :key="episode.episode_number"
-                        class="flex flex-col space-y-4 py-4 xl:flex-row xl:space-y-4 xl:space-x-4"
+                        class="flex flex-col py-4 space-y-4 xl:flex-row xl:space-y-4 xl:space-x-4"
                       >
                         <div class="flex-1">
                           <div class="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-2">
@@ -846,7 +837,7 @@ onBeforeMount(() => {
                     stroke-width="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    class="h-4 w-4"
+                    class="w-4 h-4"
                   >
                     <path
                       stroke-linecap="round"
@@ -874,7 +865,7 @@ onBeforeMount(() => {
                 </span>
               </span>
             </div>
-            <div class="media-fact border-b-0">
+            <div class="border-b-0 media-fact">
               <span>制作公司</span>
               <span class="media-fact-value text-end">
                 <span v-for="company in getProductionCompanies" :key="company" class="block">{{ company }}</span>
@@ -901,7 +892,7 @@ onBeforeMount(() => {
                 {{ mediaDetail.release_date }}
               </span>
             </div>
-            <div v-if="mediaDetail.production_countries" class="media-fact border-b-0">
+            <div v-if="mediaDetail.production_countries" class="border-b-0 media-fact">
               <span>出品国家</span>
               <span class="media-fact-value">
                 <span
@@ -928,7 +919,7 @@ onBeforeMount(() => {
               <span>原始标题</span>
               <span class="media-fact-value">{{ mediaDetail.original_title }}</span>
             </div>
-            <div v-if="mediaDetail.release_date" class="media-fact border-b-0">
+            <div v-if="mediaDetail.release_date" class="border-b-0 media-fact">
               <span>上映日期</span>
               <span class="media-fact-value">
                 {{ mediaDetail.release_date }}
@@ -964,7 +955,7 @@ onBeforeMount(() => {
                     stroke-width="1.5"
                     stroke="currentColor"
                     aria-hidden="true"
-                    class="h-4 w-4"
+                    class="w-4 h-4"
                   >
                     <path
                       stroke-linecap="round"

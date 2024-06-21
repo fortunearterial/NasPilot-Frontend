@@ -11,6 +11,7 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
+import getMediaId from '@utils/media'
 
 // 输入参数
 const props = defineProps({
@@ -62,13 +63,6 @@ const sourceIconDict: { [key: string]: any } = {
   themoviedb: tmdbImage,
   douban: doubanImage,
   bangumi: bangumiImage,
-}
-
-// 获得mediaid
-function getMediaId(media: MediaInfo) {
-  if (media?.tmdb_id) return `tmdb:${media?.tmdb_id}`
-  else if (media?.douban_id) return `douban:${media?.douban_id}`
-  else return `bangumi:${media?.bangumi_id}`
 }
 
 // 订阅弹窗选择的多季
@@ -405,7 +399,7 @@ function getYear(airDate: string) {
         v-bind="hover.props"
         :height="props.height"
         :width="props.width"
-        class="outline-none shadow ring-gray-500 rounded-lg"
+        class="rounded-lg shadow outline-none ring-gray-500"
         :class="{
           'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
           'ring-1': isImageLoaded,
@@ -446,7 +440,7 @@ function getYear(airDate: string) {
           variant="elevated"
           size="small"
           :class="getChipColor(props.media?.type || '')"
-          class="absolute left-2 top-2 bg-opacity-80 shadow-md text-white font-bold"
+          class="absolute font-bold text-white shadow-md left-2 top-2 bg-opacity-80"
         >
           {{ props.media?.type }}
         </VChip>
@@ -458,14 +452,14 @@ function getYear(airDate: string) {
           variant="elevated"
           size="small"
           :class="getChipColor('rating')"
-          class="absolute right-2 top-2 bg-opacity-80 shadow-md text-white font-bold"
+          class="absolute font-bold text-white shadow-md right-2 top-2 bg-opacity-80"
         >
           {{ props.media?.vote_average }}
         </VChip>
         <!-- 详情 -->
         <VCardText
           v-show="hover.isHovering || imageLoadError"
-          class="w-full flex flex-col flex-wrap justify-end align-left text-white absolute bottom-0 cursor-pointer pa-2"
+          class="absolute bottom-0 flex flex-col flex-wrap justify-end w-full text-white cursor-pointer align-left pa-2"
         >
           <span class="font-bold">{{ props.media?.year }}</span>
           <h1 class="mb-1 text-white font-extrabold text-xl line-clamp-2 overflow-hidden text-ellipsis ...">
@@ -474,7 +468,7 @@ function getYear(airDate: string) {
           <p class="leading-4 line-clamp-4 overflow-hidden text-ellipsis ...">
             {{ props.media?.overview }}
           </p>
-          <div class="flex align-center justify-between">
+          <div class="flex justify-between align-center">
             <IconBtn icon="mdi-magnify" color="white" @click.stop="handleSearch" />
             <IconBtn icon="mdi-heart" :color="isSubscribed ? 'error' : 'white'" @click.stop="handleSubscribe" />
           </div>

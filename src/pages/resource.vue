@@ -91,7 +91,7 @@ async function fetchData() {
       startLoadingProgress()
       let result: { [key: string]: any }
       // 优先按TMDBID精确查询
-      if (keyword?.startsWith('tmdb:') || keyword?.startsWith('douban:') || keyword?.startsWith('steam:') || keyword?.startsWith('bangumi:')) {
+      if (keyword?.startsWith('tmdb:') || keyword?.startsWith('douban:') || keyword?.startsWith('bangumi:') || keyword?.startsWith('steam:')) {
         result = await api.get(`search/media/${keyword}`, {
           params: {
             mtype: type,

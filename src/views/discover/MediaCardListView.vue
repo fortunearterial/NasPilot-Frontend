@@ -124,4 +124,6 @@ async function fetchData({ done }: { done: any }) {
   </VInfiniteScroll>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+
+</style>
