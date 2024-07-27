@@ -61,6 +61,14 @@ const Downloaders = [
     title: 'Transmission',
     value: 'transmission',
   },
+  {
+    title: 'Aria2',
+    value: 'aria2',
+  },
+  {
+    title: '迅雷',
+    value: 'xunlei',
+  },
 ]
 
 // 媒体服务器字典项
