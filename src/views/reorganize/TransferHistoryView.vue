@@ -124,6 +124,12 @@ const TransferDict: { [key: string]: string } = {
   rclone_move: 'Rclone移动',
 }
 
+const tableStyle = computed(() => {
+  return appMode.value
+    ? 'height: calc(100vh - 15.5rem - env(safe-area-inset-bottom) - 3.5rem)'
+    : 'height: calc(100vh - 14.5rem - env(safe-area-inset-bottom)'
+})
+
 // 分页提示
 const pageTip = computed(() => {
   const begin = itemsPerPage.value * (currentPage.value - 1) + 1
@@ -142,9 +148,16 @@ const totalPage = computed(() => {
 
 // 切换页签和搜索词
 watch(
-  [() => currentPage.value, () => itemsPerPage.value, () => search.value],
+  [() => currentPage.value, () => itemsPerPage.value],
   debounce(async () => {
     reloadPage()
+  }, 1000),
+)
+
+watch(
+  [() => search.value],
+  debounce(async () => {
+    reloadPage(true)
   }, 1000),
 )
 
@@ -329,7 +342,7 @@ function addUrlQuery(url: string, name: string, value: any) {
 }
 
 // 重载页面
-function reloadPage() {
+function reloadPage(resetPage = false) {
   let url = '/history'
   if (search.value) {
     url = addUrlQuery(url, 'search', search.value)
@@ -338,7 +351,7 @@ function reloadPage() {
     url = addUrlQuery(url, 'itemsPerPage', itemsPerPage.value)
   }
   if (currentPage.value) {
-    url = addUrlQuery(url, 'currentPage', currentPage.value)
+    url = addUrlQuery(url, 'currentPage', resetPage ? 1 : currentPage.value)
   }
   router.push(url)
 }
@@ -394,11 +407,7 @@ onMounted(fetchData)
       show-select
       loading-text="加载中..."
       hover
-      :style="
-        appMode
-          ? 'height: calc(100vh - 15.5rem - env(safe-area-inset-bottom) - 3.5rem)'
-          : 'height: calc(100vh - 14.5rem - env(safe-area-inset-bottom)'
-      "
+      :style="tableStyle"
     >
       <template #item.title="{ item }">
         <div class="d-flex align-center">
