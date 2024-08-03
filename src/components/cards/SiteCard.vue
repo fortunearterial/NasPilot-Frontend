@@ -113,6 +113,11 @@ async function handleResourceBrowse() {
   resourceDialog.value = true
 }
 
+// 打开资源搜索弹窗
+async function handleResourceSearch() {
+  resourceDialog.value = true
+}
+
 // 调用API，更新站点Cookie UA
 async function updateSiteCookie() {
   try {
@@ -194,7 +199,7 @@ onMounted(() => {
           <VImg :src="siteIcon" />
         </VAvatar>
       </template>
-      <VCardItem style="padding-block-end: 0;">
+      <VCardItem style="padding-block-end: 0">
         <VCardTitle class="font-bold">
           <span @click.stop="openSitePage">{{ cardProps.site?.name }}</span>
         </VCardTitle>
@@ -202,7 +207,7 @@ onMounted(() => {
           <span @click.stop="openSitePage">{{ cardProps.site?.url }}</span>
         </VCardSubtitle>
       </VCardItem>
-      <VCardText class="py-2" style="block-size: 36px;">
+      <VCardText class="py-2" style="block-size: 36px">
         <VTooltip v-if="cardProps.site?.limit_interval" text="流控">
           <template #activator="{ props }">
             <VIcon color="primary" class="me-2" v-bind="props" icon="mdi-speedometer" />
@@ -243,6 +248,12 @@ onMounted(() => {
             <VIcon icon="mdi-web" />
           </template>
           浏览
+        </VBtn>
+        <VBtn @click.stop="handleResourceSearch">
+          <template #prepend>
+            <VIcon icon="mdi-web" />
+          </template>
+          搜索
         </VBtn>
       </VCardActions>
       <StatIcon v-if="cardProps.site?.is_active" :color="statColor" />

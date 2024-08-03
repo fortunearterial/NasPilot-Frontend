@@ -36,6 +36,17 @@ app.use(
   })
 );
 
+// 配置代理中间件将Crawl请求转发给后端API
+app.use(
+  '/crawl',
+  proxy(`${proxyConfig.URL}:${proxyConfig.PORT}`, {
+    // 路径加上 /crawl 前缀
+    proxyReqPathResolver: (req) => {
+      return `/crawl${req.url}`
+    }
+  })
+);
+
 // 处理根路径的请求
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'))

@@ -159,6 +159,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:3001', // 目标地址
         changeOrigin: true, // 是否换源
       },
+      '/cookiecloud': {
+        target: 'http://127.0.0.1:3001', // 目标地址
+        changeOrigin: true, // 是否换源
+      },
+      '/crawl': {
+        target: 'http://127.0.0.1:3001', // 目标地址
+        changeOrigin: true, // 是否换源
+      },
     },
   },
 })

@@ -3,6 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import { VRow } from 'vuetify/lib/components/index.mjs'
 import api from '@/api'
+import { DownloaderDicts } from '@core/libs/dicts'
 
 // 选中的媒体服务器
 const selectedMediaServers = ref([])
@@ -52,24 +53,7 @@ const mediaServerSettings = ref({
 })
 
 // 下载器字典项
-const Downloaders = [
-  {
-    title: 'Qbittorrent',
-    value: 'qbittorrent',
-  },
-  {
-    title: 'Transmission',
-    value: 'transmission',
-  },
-  {
-    title: 'Aria2',
-    value: 'aria2',
-  },
-  {
-    title: '迅雷',
-    value: 'xunlei',
-  },
-]
+const Downloaders = DownloaderDicts
 
 // 媒体服务器字典项
 const MediaServers = [

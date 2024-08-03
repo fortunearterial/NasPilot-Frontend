@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { MediaDirectory } from '@/api/types'
 import { VTextField } from 'vuetify/lib/components/index.mjs'
+import { TypeItemDicts } from '@core/libs/dicts'
 
 // 输入参数
 const props = defineProps({
@@ -21,11 +22,7 @@ const props = defineProps({
 const path = ref<string>('')
 
 // 类型下拉字典
-const typeItems = [
-  { title: '全部', value: '' },
-  { title: '电影', value: '电影' },
-  { title: '电视剧', value: '电视剧' },
-]
+const typeItems = TypeItemDicts
 
 // 定义触发的自定义事件
 const emit = defineEmits(['close', 'changed', 'update:modelValue'])

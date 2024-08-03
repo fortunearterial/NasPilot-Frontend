@@ -58,7 +58,11 @@ async function downloadTorrentFile(enclosure: string) {
 async function getResourceList() {
   resourceLoading.value = true
   try {
-    resourceDataList.value = await api.get(`site/resource/${props.site}`)
+    resourceDataList.value = await api.get(
+      `site/resource/${props.site}${
+        resourceSearch.value ? '?resource_type=search&keyword=' + resourceSearch.value : ''
+      }`,
+    )
     resourceLoading.value = false
   } catch (error) {
     console.error(error)
@@ -103,15 +107,32 @@ async function addDownload(_torrent: any) {
 onMounted(() => {
   getResourceList()
 })
+
+// 搜索
+watch(resourceSearch, () => {
+  getResourceList()
+})
 </script>
 
 <template>
+  <VToolbar density="compact" flat color="gray">
+    <VTextField
+      v-model="resourceSearch"
+      hide-details
+      flat
+      density="compact"
+      variant="solo-filled"
+      placeholder="搜索 ..."
+      prepend-inner-icon="mdi-magnify"
+      class="me-2"
+      rounded="0"
+    />
+  </VToolbar>
   <VDataTable
     v-model:items-per-page="resourceItemsPerPage"
     :headers="resourceHeaders"
     :items="resourceDataList"
     :items-length="resourceTotalItems"
-    :search="resourceSearch"
     :loading="resourceLoading"
     density="compact"
     item-value="title"

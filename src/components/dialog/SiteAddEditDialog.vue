@@ -2,10 +2,11 @@
 import { useToast } from 'vue-toast-notification'
 import type { Site } from '@/api/types'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
-import { numberValidator, requiredValidator } from '@/@validators'
+import { numberValidator, requiredValidator, urlValidator, urlPathValidator } from '@/@validators'
 import api from '@/api'
 import { useDisplay } from 'vuetify'
 import { useConfirm } from 'vuetify-use-dialog'
+import { DownloaderDicts, TypeItemDicts } from '@core/libs/dicts'
 
 // 显示器宽度
 const display = useDisplay()
@@ -26,7 +27,20 @@ const emit = defineEmits(['save', 'remove', 'close'])
 const siteForm = ref<Site>({
   id: props.siteid ?? 0,
   url: '',
-  rss: '',
+  types: [],
+  feed: {
+    method: 'GET',
+    path: '',
+    body: '',
+    rule: '',
+  },
+  search: {
+    method: 'GET',
+    path: '',
+    body: '',
+    rule: '',
+  },
+  xpath: '',
   cookie: '',
   ua: '',
   pri: 0,
@@ -53,6 +67,18 @@ const priorityItems = ref(
     value: item,
   })),
 )
+
+// 请求方式下拉框选项
+const httpMethodItems = [
+  { title: 'HTTP GET', value: 'GET' },
+  { title: 'HTTP POST', value: 'POST' },
+]
+
+// 订阅方式下拉框选项
+const feedMethodItems = [
+  { title: 'RSS', value: 'RSS' },
+  { title: 'HTTP GET', value: 'GET' },
+]
 
 // 监控输入参数
 watchEffect(async () => {
@@ -137,14 +163,17 @@ async function updateSiteInfo() {
       <VCardText>
         <VForm @submit.prevent="() => {}">
           <VRow>
-            <VCol cols="12" md="6">
+            <VCol cols="6" md="6">
               <VTextField
                 v-model="siteForm.url"
                 label="站点地址"
                 :rules="[requiredValidator]"
-                hint="格式：http://www.example.com/"
+                hint="格式：http(s)://www.domain.com，结尾不要加'/''"
                 persistent-hint
               />
+            </VCol>
+            <VCol cols="6" md="6">
+              <VTextField v-model="siteForm.name" label="站点名称" hint="站点名称" persistent-hint />
             </VCol>
             <VCol cols="6" md="3">
               <VSelect
@@ -165,16 +194,87 @@ async function updateSiteInfo() {
                 persistent-hint
               />
             </VCol>
-          </VRow>
-          <VRow>
-            <VCol cols="12" md="9">
-              <VTextField
-                v-model="siteForm.rss"
-                label="RSS地址"
-                hint="订阅模式为`站点RSS`时使用的订阅链接，如未自动获取需手动补充"
+            <VCol cols="6" md="3">
+              <VSelect
+                v-model="siteForm.types"
+                label="适用类型"
+                multiple
+                :items="TypeItemDicts"
+                :rules="[requiredValidator]"
+                hint="站点适用的媒体类型"
                 persistent-hint
               />
             </VCol>
+            <VCol cols="6" md="3">
+              <VSelect
+                v-model="siteForm.downloader"
+                label="下载器"
+                :items="DownloaderDicts"
+                :rules="[requiredValidator]"
+                hint="站点支持的下载器"
+                persistent-hint
+              />
+            </VCol>
+          </VRow>
+          <VRow>
+            <VCol v-if="siteForm.feed" cols="3">
+              <VSelect
+                v-model="siteForm.feed.method"
+                label="订阅方式"
+                :items="feedMethodItems"
+                hint="订阅地址请求方式"
+                persistent-hint
+              />
+            </VCol>
+            <VCol v-if="siteForm.feed" cols="9">
+              <VTextField
+                v-model="siteForm.feed.path"
+                label="订阅地址路径"
+                :rules="[urlPathValidator]"
+                hint="订阅地址路径，页码用'{page}'代替"
+                persistent-hint
+              />
+            </VCol>
+          </VRow>
+          <VRow>
+            <VCol v-if="siteForm.search" cols="3">
+              <VSelect
+                v-model="siteForm.search.method"
+                label="搜索方式"
+                :items="httpMethodItems"
+                hint="搜索地址请求方式"
+                persistent-hint
+              />
+            </VCol>
+            <VCol v-if="siteForm.search" cols="9">
+              <VTextField
+                v-model="siteForm.search.path"
+                label="搜索地址路径"
+                :rules="[urlPathValidator]"
+                hint="搜索地址路径，搜索关键字用'{keyword}'代替"
+                persistent-hint
+              />
+            </VCol>
+            <VCol v-if="siteForm.search && siteForm.search.method === 'POST'" cols="12">
+              <VTextarea
+                v-model="siteForm.search.body"
+                label="搜索请求体"
+                hint="搜索请求体，即Request Body"
+                persistent-hint
+              />
+            </VCol>
+          </VRow>
+          <VRow>
+            <VCol cols="12">
+              <VTextarea
+                v-model="siteForm.xpath"
+                label="页面解析规则"
+                hint="页面解析规则，各项内容目前仅支持PyQuery(jQuery)语法，文档：https://crifan.github.io/python_html_parse_pyquery/website/syntax/"
+                persistent-hint
+              />
+            </VCol>
+          </VRow>
+          <VRow>
             <VCol cols="12" md="3">
               <VTextField v-model="siteForm.timeout" label="超时时间（秒）" hint="站点请求超时时间" persistent-hint />
             </VCol>

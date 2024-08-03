@@ -48,6 +48,7 @@ const defaultFilterRules = ref({
 
 // 订阅模式选择项
 const subscribeModeItems = [
+  { title: '按站点设置', value: '' },
   { title: '自动', value: 'spider' },
   { title: '站点RSS', value: 'rss' },
 ]
@@ -338,8 +339,9 @@ onMounted(() => {
                   v-model="selectedSubscribeMode"
                   :items="subscribeModeItems"
                   label="订阅模式"
-                  hint="自动：自动爬取站点首页，站点RSS：通过站点RSS链接订阅"
+                  hint="按站点设置（默认）：根据站点规则进行订阅；自动：自动爬取站点首页，站点RSS：通过站点RSS链接订阅"
                   persistent-hint
+                  disabled
                 />
               </VCol>
               <VCol cols="12" md="6">
