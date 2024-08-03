@@ -39,7 +39,7 @@ const historyDialog = ref(false)
 async function fetchData() {
   try {
     loading.value = true
-    dataList.value = await api.get('subscribe/')
+    dataList.value = await api.get(`subscribe/?type_in=${props.type}`)
     loading.value = false
     isRefreshed.value = true
   } catch (error) {
@@ -56,14 +56,15 @@ async function onRefresh({ done }: { done: any }) {
   done('ok')
 }
 
-// 过滤数据，管理员用户显示全部，非管理员只显示自己的订阅
-const filteredDataList = computed(() => {
-  // 从Vuex Store中获取用户信息
-  const superUser = store.state.auth.superUser
-  const userName = store.state.auth.userName
-  if (superUser) return dataList.value.filter(data => data.type === props.type)
-  else return dataList.value.filter(data => data.type === props.type && data.username === userName)
-})
+// FIX：已改为后台过滤
+// // 过滤数据，管理员用户显示全部，非管理员只显示自己的订阅
+// const filteredDataList = computed(() => {
+//   // 从Vuex Store中获取用户信息
+//   const superUser = store.state.auth.superUser
+//   const userName = store.state.auth.userName
+//   if (superUser) return dataList.value.filter(data => data.type === props.type)
+//   else return dataList.value.filter(data => data.type === props.type && data.username === userName)
+// })
 
 onMounted(async () => {
   await fetchData()
@@ -87,17 +88,11 @@ onActivated(async () => {
 <template>
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <VPullToRefresh v-model="loading" @load="onRefresh">
-    <div v-if="filteredDataList.length > 0" class="mx-3 grid gap-4 grid-subscribe-card p-1">
-      <SubscribeCard
-        v-for="data in filteredDataList"
-        :key="data.id"
-        :media="data"
-        @remove="fetchData"
-        @save="fetchData"
-      />
+    <div v-if="dataList.length > 0" class="mx-3 grid gap-4 grid-subscribe-card p-1">
+      <SubscribeCard v-for="data in dataList" :key="data.id" :media="data" @remove="fetchData" @save="fetchData" />
     </div>
     <NoDataFound
-      v-if="filteredDataList.length === 0 && isRefreshed"
+      v-if="dataList.length === 0 && isRefreshed"
       error-code="404"
       error-title="没有订阅"
       error-description="请通过搜索添加电影、电视剧、游戏订阅。"

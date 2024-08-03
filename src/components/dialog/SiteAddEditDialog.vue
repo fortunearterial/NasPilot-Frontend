@@ -211,7 +211,7 @@ async function updateSiteInfo() {
                 label="下载器"
                 :items="DownloaderDicts"
                 :rules="[requiredValidator]"
-                hint="站点支持的下载器"
+                hint="站点的下载器"
                 persistent-hint
               />
             </VCol>

@@ -19,8 +19,8 @@ export const DownloaderDicts = [
 
 export const TypeItemDicts = [
   { title: '全部', value: '' },
-  { title: '电影', value: '电影' },
-  { title: '电视剧', value: '电视剧' },
-  { title: '游戏', value: '游戏' },
-  { title: 'Jav', value: 'Jav' },
+  { title: '电影', value: 'MOVIE' },
+  { title: '电视剧', value: 'TV' },
+  { title: '游戏', value: 'GAME' },
+  { title: 'Jav', value: 'JAV' },
 ]
