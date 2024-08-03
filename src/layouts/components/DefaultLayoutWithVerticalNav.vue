@@ -91,6 +91,13 @@ function goBack() {
         }"
       />
       <VerticalNavLink v-for="item in getMenuList('系统')" :item="item" />
+      <!-- 👉 帮助 -->
+      <VerticalNavSectionTitle
+        :item="{
+          heading: '帮助',
+        }"
+      />
+      <VerticalNavLink v-for="item in getMenuList('帮助')" :item="item" />
     </template>
 
     <template #after-vertical-nav-items />

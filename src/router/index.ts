@@ -48,7 +48,7 @@ const router = createRouter({
           meta: {
             keepAlive: true,
             requiresAuth: true,
-            subType: '电影',
+            subType: 'MOVIE',
           },
         },
         {
@@ -57,25 +57,29 @@ const router = createRouter({
           meta: {
             keepAlive: true,
             requiresAuth: true,
-            subType: '电视剧',
+            subType: 'TV',
           },
         },
         {
-          path: '/subscribe-game',
-          component: () => import('../pages/subscribe-game.vue'),
+          path: '/subscribe/game',
+          component: () => import('../pages/subscribe.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
+            subType: 'GAME',
           },
         },
         {
-          path: '/subscribe-jav',
+          path: '/subscribe/jav',
           component: () => import('../pages/subscribe-jav.vue'),
           meta: {
+            keepAlive: true,
             requiresAuth: true,
+            subType: 'JAV',
           },
         },
         {
-          path: '/calendar',
+          path: '/subscribe/calendar',
           component: () => import('../pages/calendar.vue'),
           meta: {
             keepAlive: true,

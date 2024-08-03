@@ -38,12 +38,35 @@ export const SystemNavMenus = [
     admin: false,
   },
   {
+    title: '游戏',
+    full_title: '游戏订阅',
+    icon: 'mdi-gamepad-variant',
+    to: '/subscribe/game',
+    header: '订阅',
+    admin: false,
+  },
+  {
+    title: 'Jav',
+    full_title: 'Jav订阅',
+    icon: 'tabler:rating-18-plus',
+    to: '/subscribe/jav',
+    header: '订阅',
+    admin: true,
+  },
+  {
     title: '日历',
     full_title: '订阅日历',
     icon: 'mdi-calendar',
-    to: '/calendar',
+    to: '/subscribe/calendar',
     header: '订阅',
     admin: false,
+  },
+  {
+    title: '历史记录',
+    icon: 'mdi-history',
+    to: '/subscribe/history',
+    header: '订阅',
+    admin: true,
   },
   {
     title: '正在下载',
@@ -85,6 +108,13 @@ export const SystemNavMenus = [
     icon: 'mdi-cog',
     to: '/setting',
     header: '系统',
+    admin: true,
+  },
+  {
+    title: '图标查询',
+    icon: 'mdi-help',
+    to: 'https://icon-sets.iconify.design/',
+    header: '帮助',
     admin: true,
   },
 ]
@@ -197,6 +227,20 @@ export const SubscribeMovieTabs = [
 
 // 电视剧订阅标签页
 export const SubscribeTvTabs = [
+  {
+    title: '我的订阅',
+    tab: 'mysub',
+    icon: 'mdi-television',
+  },
+  {
+    title: '热门订阅',
+    tab: 'popular',
+    icon: 'mdi-television',
+  },
+]
+
+// 游戏订阅标签页
+export const SubscribeGameTabs = [
   {
     title: '我的订阅',
     tab: 'mysub',

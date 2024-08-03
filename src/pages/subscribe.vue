@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SubscribeListView from '@/views/subscribe/SubscribeListView.vue'
 import SubscribePopularView from '@/views/subscribe/SubscribePopularView.vue'
-import { SubscribeMovieTabs, SubscribeTvTabs } from '@/router/menu'
+import { SubscribeMovieTabs, SubscribeTvTabs, SubscribeGameTabs } from '@/router/menu'
 import router from '@/router'
 
 const route = useRoute()
@@ -9,6 +9,8 @@ const route = useRoute()
 const subType = route.meta.subType?.toString()
 const subId = ref(route.query.id as string)
 const activeTab = ref(route.query.tab)
+console.info('subscribe.vue', 'subType:', subType)
+console.info('subscribe.vue', 'subId:', subId)
 
 function jumpMovieTab(tab: string) {
   router.push('/subscribe/movie?tab=' + tab)
@@ -16,17 +18,25 @@ function jumpMovieTab(tab: string) {
 function jumpTvTab(tab: string) {
   router.push('/subscribe/tv?tab=' + tab)
 }
+function jumpGameTab(tab: string) {
+  router.push('/subscribe/game?tab=' + tab)
+}
 </script>
 
 <template>
   <div>
-    <VTabs v-model="activeTab" v-if="subType == '电影'">
+    <VTabs v-model="activeTab" v-if="subType == 'MOVIE'">
       <VTab v-for="item in SubscribeMovieTabs" :value="item.tab" @to="jumpMovieTab(item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>
-    <VTabs v-model="activeTab" v-if="subType == '电视剧'">
+    <VTabs v-model="activeTab" v-if="subType == 'TV'">
       <VTab v-for="item in SubscribeTvTabs" :value="item.tab" @to="jumpTvTab(item.tab)">
+        <span class="mx-5">{{ item.title }}</span>
+      </VTab>
+    </VTabs>
+    <VTabs v-model="activeTab" v-if="subType == 'GAME'">
+      <VTab v-for="item in SubscribeGameTabs" :value="item.tab" @to="jumpGameTab(item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>
