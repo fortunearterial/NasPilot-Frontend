@@ -9,34 +9,26 @@ const route = useRoute()
 const subType = route.meta.subType?.toString()
 const subId = ref(route.query.id as string)
 const activeTab = ref(route.query.tab)
-console.info('subscribe.vue', 'subType:', subType)
-console.info('subscribe.vue', 'subId:', subId)
 
-function jumpMovieTab(tab: string) {
-  router.push('/subscribe/movie?tab=' + tab)
-}
-function jumpTvTab(tab: string) {
-  router.push('/subscribe/tv?tab=' + tab)
-}
-function jumpGameTab(tab: string) {
-  router.push('/subscribe/game?tab=' + tab)
+function jumpTab(type: string, tab: string) {
+  router.push('/subscribe/' + type + '?tab=' + tab)
 }
 </script>
 
 <template>
   <div>
     <VTabs v-model="activeTab" v-if="subType == 'MOVIE'">
-      <VTab v-for="item in SubscribeMovieTabs" :value="item.tab" @to="jumpMovieTab(item.tab)">
+      <VTab v-for="item in SubscribeMovieTabs" :value="item.tab" @to="jumpTab('movie', item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>
     <VTabs v-model="activeTab" v-if="subType == 'TV'">
-      <VTab v-for="item in SubscribeTvTabs" :value="item.tab" @to="jumpTvTab(item.tab)">
+      <VTab v-for="item in SubscribeTvTabs" :value="item.tab" @to="jumpTab('tv', item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>
     <VTabs v-model="activeTab" v-if="subType == 'GAME'">
-      <VTab v-for="item in SubscribeGameTabs" :value="item.tab" @to="jumpGameTab(item.tab)">
+      <VTab v-for="item in SubscribeGameTabs" :value="item.tab" @to="jumpTab('game', item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>

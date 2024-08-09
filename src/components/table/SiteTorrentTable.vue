@@ -5,6 +5,7 @@ import api from '@/api'
 import type { TorrentInfo } from '@/api/types'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { formatFileSize } from '@core/utils/formatters'
+import { debounce } from 'lodash'
 
 // 输入参数
 const props = defineProps({
@@ -109,9 +110,12 @@ onMounted(() => {
 })
 
 // 搜索
-watch(resourceSearch, () => {
-  getResourceList()
-})
+watch(
+  [() => resourceSearch.value],
+  debounce(async () => {
+    getResourceList()
+  }, 1000),
+)
 </script>
 
 <template>

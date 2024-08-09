@@ -20,12 +20,12 @@ const selectedTorrentPriority = ref<string>('seeder')
 // CookieCloud设置项
 const cookieCloudSetting = ref({
   COOKIECLOUD_HOST: '',
-  COOKIECLOUD_KEY: '',
-  COOKIECLOUD_PASSWORD: '',
+  COOKIECLOUD_KEY: [''],
+  COOKIECLOUD_PASSWORD: [''],
   COOKIECLOUD_INTERVAL: 0,
-  USER_AGENT: '',
+  COOKIECLOUD_USER_AGENT: [''],
   COOKIECLOUD_ENABLE_LOCAL: '',
-  COOKIECLOUD_BLACKLIST: '',
+  COOKIECLOUD_BLACKLIST: [''],
 })
 
 // 种子优先规则下拉框
@@ -99,7 +99,7 @@ async function loadCookieCloudSettings() {
         COOKIECLOUD_KEY,
         COOKIECLOUD_PASSWORD,
         COOKIECLOUD_INTERVAL,
-        USER_AGENT,
+        COOKIECLOUD_USER_AGENT,
         COOKIECLOUD_ENABLE_LOCAL,
         COOKIECLOUD_BLACKLIST,
       } = result.data
@@ -108,7 +108,7 @@ async function loadCookieCloudSettings() {
         COOKIECLOUD_KEY,
         COOKIECLOUD_PASSWORD,
         COOKIECLOUD_INTERVAL,
-        USER_AGENT,
+        COOKIECLOUD_USER_AGENT,
         COOKIECLOUD_ENABLE_LOCAL,
         COOKIECLOUD_BLACKLIST,
       }
@@ -116,6 +116,23 @@ async function loadCookieCloudSettings() {
   } catch (error) {
     console.log(error)
   }
+}
+
+// 新增CookieCloud设置
+async function addCookieCloudetting() {
+  cookieCloudSetting.value.COOKIECLOUD_KEY.push('')
+  cookieCloudSetting.value.COOKIECLOUD_PASSWORD.push('')
+  cookieCloudSetting.value.COOKIECLOUD_BLACKLIST.push('')
+  cookieCloudSetting.value.COOKIECLOUD_USER_AGENT.push('')
+}
+
+// 删除CookieCloud设置
+async function removeCookieCloudetting() {
+  cookieCloudSetting.value.COOKIECLOUD_KEY.splice(cookieCloudSetting.value.COOKIECLOUD_KEY.length - 1, 1)
+  cookieCloudSetting.value.COOKIECLOUD_PASSWORD.splice(cookieCloudSetting.value.COOKIECLOUD_PASSWORD.length - 1, 1)
+  cookieCloudSetting.value.COOKIECLOUD_BLACKLIST.splice(cookieCloudSetting.value.COOKIECLOUD_BLACKLIST.length - 1, 1)
+  cookieCloudSetting.value.COOKIECLOUD_USER_AGENT.splice(cookieCloudSetting.value.COOKIECLOUD_USER_AGENT.length - 1, 1)
+  console.info(cookieCloudSetting.value)
 }
 
 // 调用API保存CookieCloud设置
@@ -169,23 +186,6 @@ onMounted(() => {
                 />
               </VCol>
               <VCol cols="12" md="6">
-                <VTextField
-                  v-model="cookieCloudSetting.COOKIECLOUD_KEY"
-                  label="用户KEY"
-                  hint="CookieCloud浏览器插件生成的用户KEY"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model="cookieCloudSetting.COOKIECLOUD_PASSWORD"
-                  type="password"
-                  label="端对端加密密码"
-                  hint="CookieCloud浏览器插件生成的端对端加密密码"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
                 <VSelect
                   v-model="cookieCloudSetting.COOKIECLOUD_INTERVAL"
                   label="自动同步间隔"
@@ -194,18 +194,37 @@ onMounted(() => {
                   persistent-hint
                 />
               </VCol>
-              <VCol cols="12" md="6">
+            </VRow>
+            <VRow v-for="(_, index) in cookieCloudSetting.COOKIECLOUD_KEY">
+              <VCol cols="12" md="4">
                 <VTextField
-                  v-model="cookieCloudSetting.COOKIECLOUD_BLACKLIST"
+                  v-model="cookieCloudSetting.COOKIECLOUD_KEY[index]"
+                  label="用户KEY"
+                  hint="CookieCloud浏览器插件生成的用户KEY"
+                  persistent-hint
+                />
+              </VCol>
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model="cookieCloudSetting.COOKIECLOUD_PASSWORD[index]"
+                  type="password"
+                  label="端对端加密密码"
+                  hint="CookieCloud浏览器插件生成的端对端加密密码"
+                  persistent-hint
+                />
+              </VCol>
+              <VCol cols="12" md="4">
+                <VTextField
+                  v-model="cookieCloudSetting.COOKIECLOUD_BLACKLIST[index]"
                   label="同步域名黑名单"
                   placeholder="多个域名,分割"
                   hint="CookieCloud同步域名黑名单，多个域名,分割"
                   persistent-hint
                 />
               </VCol>
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="12">
                 <VTextField
-                  v-model="cookieCloudSetting.USER_AGENT"
+                  v-model="cookieCloudSetting.COOKIECLOUD_USER_AGENT"
                   label="浏览器User-Agent"
                   hint="CookieCloud插件所在的浏览器的User-Agent"
                   persistent-hint
@@ -215,7 +234,13 @@ onMounted(() => {
           </VForm>
         </VCardText>
         <VCardText>
-          <VBtn type="submit" @click="saveCookieCloudetting"> 保存 </VBtn>
+          <VBtn type="submit" class="me-2" @click="saveCookieCloudetting"> 保存 </VBtn>
+          <VBtn color="success" variant="tonal" class="me-2" @click="addCookieCloudetting">
+            <VIcon icon="mdi-plus" />
+          </VBtn>
+          <VBtn color="success" variant="tonal" @click="removeCookieCloudetting">
+            <VIcon icon="mdi-minus" />
+          </VBtn>
         </VCardText>
       </VCard>
     </VCol>

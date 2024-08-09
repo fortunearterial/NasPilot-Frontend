@@ -48,7 +48,7 @@ export const SystemNavMenus = [
   {
     title: 'Jav',
     full_title: 'Jav订阅',
-    icon: 'tabler:rating-18-plus',
+    icon: 'tabler-rating-18-plus',
     to: '/subscribe/jav',
     header: '订阅',
     admin: true,
@@ -113,7 +113,7 @@ export const SystemNavMenus = [
   {
     title: '图标查询',
     icon: 'mdi-help',
-    to: 'https://icon-sets.iconify.design/',
+    href: 'https://icon-sets.iconify.design/',
     header: '帮助',
     admin: true,
   },
@@ -243,6 +243,20 @@ export const SubscribeTvTabs = [
 export const SubscribeGameTabs = [
   {
     title: '我的订阅',
+    tab: 'mysub',
+    icon: 'mdi-television',
+  },
+  {
+    title: '热门订阅',
+    tab: 'popular',
+    icon: 'mdi-television',
+  },
+]
+
+// Jav订阅标签页
+export const SubscribeJavTabs = [
+  {
+    title: '最新',
     tab: 'mysub',
     icon: 'mdi-television',
   },

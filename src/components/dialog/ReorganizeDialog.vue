@@ -7,6 +7,7 @@ import { numberValidator } from '@/@validators'
 import { useDisplay } from 'vuetify'
 import ProgressDialog from './ProgressDialog.vue'
 import { FileItem, MediaDirectory } from '@/api/types'
+import { TypeItemDicts } from '@/@core/libs/dicts'
 
 // 显示器宽度
 const display = useDisplay()
@@ -84,7 +85,7 @@ const transferForm = reactive({
   episode_part: '',
   episode_offset: null,
   min_filesize: 0,
-  scrape: false,
+  scrape: true,
 })
 
 // 所有媒体库目录
@@ -255,11 +256,7 @@ onMounted(() => {
               <VSelect
                 v-model="transferForm.type_name"
                 label="类型"
-                :items="[
-                  { title: '自动', value: '' },
-                  { title: '电影', value: '电影' },
-                  { title: '电视剧', value: '电视剧' },
-                ]"
+                :items="TypeItemDicts"
                 hint="文件的媒体类型"
                 persistent-hint
               />

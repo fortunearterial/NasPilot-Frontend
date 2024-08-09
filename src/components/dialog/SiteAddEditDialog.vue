@@ -70,12 +70,14 @@ const priorityItems = ref(
 
 // 请求方式下拉框选项
 const httpMethodItems = [
+  { title: '无', value: '' },
   { title: 'HTTP GET', value: 'GET' },
   { title: 'HTTP POST', value: 'POST' },
 ]
 
 // 订阅方式下拉框选项
 const feedMethodItems = [
+  { title: '无', value: '' },
   { title: 'RSS', value: 'RSS' },
   { title: 'HTTP GET', value: 'GET' },
 ]

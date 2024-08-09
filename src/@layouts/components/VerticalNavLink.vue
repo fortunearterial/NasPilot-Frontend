@@ -15,6 +15,7 @@ defineProps<{
       :is="item.to ? 'RouterLink' : 'a'"
       :to="item.to"
       :href="item.href"
+      :target="item.href ? '_blank' : ''"
     >
       <VIcon
         :icon="item.icon"
