@@ -42,7 +42,9 @@ const historyDialog = ref(false)
 async function fetchData() {
   try {
     loading.value = true
-    dataList.value = await api.get(`subscribe/${props.api}?stype=${props.type}&keyword=${props.keyword}`)
+    dataList.value = await api.get(
+      `subscribe/${props.api || ''}?stype=${props.type}${props.keyword ? '&keyword=' + props.keyword : ''}`,
+    )
     loading.value = false
     isRefreshed.value = true
   } catch (error) {

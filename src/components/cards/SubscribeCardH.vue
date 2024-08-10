@@ -7,6 +7,7 @@ import { formatSeason } from '@/@core/utils/formatters'
 import api from '@/api'
 import type { Subscribe } from '@/api/types'
 import router from '@/router'
+import { getMediaid2 } from '@/@core/utils/media'
 
 // 输入参数
 const props = defineProps({
@@ -40,7 +41,8 @@ function imageLoadHandler() {
 function getIcon() {
   if (props.media?.type === '电影') return 'mdi-movie-open'
   else if (props.media?.type === '电视剧') return 'mdi-television-play'
-  else if (props.media?.type === '游戏') return 'mdi-gamepad-variant-outline'
+  else if (props.media?.type === '游戏') return 'mdi-gamepad-variant'
+  else if (props.media?.type === 'Jav') return 'tabler-rating-18-plus'
   else return 'mdi-help-circle'
 }
 
@@ -110,7 +112,7 @@ async function viewMediaDetail() {
   router.push({
     path: '/media',
     query: {
-      mediaid: `${props.media?.tmdbid ? `tmdb:${props.media?.tmdbid}` : `douban:${props.media?.doubanid}`}`,
+      mediaid: getMediaid2(props.media),
       type: props.media?.type,
     },
   })

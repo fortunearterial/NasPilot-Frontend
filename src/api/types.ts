@@ -13,6 +13,10 @@ export interface Subscribe {
   tmdbid: number
   // 豆瓣ID
   doubanid?: string
+  // Javdb ID
+  javdbid: number
+  // Steam ID
+  steamid: number
   // 季号
   season?: number
   // 海报
