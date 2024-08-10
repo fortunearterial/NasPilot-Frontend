@@ -16,14 +16,14 @@ const tabs = ref<any>()
 
 // 加载时获取数据
 onBeforeMount(async () => {
-  tabs.value = SubscribeJavTabs
+  tabs.value = []
   // 获取订阅列表数据
   try {
     let avs: any = await api.get('plugin/AVSubscriber/get_av_list')
     avs.splice(0, 0, 1, 0)
     Array.prototype.splice.apply(tabs.value, avs)
   } catch (error) {
-    tabs.value = SubscribeJavTabs
+    tabs.value = []
     console.error(error)
   }
 })
@@ -36,20 +36,28 @@ function jumpTab(tab: string) {
 <template>
   <div>
     <VTabs v-model="activeTab" show-arrows>
+      <VTab v-for="item in SubscribeJavTabs" :value="item.tab" @to="jumpTab(item.tab)">
+        <span class="mx-5">{{ item.title }}</span>
+      </VTab>
       <VTab v-for="item in tabs" :value="item.tab" @to="jumpTab(item.tab)">
         <span class="mx-5">{{ item.title }}</span>
       </VTab>
     </VTabs>
 
     <VWindow v-model="activeTab" class="mt-5 disable-tab-transition" :touch="false">
-      <VWindowItem v-for="item in tabs" :key="item.tab" :value="item.tab">
+      <VWindowItem value="newest">
         <transition name="fade-slide" appear>
-          <SubscribeListViewH :type="subType" :subid="subId" :keyword="item.title" />
+          <SubscribeListViewH :type="subType" api="newest" :col="4" />
         </transition>
       </VWindowItem>
       <VWindowItem value="popular">
         <transition name="fade-slide" appear>
           <SubscribePopularView :type="subType" />
+        </transition>
+      </VWindowItem>
+      <VWindowItem v-for="item in tabs" :key="item.tab" :value="item.tab">
+        <transition name="fade-slide" appear>
+          <SubscribeListViewH :type="subType" :subid="subId" :keyword="item.tab" :col="4" />
         </transition>
       </VWindowItem>
     </VWindow>

@@ -257,7 +257,7 @@ export const SubscribeGameTabs = [
 export const SubscribeJavTabs = [
   {
     title: '最新',
-    tab: 'mysub',
+    tab: 'newest',
     icon: 'mdi-television',
   },
   {

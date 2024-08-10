@@ -183,32 +183,9 @@ watch(
           'outline-dashed outline-1': props.media?.best_version && imageLoaded,
           'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
         }"
-        min-height="170"
         @click="editSubscribeDialog"
       >
-        <div class="me-n3 absolute top-1 right-2">
-          <IconBtn>
-            <VIcon icon="mdi-dots-vertical" color="white" />
-            <VMenu activator="parent" close-on-content-click>
-              <VList>
-                <template v-for="(item, i) in dropdownItems" :key="i">
-                  <VListItem
-                    v-if="item.show !== false"
-                    variant="plain"
-                    :base-color="item.props.color"
-                    @click="item.props.click"
-                  >
-                    <template #prepend>
-                      <VIcon :icon="item.props.prependIcon" />
-                    </template>
-                    <VListItemTitle v-text="item.title" />
-                  </VListItem>
-                </template>
-              </VList>
-            </VMenu>
-          </IconBtn>
-        </div>
-        <template #image>
+        <div>
           <VImg
             :src="props.media?.backdrop || props.media?.poster"
             aspect-ratio="40/27"
@@ -221,23 +198,42 @@ watch(
                 <VSkeletonLoader class="object-cover aspect-w-40 aspect-h-27" />
               </div>
             </template>
-            <div class="absolute inset-0 subscribe-card-background"></div>
           </VImg>
-        </template>
-        <div v-if="imageLoaded">
           <VCardText class="flex items-center">
+            <div class="me-n3 absolute right-2">
+              <IconBtn>
+                <VIcon icon="mdi-dots-vertical" color="black" />
+                <VMenu activator="parent" close-on-content-click>
+                  <VList>
+                    <template v-for="(item, i) in dropdownItems" :key="i">
+                      <VListItem
+                        v-if="item.show !== false"
+                        variant="plain"
+                        :base-color="item.props.color"
+                        @click="item.props.click"
+                      >
+                        <template #prepend>
+                          <VIcon :icon="item.props.prependIcon" />
+                        </template>
+                        <VListItemTitle v-text="item.title" />
+                      </VListItem>
+                    </template>
+                  </VList>
+                </VMenu>
+              </IconBtn>
+            </div>
             <div class="h-auto w-12 flex-shrink-0 overflow-hidden rounded-md shadow-lg">
-              <VImg :src="props.media?.poster" aspect-ratio="2/3" cover @click.stop="viewMediaDetail">
+              <VImg :src="props.media?.poster" aspect-ratio="40/27" cover @click.stop="viewMediaDetail">
                 <template #placeholder>
                   <div class="w-full h-full">
-                    <VSkeletonLoader class="object-cover aspect-w-2 aspect-h-3" />
+                    <VSkeletonLoader class="object-cover aspect-w-40 aspect-h-27" />
                   </div>
                 </template>
               </VImg>
             </div>
             <div class="flex flex-col justify-center overflow-hidden pl-2 xl:pl-4">
-              <div class="text-sm font-medium text-white sm:pt-1">{{ props.media?.year }}</div>
-              <div class="mr-2 min-w-0 text-lg font-bold text-white">
+              <div class="text-sm font-medium sm:pt-1">{{ props.media?.year }}</div>
+              <div class="mr-2 min-w-0 text-lg font-bold">
                 {{ props.media?.name }}
                 {{ formatSeason(props.media?.season ? props.media?.season.toString() : '') }}
               </div>
@@ -249,15 +245,15 @@ watch(
                 v-if="props.media?.total_episode"
                 v-bind="props"
                 icon="mdi-progress-download"
-                color="white"
+                color="black"
                 class="me-1"
               />
-              <div v-if="props.media?.season" class="text-subtitle-2 me-4 text-white">
+              <div v-if="props.media?.season" class="text-subtitle-2 me-4">
                 {{ (props.media?.total_episode || 0) - (props.media?.lack_episode || 0) }} /
                 {{ props.media?.total_episode }}
               </div>
-              <IconBtn v-if="props.media?.username" icon="mdi-account" color="white" class="me-1" />
-              <span v-if="props.media?.username" class="text-subtitle-2 me-4 text-white">
+              <IconBtn v-if="props.media?.username" icon="mdi-account" color="black" class="me-1" />
+              <span v-if="props.media?.username" class="text-subtitle-2 me-4">
                 {{ props.media?.username }}
               </span>
             </div>

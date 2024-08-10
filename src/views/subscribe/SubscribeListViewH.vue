@@ -8,7 +8,6 @@ import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import SubscribeHistoryDialog from '@/components/dialog/SubscribeHistoryDialog.vue'
 import store from '@/store'
 import { useDisplay } from 'vuetify'
-// import waterfall from 'vue-waterfall2'
 
 // 显示器宽度
 const display = useDisplay()
@@ -23,6 +22,8 @@ const props = defineProps({
   type: String,
   keyword: String,
   subid: String,
+  col: Number,
+  api: String,
 })
 
 // 是否刷新过
@@ -41,7 +42,7 @@ const historyDialog = ref(false)
 async function fetchData() {
   try {
     loading.value = true
-    dataList.value = await api.get(`subscribe/?type_in=${props.type}&keyword_in=${props.keyword}`)
+    dataList.value = await api.get(`subscribe/${props.api}?stype=${props.type}&keyword=${props.keyword}`)
     loading.value = false
     isRefreshed.value = true
   } catch (error) {
@@ -90,7 +91,11 @@ onActivated(async () => {
 <template>
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <VPullToRefresh v-model="loading" @load="onRefresh">
-    <div v-if="dataList.length > 0" class="mx-3 grid gap-4 grid-subscribe-card-h p-1">
+    <div
+      v-if="dataList.length > 0"
+      class="mx-3 grid grid-subscribe-card gap-4 p-1"
+      :class="'grid-col-' + (props.col || 4)"
+    >
       <SubscribeCardH v-for="data in dataList" :key="data.id" :media="data" @remove="fetchData" @save="fetchData" />
     </div>
     <NoDataFound
