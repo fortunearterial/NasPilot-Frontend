@@ -7,7 +7,7 @@ import { formatSeason } from '@/@core/utils/formatters'
 import api from '@/api'
 import type { Subscribe } from '@/api/types'
 import router from '@/router'
-import { getMediaid2 } from '@/@core/utils/media'
+import { getMediaid2, opentMediaid2 } from '@/@core/utils/media'
 
 // 输入参数
 const props = defineProps({
@@ -118,6 +118,11 @@ async function viewMediaDetail() {
   })
 }
 
+// 原详情页
+async function openOriginDetail() {
+  opentMediaid2(props.media)
+}
+
 // 弹出菜单
 const dropdownItems = ref([
   {
@@ -140,8 +145,16 @@ const dropdownItems = ref([
     title: '查看详情',
     value: 3,
     props: {
-      prependIcon: 'mdi-open-in-new',
+      prependIcon: 'mdi-page-layout-footer',
       click: viewMediaDetail,
+    },
+  },
+  {
+    title: '原详情页',
+    value: 6,
+    props: {
+      prependIcon: 'mdi-open-in-new',
+      click: openOriginDetail,
     },
   },
   {
