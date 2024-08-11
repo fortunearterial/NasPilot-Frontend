@@ -8,6 +8,7 @@ import tmdb from '@images/logos/tmdb.png'
 import wechat from '@images/logos/wechat.png'
 import fanart from '@images/logos/fanart.webp'
 import tvdb from '@images/logos/thetvdb.jpeg'
+import javdb from '@images/logos/javdb.png'
 
 interface Status {
   OK: string
@@ -29,6 +30,16 @@ interface Address {
 
 // 测试集
 const targets = ref<Address[]>([
+  {
+    image: javdb,
+    name: 'javdb.com',
+    url: 'https://javdb.com',
+    proxy: true,
+    status: 'Normal',
+    time: '',
+    message: '',
+    btndisable: false,
+  },
   {
     image: tmdb,
     name: 'api.themoviedb.org',
@@ -157,36 +168,26 @@ async function netTest(index: number) {
     if (result.success) {
       target.status = 'OK'
       target.message = '正常'
-    }
-    else {
+    } else {
       target.status = 'Fail'
       target.message = result.message
     }
     target.time = result.data?.time
     target.btndisable = false
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error)
   }
 }
 
 // 加载时测试所有连接
 onMounted(async () => {
-  for (let i = 0; i < targets.value.length; i++)
-    await netTest(i)
+  for (let i = 0; i < targets.value.length; i++) await netTest(i)
 })
 </script>
 
 <template>
-  <VList
-    lines="two"
-    border
-    rounded
-  >
-    <template
-      v-for="(target, index) of targets"
-      :key="target.name"
-    >
+  <VList lines="two" border rounded>
+    <template v-for="(target, index) of targets" :key="target.name">
       <VListItem>
         <template #prepend>
           <VAvatar :image="target.image" />
@@ -195,30 +196,14 @@ onMounted(async () => {
           {{ target.name }}
         </VListItemTitle>
         <VListItemSubtitle class="mt-1 me-2">
-          <VBadge
-            dot
-            location="start center"
-            offset-x="2"
-            :color="resolveStatusColor[target.status]"
-            class="me-3"
-          >
+          <VBadge dot location="start center" offset-x="2" :color="resolveStatusColor[target.status]" class="me-3">
             <span class="ms-4">{{ target.message }}</span>
           </VBadge>
 
-          <span
-            v-if="target.time"
-            class="text-xs text-wrap text-disabled"
-          >
-            {{ target.time }} ms
-          </span>
+          <span v-if="target.time" class="text-xs text-wrap text-disabled"> {{ target.time }} ms </span>
         </VListItemSubtitle>
         <template #append>
-          <VBtn
-            size="small"
-            icon="mdi-connection"
-            :disabled="target.btndisable"
-            @click="netTest(index)"
-          />
+          <VBtn size="small" icon="mdi-connection" :disabled="target.btndisable" @click="netTest(index)" />
         </template>
       </VListItem>
       <VDivider v-if="index !== targets.length - 1" />

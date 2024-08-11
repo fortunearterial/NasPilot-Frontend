@@ -20,3 +20,14 @@ export function getMediaid2(media: Subscribe | undefined) {
 
   return mediaid
 }
+
+export function opentMediaid2(media: Subscribe | undefined) {
+  let url = ''
+  if (media?.tmdbid) {
+    if (media?.type == '电视剧') url = `https://www.themoviedb.org/tv/${media?.tmdbid}`
+    else url = `https://www.themoviedb.org/movie/${media?.tmdbid}`
+  } else if (media?.steamid) url = `steam:${media?.steamid}`
+  else if (media?.javdbid) url = `https://javdb.com/v/${media?.javdbid}`
+
+  window.open(url, '_blank')
+}
