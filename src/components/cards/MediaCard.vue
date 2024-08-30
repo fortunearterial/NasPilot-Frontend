@@ -11,7 +11,7 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
-import {getMediaid} from '@/@core/utils/media'
+import { getMediaid } from '@/@core/utils/media'
 
 // 输入参数
 const props = defineProps({
@@ -258,7 +258,6 @@ async function checkSeasonsNotExists() {
         let state = 0
         if (item.episodes.length === 0) state = 2
         else if (item.episodes.length < item.total_episode) state = 1
-
         seasonsNotExisted.value[item.season] = state
       })
     }
@@ -462,7 +461,7 @@ function getYear(airDate: string) {
           class="absolute bottom-0 flex flex-col flex-wrap justify-end w-full text-white cursor-pointer align-left pa-2"
         >
           <span class="font-bold">{{ props.media?.year }}</span>
-          <h1 class="mb-1 text-white font-extrabold text-xl line-clamp-2 overflow-hidden text-ellipsis ...">
+          <h1 class="mb-1 text-white font-extrabold text-xl line-clamp-3 overflow-hidden text-ellipsis ...">
             {{ props.media?.title }}
           </h1>
           <p class="leading-4 line-clamp-4 overflow-hidden text-ellipsis ...">
@@ -476,7 +475,7 @@ function getYear(airDate: string) {
         <VAvatar
           size="24"
           density="compact"
-          class="absolute bottom-1 right-1"
+          class="absolute bottom-1 right-1 bg-gray-500 bg-opacity-80 rounded-circle"
           tile
           v-if="!hover.isHovering && isImageLoaded && props.media?.source"
         >

@@ -89,8 +89,13 @@ async function loadSeasonEpisodes(season: number) {
   // 加载季集信息
   if (seasonEpisodesInfo.value[season]) return
   try {
-    const result: TmdbEpisode[] = await api.get(`tmdb/${mediaDetail.value.tmdb_id}/${season}`)
-    seasonEpisodesInfo.value[season] = result || []
+    if (mediaDetail.value.bangumi_id) {
+      const result: TmdbEpisode[] = await api.get(`bangumi/${mediaDetail.value.bangumi_id}/${season}`)
+      seasonEpisodesInfo.value[season] = result || []
+    } else if (mediaDetail.value.tmdb_id) {
+      const result: TmdbEpisode[] = await api.get(`tmdb/${mediaDetail.value.tmdb_id}/${season}`)
+      seasonEpisodesInfo.value[season] = result || []
+    }
   } catch (error) {
     console.error(error)
   }
@@ -218,7 +223,7 @@ async function checkMovieSubscribed() {
 
 // 过滤掉第0季
 const getMediaSeasons = computed(() => {
-  return mediaDetail.value?.season_info?.filter(season => season.season_number !== 0)
+  return mediaDetail.value?.season_info // ?.filter(season => season.season_number !== 0)
 })
 
 // 检查所有季的订阅状态
@@ -509,7 +514,7 @@ onBeforeMount(() => {
             :class="{
               'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
               'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
-              'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
+              'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id,
             }"
           >
             <template #placeholder>
@@ -519,7 +524,7 @@ onBeforeMount(() => {
                   :class="{
                     'aspect-w-92 aspect-h-43': mediaDetail.steam_id,
                     'aspect-w-16 aspect-h-10': mediaDetail.javdb_id,
-                    'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id,
+                    'aspect-w-2 aspect-h-3': mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id,
                   }"
                 />
               </div>
@@ -597,7 +602,6 @@ onBeforeMount(() => {
             v-if="
               mediaDetail.type === '电影' ||
               mediaDetail.douban_id ||
-              mediaDetail.bangumi_id ||
               mediaDetail.type === '游戏' ||
               mediaDetail.steam_id ||
               mediaDetail.type === 'Jav' ||
@@ -692,7 +696,7 @@ onBeforeMount(() => {
               </div>
             </a>
             <a
-              v-if="mediaDetail.tvdb_id"
+              v-if="mediaDetail.steam_id"
               class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getSteamLink()"
               target="_blank"
@@ -705,7 +709,7 @@ onBeforeMount(() => {
               </div>
             </a>
             <a
-              v-if="mediaDetail.tvdb_id"
+              v-if="mediaDetail.javdb_id"
               class="inline-flex mb-2 mr-2 last:mr-0"
               :href="getJavDBLink()"
               target="_blank"
@@ -731,8 +735,8 @@ onBeforeMount(() => {
               </div>
             </a>
           </div>
-          <h2 v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="py-4">季</h2>
-          <div v-if="mediaDetail.type === '电视剧' && mediaDetail.tmdb_id" class="flex flex-col w-full space-y-2">
+          <h2 v-if="!!getMediaSeasons" class="py-4">季</h2>
+          <div v-if="!!getMediaSeasons" class="flex flex-col w-full space-y-2">
             <VExpansionPanels>
               <VExpansionPanel
                 v-for="season in getMediaSeasons"
