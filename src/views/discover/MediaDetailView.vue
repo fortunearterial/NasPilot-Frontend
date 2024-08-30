@@ -39,16 +39,16 @@ const isSubscribed = ref(false)
 const isRefreshed = ref(false)
 
 // 存储每一季的集信息
-const seasonEpisodesInfo = ref({} as { [key: number]: TmdbEpisode[] })
+const seasonEpisodesInfo = ref({} as { [key: string]: TmdbEpisode[] })
 
 // 存储存在的季集
-const existsEpisodes = ref({} as { [key: number]: number[] })
+const existsEpisodes = ref({} as { [key: string]: number[] })
 
 // 各季缺失状态：0-已入库 1-部分缺失 2-全部缺失，没有数据也是已入库
-const seasonsNotExisted = ref<{ [key: number]: number }>({})
+const seasonsNotExisted = ref<{ [key: string]: number }>({})
 
 // 各季的订阅状态
-const seasonsSubscribed = ref<{ [key: number]: boolean }>({})
+const seasonsSubscribed = ref<{ [key: string]: boolean }>({})
 
 // 订阅编号
 const subscribeId = ref<number>()
@@ -83,17 +83,18 @@ async function getMediaDetail() {
 }
 
 // 调用API加载季集信息（TMDB）
-async function loadSeasonEpisodes(season: number) {
+async function loadSeasonEpisodes(season: string | undefined) {
   // 加载季集存在信息
   loadEpisodeExists()
+  if (!season) return
   // 加载季集信息
   if (seasonEpisodesInfo.value[season]) return
   try {
-    if (mediaDetail.value.bangumi_id) {
-      const result: TmdbEpisode[] = await api.get(`bangumi/${mediaDetail.value.bangumi_id}/${season}`)
-      seasonEpisodesInfo.value[season] = result || []
-    } else if (mediaDetail.value.tmdb_id) {
+    if (mediaDetail.value.tmdb_id) {
       const result: TmdbEpisode[] = await api.get(`tmdb/${mediaDetail.value.tmdb_id}/${season}`)
+      seasonEpisodesInfo.value[season] = result || []
+    } else if (mediaDetail.value.bangumi_id) {
+      const result: TmdbEpisode[] = await api.get(`bangumi/${mediaDetail.value.bangumi_id}/${season}`)
       seasonEpisodesInfo.value[season] = result || []
     }
   } catch (error) {
@@ -171,7 +172,7 @@ async function checkExists() {
 }
 
 // 查询当前媒体是否已订阅
-async function checkSubscribe(season = 0) {
+async function checkSubscribe(season?: string) {
   try {
     const mediaid = getMediaid(mediaDetail.value)
 
@@ -231,7 +232,9 @@ async function checkSeasonsSubscribed() {
   if (mediaDetail.value.type !== '电视剧') return
   try {
     mediaDetail.value?.season_info?.forEach(async item => {
-      seasonsSubscribed.value[item.season_number ?? 0] = await checkSubscribe(item.season_number)
+      if (item.season_number) {
+        seasonsSubscribed.value[item.season_number.toString()] = await checkSubscribe(item.season_number?.toString())
+      }
     })
   } catch (error) {
     console.error(error)
@@ -239,7 +242,7 @@ async function checkSeasonsSubscribed() {
 }
 
 // 调用API添加订阅，电视剧的话需要指定季
-async function addSubscribe(season = 0) {
+async function addSubscribe(season?: string) {
   // 开始处理
   startNProgress()
   try {
@@ -287,8 +290,14 @@ async function addSubscribe(season = 0) {
 }
 
 // 弹出添加订阅提示
-function showSubscribeAddToast(result: boolean, title: string, season: number, message: string, best_version: number) {
-  if (season) title = `${title} ${formatSeason(season.toString())}`
+function showSubscribeAddToast(
+  result: boolean,
+  title: string,
+  season: string | undefined,
+  message: string,
+  best_version: number,
+) {
+  if (season) title = `${title} ${formatSeason(season)}`
 
   let subname = '订阅'
   if (best_version > 0) subname = '洗版订阅'
@@ -297,7 +306,7 @@ function showSubscribeAddToast(result: boolean, title: string, season: number, m
 }
 
 // 调用API取消订阅
-async function removeSubscribe(season: number) {
+async function removeSubscribe(season?: string) {
   // 开始处理
   startNProgress()
   try {
@@ -323,9 +332,14 @@ async function removeSubscribe(season: number) {
 }
 
 // 订阅按钮响应
-function handleSubscribe(season = 0) {
-  if (isSubscribed.value) removeSubscribe(season)
-  else addSubscribe(season)
+function handleSubscribe(season?: string) {
+  if (season) {
+    if (seasonsSubscribed.value[season]) removeSubscribe(season)
+    else addSubscribe(season)
+  } else {
+    if (isSubscribed.value) removeSubscribe()
+    else addSubscribe()
+  }
 }
 
 // 从genres中获取name，使用、分隔
@@ -392,7 +406,8 @@ const getProductionCompanies = computed(() => {
 })
 
 // 计算存在状态的颜色
-function getExistColor(season: number) {
+function getExistColor(season: string | undefined) {
+  if (!season) return ''
   const state = seasonsNotExisted.value[season]
   if (!state) return 'success'
 
@@ -402,7 +417,8 @@ function getExistColor(season: number) {
 }
 
 // 计算存在状态的文本
-function getExistText(season: number) {
+function getExistText(season: string | undefined) {
+  if (!season) return ''
   const state = seasonsNotExisted.value[season]
   if (!state) return '已入库'
 
@@ -610,7 +626,7 @@ onBeforeMount(() => {
             class="mb-2 ms-2"
             :color="getSubscribeColor"
             variant="tonal"
-            @click="handleSubscribe(0)"
+            @click="handleSubscribe()"
           >
             <template #prepend>
               <VIcon :icon="getSubscribeIcon" />
@@ -741,25 +757,27 @@ onBeforeMount(() => {
               <VExpansionPanel
                 v-for="season in getMediaSeasons"
                 :key="season.season_number"
-                @group:selected="loadSeasonEpisodes(season.season_number || 0)"
+                @group:selected="loadSeasonEpisodes(season.season_number?.toString())"
               >
                 <VExpansionPanelTitle>
                   <template #default>
-                    <div class="flex flex-row items-center justify-between">
+                    <div class="flex flex-row items-center justify-between" v-if="season.season_number !== undefined">
                       <span class="font-weight-bold">第 {{ season.season_number }} 季</span>
                       <VChip size="small" class="ms-1"> {{ season.episode_count }}集 </VChip>
                       <div class="absolute right-12">
-                        <VChip v-if="seasonsNotExisted" :color="getExistColor(season.season_number || 0)" flat>
-                          {{ getExistText(season.season_number || 0) }}
+                        <VChip v-if="seasonsNotExisted" :color="getExistColor(season.season_number.toString())" flat>
+                          {{ getExistText(season.season_number.toString()) }}
                         </VChip>
                         <IconBtn
                           class="ms-1"
-                          :color="seasonsSubscribed[season.season_number || 0] ? 'error' : 'warning'"
+                          :color="seasonsSubscribed[season.season_number.toString()] ? 'error' : 'warning'"
                           variant="text"
-                          @click.stop="handleSubscribe(season.season_number)"
+                          @click.stop="handleSubscribe(season.season_number.toString())"
                         >
                           <VIcon
-                            :icon="seasonsSubscribed[season.season_number || 0] ? 'mdi-heart' : 'mdi-heart-outline'"
+                            :icon="
+                              seasonsSubscribed[season.season_number.toString()] ? 'mdi-heart' : 'mdi-heart-outline'
+                            "
                           />
                         </IconBtn>
                       </div>

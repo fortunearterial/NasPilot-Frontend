@@ -126,7 +126,7 @@ export interface MediaInfo {
   // 标题（年）
   title_year?: string
   // 季号
-  season?: number
+  season?: string
   // TMDB ID
   tmdb_id?: number
   // IMDB ID
