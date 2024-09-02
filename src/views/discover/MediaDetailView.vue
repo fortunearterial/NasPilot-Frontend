@@ -232,7 +232,7 @@ async function checkSeasonsSubscribed() {
   if (mediaDetail.value.type !== '电视剧') return
   try {
     mediaDetail.value?.season_info?.forEach(async item => {
-      if (item.season_number) {
+      if (item.season_number?.toString()) {
         seasonsSubscribed.value[item.season_number.toString()] = await checkSubscribe(item.season_number?.toString())
       }
     })

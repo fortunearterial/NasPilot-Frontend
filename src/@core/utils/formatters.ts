@@ -57,7 +57,7 @@ export function formatDateToMonthShort(value: string, toTimeForCurrentDay = true
 export const prefixWithPlus = (value: number) => (value > 0 ? `+${value}` : value)
 
 // 格式化为Sxx
-export const formatSeason = (value: string) => (value ? `S${value.padStart(2, '0')}` : '')
+export const formatSeason = (value: string | undefined) => (value ? `S${value.padStart(2, '0')}` : '')
 
 // 格式化为xx[TGMK]B
 export function formatFileSize(bytes: number) {

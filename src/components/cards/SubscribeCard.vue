@@ -254,7 +254,7 @@ watch(
               <div class="text-sm font-medium text-white sm:pt-1">{{ props.media?.year }}</div>
               <div class="mr-2 min-w-0 text-lg font-bold text-white">
                 {{ props.media?.name }}
-                {{ formatSeason(props.media?.season ? props.media?.season.toString() : '') }}
+                {{ formatSeason(props.media?.season?.toString()) }}
               </div>
             </div>
           </VCardText>
@@ -267,7 +267,7 @@ watch(
                 color="white"
                 class="me-1"
               />
-              <div v-if="props.media?.season" class="text-subtitle-2 me-4 text-white">
+              <div v-if="props.media?.season?.toString()" class="text-subtitle-2 me-4 text-white">
                 {{ (props.media?.total_episode || 0) - (props.media?.lack_episode || 0) }} /
                 {{ props.media?.total_episode }}
               </div>
