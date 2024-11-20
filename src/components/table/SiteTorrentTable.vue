@@ -61,7 +61,7 @@ async function getResourceList() {
   try {
     resourceDataList.value = await api.get(
       `site/resource/${props.site}${
-        resourceSearch.value ? '?resource_type=search&keyword=' + resourceSearch.value : ''
+        resourceSearch.value ? '?resource_type=search&keyword=' + resourceSearch.value : '?resource_type=browse'
       }`,
     )
     resourceLoading.value = false
