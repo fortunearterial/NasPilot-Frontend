@@ -114,6 +114,7 @@ async function getResourceList() {
 async function getSiteCategoryList() {
   try {
     siteCategoryList.value = await api.get(`site/category/${props.site?.id}`)
+    console.info('siteCategoryList', siteCategoryList.value)
   } catch (error) {
     console.error(error)
   }

@@ -3,6 +3,7 @@ import { useToast } from 'vue-toast-notification'
 import type { DownloaderConf, Site } from '@/api/types'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { numberValidator, requiredValidator } from '@/@validators'
+import { mediaTypeItems, httpOptions } from '@/api/constants'
 import api from '@/api'
 import { useDisplay } from 'vuetify'
 import { useConfirm } from 'vuetify-use-dialog'
@@ -36,6 +37,20 @@ const siteForm = ref<Site>({
   name: '',
   domain: '',
   downloader: '',
+  types: [],
+  rss_mapping: '',
+  browse: '',
+  browse_config: {
+    lists: '',
+    fields: {
+    },
+  },
+  search: '',
+  search_config: {
+    lists: '',
+    fields: {
+    },
+  },
 })
 
 // 提示框
@@ -63,6 +78,9 @@ const priorityItems = ref(
 
 // 下载器选项
 const downloaderOptions = ref<{ title: string; value: string }[]>([])
+
+// 配置类型
+const configType = ref('rss')
 
 async function loadDownloaderSetting() {
   try {
@@ -154,6 +172,10 @@ async function updateSiteInfo() {
   doneNProgress()
 }
 
+async function syncFromBrowse() {
+  siteForm.value.search_config = JSON.parse(JSON.stringify(siteForm.value.browse_config))
+}
+
 onMounted(async () => {
   if (props.oper !== 'add') {
     await fetchSiteInfo()
@@ -186,13 +208,10 @@ onMounted(async () => {
               />
             </VCol>
             <VCol cols="6" md="3">
-              <VSelect
-                v-model="siteForm.pri"
-                label="优先级"
-                :items="priorityItems"
+              <VTextField
+                v-model="siteForm.name"
+                label="站点名称"
                 :rules="[requiredValidator]"
-                hint="优先级越小越优先"
-                persistent-hint
               />
             </VCol>
             <VCol cols="6" md="3">
@@ -206,15 +225,17 @@ onMounted(async () => {
             </VCol>
           </VRow>
           <VRow>
-            <VCol cols="12" md="6">
-              <VTextField
-                v-model="siteForm.rss"
-                label="RSS地址"
-                hint="订阅模式为`站点RSS`时使用的订阅链接，如未自动获取需手动补充"
+            <VCol cols="6" md="3">
+              <VSelect
+                v-model="siteForm.pri"
+                label="优先级"
+                :items="priorityItems"
+                :rules="[requiredValidator]"
+                hint="优先级越小越优先"
                 persistent-hint
               />
             </VCol>
-            <VCol cols="12" md="3">
+            <VCol cols="6" md="3">
               <VTextField
                 v-model="siteForm.timeout"
                 label="超时时间（秒）"
@@ -222,7 +243,7 @@ onMounted(async () => {
                 persistent-hint
               />
             </VCol>
-            <VCol cols="6" md="3">
+            <VCol cols="12" md="6">
               <VSelect
                 v-model="siteForm.downloader"
                 label="下载器"
@@ -232,6 +253,278 @@ onMounted(async () => {
               />
             </VCol>
           </VRow>
+          <VRow>
+            <VCol cols="12" md="6">
+              <VSelect
+                v-model="siteForm.types"
+                label="站点类型"
+                :items="mediaTypeItems"
+                multiple
+                hint="此站点资源的类型"
+                persistent-hint
+              />
+            </VCol>
+          </VRow>
+          <VTabs v-model="configType" show-arrows class="v-tabs-pill mt-3">
+            <VTab selected-class="v-tab--selected">
+              <div>
+                <VIcon size="20" start icon="mdi-rss" value="rss" />
+                RSS配置
+              </div>
+            </VTab>
+            <VTab selected-class="v-tab--selected">
+              <div>
+                <VIcon size="20" start icon="mdi-table" value="browse" />
+                列表配置
+              </div>
+            </VTab>
+            <VTab selected-class="v-tab--selected">
+              <div>
+                <VIcon size="20" start icon="mdi-search" value="search" />
+                搜索配置
+              </div>
+            </VTab>
+          </VTabs>
+          <VWindow v-model="configType" class="my-3 disable-tab-transition" :touch="false">
+            <VWindowItem value="rss">
+              <VRow>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.rss"
+                    label="RSS地址"
+                    hint="订阅模式为`站点RSS`时使用的订阅链接，如未自动获取需手动补充"
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+              <VRow>
+                <VCol cols="12" md="12">
+                  <VTextarea
+                    v-model="siteForm.rss_mapping"
+                    label="RSS转标准值映射"
+                    hint="当站点的RSS地址获取的XML为非标准时，可使用此映射进行转换，标准参考：https://mikanani.me/RSS/Classic"
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+            </VWindowItem>
+            <VWindowItem value="browse">
+              <VRow>
+                <VCol cols="3" md="3">
+                  <VSelect
+                    v-model="siteForm.browse_method"
+                    label="请求类型"
+                    :items="httpOptions"
+                    hint="列表地址的请求类型"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="6" md="6">
+                  <VTextField
+                    v-model="siteForm.browse"
+                    label="列表地址"
+                    hint="订阅模式为`自动`或订阅模式为`站点RSS`且没有RSS配置时使用的订阅链接"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="3" md="3">
+                  <VBtn @click="syncFromBrowse" variant="outlined">
+                    同步至搜索配置
+                  </VBtn>
+                </VCol>
+              </VRow>
+              <VRow>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.list"
+                    label="列表配置"
+                    hint='用于获取种子列表集合，参考：{"selector": "table.tablesorter > tbody > tr"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.id"
+                    label="唯一标识配置"
+                    hint='用于获取各种子的唯一标识，参考：{"selector":"a[href*=\"/topics/list/sort_id/\"]","attribute":"href","filters":[{"name":"re_search","args":["\\d+",0]}]}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.title"
+                    label="标题配置"
+                    hint='用于获取各种子的标题，参考：{"selector":"td.title > a"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.details"
+                    label="详情地址配置"
+                    hint='用于获取各种子的详情地址，参考：{"selector":"td.title > a","attribute":"href"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.download"
+                    label="下载地址配置"
+                    hint='用于获取各种子的下载地址，参考：{"selector":"a.download-arrow.arrow-magnet","attribute":"href"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.date"
+                    label="发布日期配置"
+                    hint='用于获取各种子的下载地址，参考：{"selector":"td:nth-child(1) > span","optional":true}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.size"
+                    label="种子大小配置"
+                    hint='用于获取各种子的大小，参考：{"selector":"td:nth-child(5)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.seeders"
+                    label="种子数配置"
+                    hint='用于获取各种子的种子数，参考：{"selector":"td:nth-child(6)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.leechers"
+                    label="下载数配置"
+                    hint='用于获取各种子的下载数，参考：{"selector":"td:nth-child(7)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.grabs"
+                    label="完成数配置"
+                    hint='用于获取各种子的完成数，参考：{"selector":"td:nth-child(8)"}'
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+            </VWindowItem>
+            <VWindowItem value="search">
+              <VRow>
+                <VCol cols="3" md="3">
+                  <VSelect
+                    v-model="siteForm.search_method"
+                    label="请求类型"
+                    :items="httpOptions"
+                    hint="搜索地址的请求类型"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="6" md="6">
+                  <VTextField
+                    v-model="siteForm.search"
+                    label="搜索地址"
+                    hint="搜索资源时使用的链接地址"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="3" md="3">
+                  <VBtn @click="syncFromBrowse" variant="outlined">
+                    一键同步列表配置
+                  </VBtn>
+                </VCol>
+              </VRow>
+              <VRow>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.list"
+                    label="列表配置"
+                    hint='用于获取种子列表集合，参考：{"selector": "table.tablesorter > tbody > tr"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.id"
+                    label="唯一标识配置"
+                    hint='用于获取各种子的唯一标识，参考：{"selector":"a[href*=\"/topics/list/sort_id/\"]","attribute":"href","filters":[{"name":"re_search","args":["\\d+",0]}]}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.title"
+                    label="标题配置"
+                    hint='用于获取各种子的标题，参考：{"selector":"td.title > a"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.details"
+                    label="详情地址配置"
+                    hint='用于获取各种子的详情地址，参考：{"selector":"td.title > a","attribute":"href"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.download"
+                    label="下载地址配置"
+                    hint='用于获取各种子的下载地址，参考：{"selector":"a.download-arrow.arrow-magnet","attribute":"href"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.date"
+                    label="发布日期配置"
+                    hint='用于获取各种子的下载地址，参考：{"selector":"td:nth-child(1) > span","optional":true}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.size"
+                    label="种子大小配置"
+                    hint='用于获取各种子的大小，参考：{"selector":"td:nth-child(5)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.seeders"
+                    label="种子数配置"
+                    hint='用于获取各种子的种子数，参考：{"selector":"td:nth-child(6)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.leechers"
+                    label="下载数配置"
+                    hint='用于获取各种子的下载数，参考：{"selector":"td:nth-child(7)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.search_config.fields.grabs"
+                    label="完成数配置"
+                    hint='用于获取各种子的完成数，参考：{"selector":"td:nth-child(8)"}'
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+            </VWindowItem>
+          </VWindow>
           <VTabs v-model="siteType" show-arrows class="v-tabs-pill mt-3">
             <VTab selected-class="v-tab--selected">
               <div>

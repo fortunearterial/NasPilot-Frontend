@@ -78,3 +78,16 @@ export const transferTypeOptions = [
   { title: '硬链接', value: 'link' },
   { title: '软链接', value: 'softlink' },
 ]
+
+// 媒体类型字典
+export const mediaTypeItems = [
+  { title: '电影', value: 'movie' },
+  { title: '电视剧', value: 'tv' },
+  { title: '游戏', value: 'game' },
+]
+
+// 请求类型字典
+export const httpOptions = [
+  { title: 'GET', value: 'get' },
+  { title: 'POST', value: 'post' }
+]

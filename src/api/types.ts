@@ -449,6 +449,23 @@ export interface Site {
   limit_seconds?: number
   // 是否启用
   is_active: boolean
+
+  // 站点类型
+  types?: any
+  // RSS转标准值映射
+  rss_mapping?: any
+  // BROWSE地址
+  browse?: string
+  // BROWSE请求方式
+  browse_method?: string
+  // BROWSE获取种子列表配置
+  browse_config?: any
+  // SEARCH地址
+  search?: string
+  // SEARCH请求方式
+  search_method?: string
+  // SEARCH获取种子列表配置
+  search_config?: any
 }
 
 // 站点使用统计
