@@ -665,6 +665,14 @@ onDeactivated(() => {
                     :rules="[(v: any) => v === 0 || !!v || '请输入元数据缓存时间', (v: any) => v >= 0 || '元数据缓存时间必须大于等于0']"
                   />
                 </VCol>
+                <VCol cols="12" md="6">
+                  <VSwitch
+                    v-model="SystemSettings.Advanced.TMDB_API_ADULT"
+                    label="是否允许搜索成人数据"
+                    hint="开启后将搜索到包含成人内容的数据"
+                    persistent-hint
+                  />
+                </VCol>
               </VRow>
               <VRow>
                 <VCol cols="12" md="6">

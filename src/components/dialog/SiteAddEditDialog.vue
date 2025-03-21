@@ -41,13 +41,11 @@ const siteForm = ref<Site>({
   rss_mapping: '',
   browse: '',
   browse_config: {
-    lists: '',
     fields: {
     },
   },
   search: '',
   search_config: {
-    lists: '',
     fields: {
     },
   },
@@ -334,7 +332,14 @@ onMounted(async () => {
                 </VCol>
               </VRow>
               <VRow>
-                <VCol cols="12" md="12">
+                <VCol cols="3" md="3">
+                  <VSwitch
+                    v-model="siteForm.browse_config.list_in_detail"
+                    label="种子列表在详情页"
+                    hint="如果站点种子列表在详情页，则列表配置必须指向各详情页的a标签"
+                  />
+                </VCol>
+                <VCol cols="9" md="9">
                   <VTextField
                     v-model="siteForm.browse_config.list"
                     label="列表配置"
@@ -342,6 +347,7 @@ onMounted(async () => {
                     persistent-hint
                   />
                 </VCol>
+                
                 <VCol cols="12" md="12">
                   <VTextField
                     v-model="siteForm.browse_config.fields.id"
@@ -376,7 +382,7 @@ onMounted(async () => {
                 </VCol>
                 <VCol cols="12" md="12">
                   <VTextField
-                    v-model="siteForm.browse_config.fields.date"
+                    v-model="siteForm.browse_config.fields.date_added"
                     label="发布日期配置"
                     hint='用于获取各种子的下载地址，参考：{"selector":"td:nth-child(1) > span","optional":true}'
                     persistent-hint
@@ -411,6 +417,14 @@ onMounted(async () => {
                     v-model="siteForm.browse_config.fields.grabs"
                     label="完成数配置"
                     hint='用于获取各种子的完成数，参考：{"selector":"td:nth-child(8)"}'
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="12">
+                  <VTextField
+                    v-model="siteForm.browse_config.fields.labels"
+                    label="标签配置"
+                    hint='用于获取各种子的标签，参考：{"selector":"td:nth-child(9)"}'
                     persistent-hint
                   />
                 </VCol>

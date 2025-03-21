@@ -88,6 +88,6 @@ export const mediaTypeItems = [
 
 // 请求类型字典
 export const httpOptions = [
-  { title: 'GET', value: 'get' },
-  { title: 'POST', value: 'post' }
+  { title: 'GET', value: 'HTTP_GET' },
+  { title: 'POST', value: 'HTTP_POST' }
 ]
