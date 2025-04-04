@@ -396,7 +396,7 @@ onDeactivated(() => {
                 <VTextField
                   v-model="SystemSettings.Basic.API_TOKEN"
                   label="API令牌"
-                  hint="设置外部请求MoviePilot API时使用的token值"
+                  hint="设置外部请求NasPilot API时使用的token值"
                   placeholder="不能小于16位字符"
                   persistent-hint
                   prependInnerIcon="mdi-reload"
@@ -481,6 +481,9 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
+                    <VListItem variant="plain" @click="addDownloader('thunder')">
+                      <VListItemTitle>迅雷</VListItemTitle>
+                    </VListItem>
                     <VListItem variant="plain" @click="addDownloader('qbittorrent')">
                       <VListItemTitle>Qbittorrent</VListItemTitle>
                     </VListItem>

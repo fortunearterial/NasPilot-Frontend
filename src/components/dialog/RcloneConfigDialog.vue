@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 if (!props.conf.filepath) {
-  props.conf.filepath = '/moviepilot/.config/rclone/rclone.conf'
+  props.conf.filepath = '/naspilot/.config/rclone/rclone.conf'
 }
 
 if (!props.conf.content) {

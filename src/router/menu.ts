@@ -124,7 +124,7 @@ export const SettingTabs = [
     title: '系统',
     icon: 'mdi-server-network',
     tab: 'system',
-    description: '基础设置、下载器（Qbittorrent、Transmission）、媒体服务器（Emby、Jellyfin、Plex）',
+    description: '基础设置、下载器（迅雷、Qbittorrent、Transmission）、媒体服务器（Emby、Jellyfin、Plex）',
   },
   {
     title: '存储 & 目录',

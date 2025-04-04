@@ -52,7 +52,7 @@ onMounted(() => {
       <VCardText class="pt-2">
         <VTextarea
           v-model="repoString"
-          placeholder="格式：https://github.com/jxxghp/MoviePilot-Plugins/,https://github.com/xxxx/xxxxxx/"
+          placeholder="格式：https://github.com/jxxghp/NasPilot-Plugins/,https://github.com/xxxx/xxxxxx/"
           hint="多个地址使用逗号分隔，仅支持Github仓库"
           persistent-hint
         />

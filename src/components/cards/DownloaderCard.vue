@@ -6,6 +6,7 @@ import { useToast } from 'vue-toast-notification'
 import type { DownloaderInfo } from '@/api/types'
 import qbittorrent_image from '@images/logos/qbittorrent.png'
 import transmission_image from '@images/logos/transmission.png'
+import thunder_image from '@images/logos/thunder.png'
 import { cloneDeep } from 'lodash-es'
 
 // 定义输入
@@ -117,6 +118,8 @@ function saveDownloaderInfo() {
 // 根据存储类型选择图标
 const getIcon = computed(() => {
   switch (props.downloader.type) {
+    case 'thunder':
+      return thunder_image
     case 'qbittorrent':
       return qbittorrent_image
     case 'transmission':
@@ -184,6 +187,37 @@ onUnmounted(() => {
               </VCol>
               <VCol cols="12" md="6">
                 <VSwitch v-model="downloaderInfo.default" label="默认下载器" :disabled="!downloaderInfo.enabled" />
+              </VCol>
+            </VRow>
+            <VRow v-if="downloaderInfo.type == 'thunder'">
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.name"
+                  label="名称"
+                  placeholder="必填；不可与其他名称重名"
+                  hint="下载器的别名"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.config.host"
+                  label="程序地址"
+                  placeholder="C:\Program Files (x86)\Thunder Network\Thunder\Program\Thunder.exe"
+                  hint="迅雷程序地址，格式：C:\Program Files (x86)\Thunder Network\Thunder\Program\Thunder.exe"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VSwitch
+                  v-model="downloaderInfo.config.category"
+                  label="自动分类管理"
+                  hint="由下载器自动管理分类和下载目录"
+                  persistent-hint
+                  active
+                />
               </VCol>
             </VRow>
             <VRow v-if="downloaderInfo.type == 'qbittorrent'">

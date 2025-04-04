@@ -7,6 +7,7 @@ import { mediaTypeItems, httpOptions } from '@/api/constants'
 import api from '@/api'
 import { useDisplay } from 'vuetify'
 import { useConfirm } from 'vuetify-use-dialog'
+import SpiderConfig from '../misc/SpiderConfig.vue'
 
 // 显示器宽度
 const display = useDisplay()
@@ -41,13 +42,13 @@ const siteForm = ref<Site>({
   rss_mapping: '',
   browse: '',
   browse_config: {
-    fields: {
-    },
+    list_fields: {},
+    torrent_fields: {},
   },
   search: '',
   search_config: {
-    fields: {
-    },
+    list_fields: {},
+    torrent_fields: {},
   },
 })
 
@@ -206,11 +207,7 @@ onMounted(async () => {
               />
             </VCol>
             <VCol cols="6" md="3">
-              <VTextField
-                v-model="siteForm.name"
-                label="站点名称"
-                :rules="[requiredValidator]"
-              />
+              <VTextField v-model="siteForm.name" label="站点名称" :rules="[requiredValidator]" />
             </VCol>
             <VCol cols="6" md="3">
               <VSelect
@@ -317,7 +314,7 @@ onMounted(async () => {
                     persistent-hint
                   />
                 </VCol>
-                <VCol cols="6" md="6">
+                <VCol cols="9" md="9">
                   <VTextField
                     v-model="siteForm.browse"
                     label="列表地址"
@@ -325,110 +322,8 @@ onMounted(async () => {
                     persistent-hint
                   />
                 </VCol>
-                <VCol cols="3" md="3">
-                  <VBtn @click="syncFromBrowse" variant="outlined">
-                    同步至搜索配置
-                  </VBtn>
-                </VCol>
               </VRow>
-              <VRow>
-                <VCol cols="3" md="3">
-                  <VSwitch
-                    v-model="siteForm.browse_config.list_in_detail"
-                    label="种子列表在详情页"
-                    hint="如果站点种子列表在详情页，则列表配置必须指向各详情页的a标签"
-                  />
-                </VCol>
-                <VCol cols="9" md="9">
-                  <VTextField
-                    v-model="siteForm.browse_config.list"
-                    label="列表配置"
-                    hint='用于获取种子列表集合，参考：{"selector": "table.tablesorter > tbody > tr"}'
-                    persistent-hint
-                  />
-                </VCol>
-                
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.id"
-                    label="唯一标识配置"
-                    hint='用于获取各种子的唯一标识，参考：{"selector":"a[href*=\"/topics/list/sort_id/\"]","attribute":"href","filters":[{"name":"re_search","args":["\\d+",0]}]}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.title"
-                    label="标题配置"
-                    hint='用于获取各种子的标题，参考：{"selector":"td.title > a"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.details"
-                    label="详情地址配置"
-                    hint='用于获取各种子的详情地址，参考：{"selector":"td.title > a","attribute":"href"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.download"
-                    label="下载地址配置"
-                    hint='用于获取各种子的下载地址，参考：{"selector":"a.download-arrow.arrow-magnet","attribute":"href"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.date_added"
-                    label="发布日期配置"
-                    hint='用于获取各种子的下载地址，参考：{"selector":"td:nth-child(1) > span","optional":true}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.size"
-                    label="种子大小配置"
-                    hint='用于获取各种子的大小，参考：{"selector":"td:nth-child(5)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.seeders"
-                    label="种子数配置"
-                    hint='用于获取各种子的种子数，参考：{"selector":"td:nth-child(6)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.leechers"
-                    label="下载数配置"
-                    hint='用于获取各种子的下载数，参考：{"selector":"td:nth-child(7)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.grabs"
-                    label="完成数配置"
-                    hint='用于获取各种子的完成数，参考：{"selector":"td:nth-child(8)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.browse_config.fields.labels"
-                    label="标签配置"
-                    hint='用于获取各种子的标签，参考：{"selector":"td:nth-child(9)"}'
-                    persistent-hint
-                  />
-                </VCol>
-              </VRow>
+              <SpiderConfig :config="siteForm.browse_config" syncText="一键同步至搜索配置" @sync="syncFromBrowse" />
             </VWindowItem>
             <VWindowItem value="search">
               <VRow>
@@ -441,7 +336,7 @@ onMounted(async () => {
                     persistent-hint
                   />
                 </VCol>
-                <VCol cols="6" md="6">
+                <VCol cols="9" md="9">
                   <VTextField
                     v-model="siteForm.search"
                     label="搜索地址"
@@ -449,94 +344,8 @@ onMounted(async () => {
                     persistent-hint
                   />
                 </VCol>
-                <VCol cols="3" md="3">
-                  <VBtn @click="syncFromBrowse" variant="outlined">
-                    一键同步列表配置
-                  </VBtn>
-                </VCol>
               </VRow>
-              <VRow>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.list"
-                    label="列表配置"
-                    hint='用于获取种子列表集合，参考：{"selector": "table.tablesorter > tbody > tr"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.id"
-                    label="唯一标识配置"
-                    hint='用于获取各种子的唯一标识，参考：{"selector":"a[href*=\"/topics/list/sort_id/\"]","attribute":"href","filters":[{"name":"re_search","args":["\\d+",0]}]}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.title"
-                    label="标题配置"
-                    hint='用于获取各种子的标题，参考：{"selector":"td.title > a"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.details"
-                    label="详情地址配置"
-                    hint='用于获取各种子的详情地址，参考：{"selector":"td.title > a","attribute":"href"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.download"
-                    label="下载地址配置"
-                    hint='用于获取各种子的下载地址，参考：{"selector":"a.download-arrow.arrow-magnet","attribute":"href"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.date"
-                    label="发布日期配置"
-                    hint='用于获取各种子的下载地址，参考：{"selector":"td:nth-child(1) > span","optional":true}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.size"
-                    label="种子大小配置"
-                    hint='用于获取各种子的大小，参考：{"selector":"td:nth-child(5)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.seeders"
-                    label="种子数配置"
-                    hint='用于获取各种子的种子数，参考：{"selector":"td:nth-child(6)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.leechers"
-                    label="下载数配置"
-                    hint='用于获取各种子的下载数，参考：{"selector":"td:nth-child(7)"}'
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12" md="12">
-                  <VTextField
-                    v-model="siteForm.search_config.fields.grabs"
-                    label="完成数配置"
-                    hint='用于获取各种子的完成数，参考：{"selector":"td:nth-child(8)"}'
-                    persistent-hint
-                  />
-                </VCol>
-              </VRow>
+              <SpiderConfig :config="siteForm.search_config" syncText="一键同步列表配置" @sync="syncFromBrowse" />
             </VWindowItem>
           </VWindow>
           <VTabs v-model="siteType" show-arrows class="v-tabs-pill mt-3">

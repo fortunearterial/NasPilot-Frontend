@@ -199,6 +199,13 @@ const router = createRouter({
           path: 'login',
           component: () => import('../pages/login.vue'),
         },
+        { 
+          path: '/oauth/authorize', 
+              component: () => import('../pages/authorize.vue'),
+              meta: {
+            requiresAuth: true,
+          },
+        },
         {
           path: '/:pathMatch(.*)*',
           component: () => import('../pages/[...all].vue'),
