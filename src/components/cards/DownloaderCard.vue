@@ -200,7 +200,7 @@ onUnmounted(() => {
                   active
                 />
               </VCol>
-              <VCol cols="12" md="6">
+              <!-- <VCol cols="12" md="6">
                 <VTextField
                   v-model="downloaderInfo.config.host"
                   label="程序地址"
@@ -209,16 +209,7 @@ onUnmounted(() => {
                   persistent-hint
                   active
                 />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSwitch
-                  v-model="downloaderInfo.config.category"
-                  label="自动分类管理"
-                  hint="由下载器自动管理分类和下载目录"
-                  persistent-hint
-                  active
-                />
-              </VCol>
+              </VCol> -->
             </VRow>
             <VRow v-if="downloaderInfo.type == 'qbittorrent'">
               <VCol cols="12" md="6">

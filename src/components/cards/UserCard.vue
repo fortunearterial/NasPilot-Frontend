@@ -48,7 +48,7 @@ const tvShowSubscriptions = ref(0)
 // 按用户查询订阅数量
 async function fetchSubscriptions() {
   try {
-    const result: Subscribe[] = await api.get(`subscribe/user/${props.user.name}`)
+    const result: Subscribe[] = await api.get(`subscribe/user`)
     if (result) {
       movieSubscriptions.value = result.filter(item => item.type === '电影').length
       tvShowSubscriptions.value = result.filter(item => item.type === '电视剧').length
