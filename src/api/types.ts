@@ -77,7 +77,9 @@ export interface Subscribe {
   // 过滤规则组
   filter_groups?: string[]
   // 下载器
-  downloader: string
+  downloader?: string
+  // 自定义剧集组
+  episode_group?: string
 }
 
 // 订阅分享
@@ -138,6 +140,8 @@ export interface SubscribeShare {
   media_category?: string
   // 复用次数
   count?: number
+  // 自定义剧集组
+  episode_group?: string
 }
 
 // 历史记录
@@ -184,6 +188,8 @@ export interface TransferHistory {
   errmsg?: string
   // 日期
   date?: string
+  // 源文件项
+  src_fileitem?: FileItem
 }
 
 // 媒体信息
@@ -286,6 +292,8 @@ export interface MediaInfo {
   next_episode_to_air?: object
   // 别名
   names?: string[]
+  // 剧集组
+  episode_group?: string
 }
 
 // 季信息
@@ -812,6 +820,8 @@ export interface User {
   permissions: { [key: string]: any }
   // 用户个性化设置 json
   settings: { [key: string]: string | null }
+  // 昵称
+  nickname?: string
 }
 
 // 存储空间
@@ -1229,6 +1239,8 @@ export interface TransferForm {
   library_type_folder?: boolean
   // 媒体库类别子目录
   library_category_folder?: boolean
+  // 剧集组编号
+  episode_group?: string
 }
 
 // 整理队列
@@ -1270,6 +1282,8 @@ export interface RecommendSource {
   name: string
   // 媒体数据源API地址
   api_path: string
+  // 类型
+  type: string
 }
 
 // 站点资源分类

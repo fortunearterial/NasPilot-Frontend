@@ -10,7 +10,7 @@ import WorkflowSidebar from '@/layouts/components/WorkflowSidebar.vue'
 import DropzoneBackground from '@/layouts/components/DropzoneBackground.vue'
 import ImportCodeDialog from '@/components/dialog/ImportCodeDialog.vue'
 
-const { onConnect, addEdges, nodes, edges } = useVueFlow()
+const { onConnect, addEdges, nodes, edges, addNodes, screenToFlowCoordinate } = useVueFlow()
 
 const { onDragOver, onDrop, onDragLeave, isDragOver } = useDragAndDrop()
 
@@ -98,6 +98,43 @@ const $toast = useToast()
 // 导入代码对话框
 const importCodeDialog = ref(false)
 
+// 为移动端生成节点ID
+function getId() {
+  return 'act_' + Math.random().toString(36).substr(2, 9)
+}
+
+// 处理移动端组件点击事件
+function handleComponentClick(action: any) {
+  // 计算当前视图中心点
+  const centerX = window.innerWidth / 2
+  const centerY = window.innerHeight / 3
+
+  // 转换为画布坐标
+  const position = screenToFlowCoordinate({
+    x: centerX,
+    y: centerY,
+  })
+
+  // 生成一个新节点ID
+  const nodeId = getId()
+
+  // 创建新节点
+  const newNode = {
+    id: nodeId,
+    type: action.type,
+    name: action.name,
+    description: action.desc || '',
+    position,
+    data: {},
+  }
+
+  // 添加节点到画布
+  addNodes(newNode)
+
+  // 显示提示
+  $toast.success('已添加组件到画布')
+}
+
 // 调用API 编辑任务
 async function updateWorkflow() {
   // 更新节点和流程
@@ -148,36 +185,40 @@ onMounted(() => {
     edges.value = props.workflow.flows ?? []
   }
 })
+
+// 判断是不是MACOS
+const isMacOS = computed(() => {
+  return /Macintosh|MacIntel|MacPPC|Mac68K/.test(navigator.userAgent)
+})
 </script>
 
 <template>
   <VDialog scrollable fullscreen :scrim="false" transition="dialog-bottom-transition">
-    <VCard>
+    <VCard class="workflow-dialog">
       <!-- Toolbar -->
-      <div>
-        <VToolbar color="primary">
-          <VToolbarItems>
-            <VBtn icon @click="emit('close')" class="ms-3">
-              <VIcon size="large" color="white" icon="mdi-close" />
-            </VBtn>
-          </VToolbarItems>
-          <VToolbarTitle> 编辑流程 - {{ workflow?.name }} </VToolbarTitle>
-          <VToolbarItems>
-            <VBtn icon @click="importCodeDialog = true">
-              <VIcon size="large" color="white" icon="mdi-import" />
-            </VBtn>
-            <VBtn icon @click="shareWorkflow">
-              <VIcon size="large" color="white" icon="mdi-share" />
-            </VBtn>
-            <VBtn icon @click="updateWorkflow" class="mx-5">
-              <VIcon size="large" color="white" icon="mdi-content-save" />
-            </VBtn>
-          </VToolbarItems>
-        </VToolbar>
-      </div>
-      <VDivider />
-      <VCardText class="px-0 py-0">
-        <div class="dnd-flow" @drop="onDrop">
+      <VToolbar color="primary">
+        <VToolbarItems>
+          <VBtn icon @click="emit('close')" class="ms-3">
+            <VIcon size="large" color="white" icon="mdi-close" />
+          </VBtn>
+        </VToolbarItems>
+        <VToolbarTitle> 编辑流程 - {{ workflow?.name }} </VToolbarTitle>
+        <VSpacer></VSpacer>
+        <VToolbarItems>
+          <VBtn icon variant="text" @click="importCodeDialog = true" class="ms-2">
+            <VIcon size="24" color="white" icon="mdi-import" />
+          </VBtn>
+          <VBtn icon variant="text" @click="shareWorkflow" class="ms-2">
+            <VIcon size="24" color="white" icon="mdi-share" />
+          </VBtn>
+          <VBtn icon variant="text" @click="updateWorkflow" class="ms-2 me-3">
+            <VIcon size="24" color="white" icon="mdi-content-save" />
+          </VBtn>
+        </VToolbarItems>
+      </VToolbar>
+
+      <VCardText class="workflow-content pa-0">
+        <div class="workflow-canvas" @drop="onDrop">
           <VueFlow
             :nodes="nodes"
             :edges="edges"
@@ -187,7 +228,7 @@ onMounted(() => {
             :edge-updater-radius="10"
             @dragover="onDragOver"
             @dragleave="onDragLeave"
-            delete-key-code="Delete"
+            :delete-key-code="isMacOS ? 'Backspace' : 'Delete'"
             auto-connect
           >
             <MiniMap />
@@ -199,10 +240,11 @@ onMounted(() => {
             >
             </DropzoneBackground>
           </VueFlow>
-          <WorkflowSidebar />
+          <WorkflowSidebar @component-click="handleComponentClick" />
         </div>
       </VCardText>
     </VCard>
+
     <ImportCodeDialog
       v-if="importCodeDialog"
       v-model="importCodeDialog"
@@ -213,92 +255,49 @@ onMounted(() => {
     />
   </VDialog>
 </template>
-<style>
+
+<style lang="scss">
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
 @import '@vue-flow/controls/dist/style.css';
 @import '@vue-flow/minimap/dist/style.css';
 @import '@vue-flow/node-resizer/dist/style.css';
 
+.workflow-dialog {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  block-size: 100%;
+}
+
+.workflow-content {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+}
+
+.workflow-canvas {
+  position: relative;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
 .vue-flow__minimap {
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  background-color: rgba(var(--v-theme-surface), 0.8);
+  box-shadow: 0 4px 15px rgba(var(--v-shadow-key-umbra-color), 0.1);
+  inset-block-end: 20px;
+  inset-inline-end: 20px;
   transform: scale(75%);
   transform-origin: bottom right;
 }
 
-.dnd-flow {
-  flex-direction: column;
-  display: flex;
-  height: 100%;
-}
-
-.dnd-flow aside {
-  color: #fff;
-  font-weight: 700;
-  border-right: 1px solid #eee;
-  padding: 15px 10px;
-  font-size: 12px;
-  background: #10b981bf;
-  -webkit-box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 5px 10px #0000004d;
-}
-
-.dnd-flow aside .nodes > * {
-  margin-bottom: 10px;
-  cursor: grab;
-  font-weight: 500;
-  -webkit-box-shadow: 5px 5px 10px 2px rgba(0, 0, 0, 0.25);
-  box-shadow: 5px 5px 10px 2px #00000040;
-}
-
-.dnd-flow aside .description {
-  margin-bottom: 10px;
-}
-.dnd-flow .vue-flow-wrapper {
-  flex-grow: 1;
-  height: 100%;
-}
-
-@media screen and (min-width: 640px) {
-  .dnd-flow {
-    flex-direction: row;
-  }
-
-  .dnd-flow aside {
-    max-width: 25%;
-  }
-}
-
-@media screen and (max-width: 639px) {
-  .dnd-flow aside .nodes {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-  }
-}
-
-.dropzone-background {
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
-.dropzone-background .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  pointer-events: none;
-}
-
 .vue-flow__handle {
-  height: 24px;
-  width: 8px;
   border-radius: 4px;
+  block-size: 24px;
+  inline-size: 8px;
 }
 
 .vue-flow__edge-path,
@@ -312,5 +311,40 @@ onMounted(() => {
 
 .vue-flow__handle-right {
   background-color: rgb(var(--v-theme-error));
+}
+
+// 自定义节点样式
+.vue-flow__node {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+
+  &:hover {
+    box-shadow: 0 8px 16px rgba(var(--v-shadow-key-umbra-color), 0.15) !important;
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    box-shadow: 0 0 0 1px rgb(var(--v-theme-primary)) !important;
+  }
+}
+
+// 自定义动作连线样式
+.vue-flow__edge.animation {
+  .vue-flow__edge-path {
+    stroke: rgb(var(--v-theme-primary));
+  }
+
+  &.selected {
+    .vue-flow__edge-path {
+      stroke: rgb(var(--v-theme-primary));
+      stroke-width: 4;
+    }
+  }
+}
+
+@media screen and (width <= 600px) {
+  .vue-flow__minimap {
+    display: none;
+  }
 }
 </style>

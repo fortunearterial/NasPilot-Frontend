@@ -118,77 +118,73 @@ onMounted(() => {
 })
 </script>
 <template>
-  <VDialog max-width="45rem" scrollable>
+  <VDialog max-width="35rem" scrollable>
     <VCard>
-      <VCardItem>
-        <VCardTitle v-if="title">{{ torrent?.site_name }} - {{ title }}</VCardTitle>
-        <VCardTitle v-else>确认下载</VCardTitle>
-        <DialogCloseBtn @click="emit('close')" />
-      </VCardItem>
+      <VCardTitle class="py-4 me-12">
+        <VIcon icon="mdi-download" class="me-2" />
+        <span v-if="title">{{ torrent?.site_name }} - {{ title }}</span>
+        <span v-else>确认下载</span>
+      </VCardTitle>
+      <VDialogCloseBtn @click="emit('close')" />
       <VDivider />
-      <VCardText>
-        <VList lines="one">
-          <VListItem>
-            <template #prepend>
-              <VIcon icon="mdi-web"></VIcon>
-            </template>
-            <VListItemTitle>
-              <span class="whitespace-break-spaces me-2">{{ torrent?.title }}</span>
-              <span class="text-green-700 ms-2 text-sm">↑{{ torrent?.seeders }}</span>
-              <span class="text-orange-700 ms-2 text-sm">↓{{ torrent?.peers }}</span>
-            </VListItemTitle>
-          </VListItem>
-          <VListItem>
-            <template #prepend>
-              <VIcon icon="mdi-subtitles-outline"></VIcon>
-            </template>
-            <VListItemTitle>
-              <span class="text-body-1 whitespace-break-spaces">{{ torrent?.description }}</span>
-            </VListItemTitle>
-          </VListItem>
-          <VListItem>
-            <template #prepend>
-              <VIcon icon="mdi-database"></VIcon>
-            </template>
-            <VListItemTitle>
-              <span class="text-body-1">
-                <VChip variant="tonal" label>
-                  {{ formatFileSize(torrent?.size || 0) }}
-                </VChip>
-              </span>
-            </VListItemTitle>
-          </VListItem>
-        </VList>
-        <VRow>
-          <VCol cols="12" md="4">
-            <VSelect
-              v-model="selectedDownloader"
-              :items="downloaderOptions"
-              label="指定下载器"
-              variant="underlined"
-              placeholder="留空默认"
-            />
-          </VCol>
-          <VCol cols="12" md="8">
-            <VCombobox
-              v-model="selectedDirectory"
-              :items="targetDirectories"
-              label="指定保存目录"
-              placeholder="留空自动匹配"
-              variant="underlined"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
+      <VList lines="one">
+        <VListItem>
+          <template #prepend>
+            <VIcon icon="mdi-web"></VIcon>
+          </template>
+          <VListItemTitle>
+            <span class="whitespace-break-spaces me-2">{{ torrent?.title }}</span>
+            <span class="text-green-700 ms-2 text-sm">↑{{ torrent?.seeders }}</span>
+            <span class="text-orange-700 ms-2 text-sm">↓{{ torrent?.peers }}</span>
+          </VListItemTitle>
+        </VListItem>
+        <VListItem v-if="torrent?.description">
+          <template #prepend>
+            <VIcon icon="mdi-subtitles-outline"></VIcon>
+          </template>
+          <VListItemTitle>
+            <span class="text-body-2 whitespace-break-spaces">{{ torrent?.description }}</span>
+          </VListItemTitle>
+        </VListItem>
+        <VListItem v-if="torrent?.size">
+          <template #prepend>
+            <VIcon icon="mdi-database"></VIcon>
+          </template>
+          <VListItemTitle>
+            <span class="text-body-2">
+              <VChip variant="tonal" label>
+                {{ formatFileSize(torrent?.size || 0) }}
+              </VChip>
+            </span>
+          </VListItemTitle>
+        </VListItem>
+      </VList>
+      <VRow class="px-7">
+        <VCol cols="12" md="4">
+          <VSelect
+            v-model="selectedDownloader"
+            :items="downloaderOptions"
+            size="small"
+            label="下载器（默认）"
+            variant="underlined"
+            placeholder="留空默认"
+            density="compact"
+          />
+        </VCol>
+        <VCol cols="12" md="8">
+          <VCombobox
+            v-model="selectedDirectory"
+            :items="targetDirectories"
+            label="保存目录（自动）"
+            size="small"
+            placeholder="留空自动匹配"
+            variant="underlined"
+            density="compact"
+          />
+        </VCol>
+      </VRow>
       <VCardText class="text-center">
-        <VBtn
-          variant="elevated"
-          :disabled="loading"
-          @click="addDownload"
-          :prepend-icon="icon"
-          class="px-5"
-          size="large"
-        >
+        <VBtn variant="elevated" :disabled="loading" @click="addDownload" :prepend-icon="icon" class="px-5">
           {{ buttonText }}
         </VBtn>
       </VCardText>

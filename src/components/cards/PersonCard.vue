@@ -77,9 +77,8 @@ function goPersonDetail() {
         v-bind="hover.props"
         :height="personProps.height"
         :width="personProps.width"
-        class="rounded-lg"
         :class="{
-          'transition transform-cpu duration-300 scale-105': hover.isHovering,
+          'transition transform-cpu duration-300 -translate-y-1': hover.isHovering,
         }"
         @click.stop="goPersonDetail"
       >
@@ -116,7 +115,7 @@ function goPersonDetail() {
   </VHover>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .person-card {
   background-image: linear-gradient(45deg, rgb(var(--v-theme-background)), rgb(var(--v-theme-surface)) 60%);
 }

@@ -11,6 +11,7 @@ import { useDisplay } from 'vuetify'
 import { isNullOrEmptyObject } from '@/@core/utils'
 import { PluginTabs } from '@/router/menu'
 import PluginMarketSettingDialog from '@/components/dialog/PluginMarketSettingDialog.vue'
+import { useDynamicButton } from '@/composables/useDynamicButton'
 
 const route = useRoute()
 
@@ -21,7 +22,7 @@ const display = useDisplay()
 const appMode = inject('pwaMode') && display.mdAndDown.value
 
 // 当前标签
-const activeTab = ref(route.query.tab)
+const activeTab = ref('我的插件')
 
 // 插件ID参数
 const pluginId = ref(route.query.id)
@@ -47,11 +48,25 @@ const loading = ref(false)
 // 已安装插件列表
 const dataList = ref<Plugin[]>([])
 
+// 计算已安装插件的名称列表
+const installedPluginNames = computed(() => {
+  return dataList.value.map(item => item.plugin_name)
+})
+
+// 过滤后的已安装插件列表
+const filteredDataList = ref<Plugin[]>([])
+
 // 未安装插件列表
 const uninstalledList = ref<Plugin[]>([])
 
 // 插件市场插件列表
 const marketList = ref<Plugin[]>([])
+
+// 排序后的未安装插件列表
+const sortedUninstalledList = ref<Plugin[]>([])
+
+// 显示的未安装插件列表
+const displayUninstalledList = ref<Plugin[]>([])
 
 // 是否刷新过
 const isRefreshed = ref(false)
@@ -101,6 +116,28 @@ const filterForm = reactive({
   repo: [] as string[],
 })
 
+// 计算过滤表单是否全部为空
+const isFilterFormEmpty = computed(() => {
+  return (
+    filterForm.name === '' &&
+    filterForm.author.length === 0 &&
+    filterForm.label.length === 0 &&
+    filterForm.repo.length === 0
+  )
+})
+
+// 插件过滤条件
+const installedFilter = ref(null)
+
+// 有新版本过滤条件
+const hasUpdateFilter = ref(false)
+
+// 已安装插件过滤窗口
+const filterInstalledPluginDialog = ref(false)
+
+// 插件市场过滤窗口
+const filterMarketPluginDialog = ref(false)
+
 // 作者过滤项
 const authorFilterOptions = ref<string[]>([])
 // 标签过滤项
@@ -141,7 +178,7 @@ function sortPluginOrder() {
 // 保存顺序设置
 async function savePluginOrder() {
   // 顺序配置
-  const orderObj = dataList.value.map(item => ({ id: item.id || '' }))
+  const orderObj = filteredDataList.value.map(item => ({ id: item.id || '' }))
   orderConfig.value = orderObj
   const orderString = JSON.stringify(orderObj)
   localStorage.setItem('MP_PLUGIN_ORDER', orderString)
@@ -315,8 +352,8 @@ async function refreshData() {
   fetchUninstalledPlugins()
 }
 
-// 对uninstalledList进行排序，按PluginStatistics倒序
-const sortedUninstalledList = computed(() => {
+// 对uninstalledList进行排序到sortedUninstalledList
+watch([marketList, filterForm], () => {
   // 匹配过滤函数
   const match = (filter: Array<string>, value: string | undefined) =>
     filter.length === 0 || (value && filter.includes(value))
@@ -325,8 +362,7 @@ const sortedUninstalledList = computed(() => {
   const filterText = (filter: string, value: string | undefined) =>
     !filter || (value && value.toLowerCase().includes(filter.toLowerCase()))
 
-  // 过滤后的数据列表
-  const ret_list: Plugin[] = []
+  sortedUninstalledList.value = []
 
   // 过滤
   marketList.value.forEach(value => {
@@ -337,22 +373,26 @@ const sortedUninstalledList = computed(() => {
         matchMultiple(filterForm.label, value.plugin_label) &&
         match(filterForm.repo, handleRepoUrl(value.repo_url))
       ) {
-        ret_list.push(value)
+        sortedUninstalledList.value.push(value)
       }
     }
   })
 
-  if (isNullOrEmptyObject(PluginStatistics.value)) return ret_list
-  // 数据排序
-  if (!activeSort.value || activeSort.value === 'count') {
-    return ret_list.sort((a, b) => {
-      return PluginStatistics.value[b.id || '0'] - PluginStatistics.value[a.id || '0']
-    })
-  } else if (activeSort.value) {
-    return ret_list.sort((a: any, b: any) => {
-      return a[activeSort.value ?? ''] > b[activeSort.value ?? ''] ? 1 : -1
-    })
+  // 排序
+  if (!isNullOrEmptyObject(PluginStatistics.value)) {
+    if (!activeSort.value || activeSort.value === 'count') {
+      sortedUninstalledList.value = sortedUninstalledList.value.sort((a, b) => {
+        return PluginStatistics.value[b.id || '0'] - PluginStatistics.value[a.id || '0']
+      })
+    } else if (activeSort.value) {
+      sortedUninstalledList.value = sortedUninstalledList.value.sort((a: any, b: any) => {
+        return a[activeSort.value ?? ''] > b[activeSort.value ?? ''] ? 1 : -1
+      })
+    }
   }
+
+  // 显示前20个
+  displayUninstalledList.value = sortedUninstalledList.value.slice(0, 20)
 })
 
 // 标签转换
@@ -380,6 +420,28 @@ function handleRepoUrl(url: string | undefined) {
   return url.replace('https://github.com/', '').replace('https://raw.githubusercontent.com/', '')
 }
 
+// 监测dataList变化或installedFilter、hasUpdateFilter变化时更新filteredDataList
+watch([dataList, installedFilter, hasUpdateFilter], () => {
+  filteredDataList.value = dataList.value.filter(item => {
+    if (!installedFilter.value && !hasUpdateFilter.value) return true
+    if (hasUpdateFilter.value) {
+      return item.has_update
+    }
+    if (installedFilter.value) {
+      return item.plugin_name?.toLowerCase().includes((installedFilter.value as string).toLowerCase())
+    }
+    return true
+  })
+})
+
+// 插件市场加载更多数据
+function loadMarketMore({ done }: { done: any }) {
+  // 从 dataList 中获取最前面的 20 个元素
+  const itemsToMove = sortedUninstalledList.value.splice(0, 20)
+  displayUninstalledList.value.push(...itemsToMove)
+  done('ok')
+}
+
 // 加载时获取数据
 onMounted(async () => {
   await loadPluginOrderConfig()
@@ -393,28 +455,158 @@ onMounted(async () => {
     }
   }
 })
+
+// 使用动态按钮钩子
+useDynamicButton({
+  icon: 'mdi-magnify',
+  onClick: () => {
+    SearchDialog.value = true
+  },
+})
 </script>
 
 <template>
   <div>
-    <VTabs v-model="activeTab" show-arrows>
-      <VTab v-for="item in PluginTabs" :value="item.tab">
-        <div class="flex align-center min-w-24">
-          <VIcon size="20" start :icon="item.icon" />
-          {{ item.title }}
-        </div>
-      </VTab>
-    </VTabs>
+    <VHeaderTab :items="PluginTabs" v-model="activeTab">
+      <template #append>
+        <VMenu
+          v-if="activeTab === '我的插件'"
+          v-model="filterInstalledPluginDialog"
+          width="20rem"
+          :close-on-content-click="false"
+          scrim
+        >
+          <template #activator="{ props }">
+            <VBtn
+              icon="mdi-filter-multiple-outline"
+              variant="text"
+              :color="installedFilter ? 'primary' : 'gray'"
+              size="default"
+              class="settings-icon-button"
+              v-bind="props"
+            />
+          </template>
+          <VCard>
+            <VCardItem>
+              <VCardTitle>
+                <VIcon icon="mdi-filter-multiple-outline" class="mr-2" />
+                筛选插件
+              </VCardTitle>
+              <VDialogCloseBtn @click="filterInstalledPluginDialog = false" />
+            </VCardItem>
+            <VCardText>
+              <VRow>
+                <VCol cols="12">
+                  <VCombobox
+                    v-model="installedFilter"
+                    :items="installedPluginNames"
+                    label="名称"
+                    density="comfortable"
+                    clearable
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VSwitch v-model="hasUpdateFilter" label="有新版本" />
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VMenu>
+        <VMenu
+          v-if="activeTab === '插件市场'"
+          v-model="filterMarketPluginDialog"
+          width="25rem"
+          :close-on-content-click="false"
+          scrim
+        >
+          <template #activator="{ props }">
+            <VBtn
+              icon="mdi-filter-multiple-outline"
+              variant="text"
+              :color="isFilterFormEmpty ? 'gray' : 'primary'"
+              size="default"
+              class="settings-icon-button"
+              v-bind="props"
+            />
+          </template>
+          <VCard>
+            <VCardItem>
+              <VCardTitle>
+                <VIcon icon="mdi-filter-multiple-outline" class="mr-2" />
+                筛选插件
+              </VCardTitle>
+              <VDialogCloseBtn @click="filterMarketPluginDialog = false" />
+            </VCardItem>
+            <VCardText>
+              <!-- 过滤表单 -->
+              <div v-if="isAppMarketLoaded">
+                <VRow>
+                  <VCol cols="12" md="6">
+                    <VTextField v-model="filterForm.name" density="comfortable" label="名称" clearable />
+                  </VCol>
+                  <VCol v-if="authorFilterOptions.length > 0" cols="12" md="6">
+                    <VSelect
+                      v-model="filterForm.author"
+                      :items="authorFilterOptions"
+                      density="comfortable"
+                      chips
+                      label="作者"
+                      multiple
+                      clearable
+                    />
+                  </VCol>
+                  <VCol v-if="labelFilterOptions.length > 0" cols="12" md="6">
+                    <VSelect
+                      v-model="filterForm.label"
+                      :items="labelFilterOptions"
+                      density="comfortable"
+                      chips
+                      label="标签"
+                      multiple
+                      clearable
+                    />
+                  </VCol>
+                  <VCol v-if="repoFilterOptions.length > 0" cols="12" md="6">
+                    <VSelect
+                      v-model="filterForm.repo"
+                      :items="repoFilterOptions"
+                      density="comfortable"
+                      chips
+                      label="插件库"
+                      multiple
+                      clearable
+                    />
+                  </VCol>
+                  <VCol v-if="repoFilterOptions.length > 0" cols="12" md="6">
+                    <VSelect v-model="activeSort" :items="sortOptions" density="comfortable" label="排序" />
+                  </VCol>
+                </VRow>
+              </div>
+            </VCardText>
+          </VCard>
+        </VMenu>
+        <VBtn
+          v-if="activeTab === '插件市场'"
+          icon="mdi-store-cog"
+          variant="text"
+          color="gray"
+          size="default"
+          class="settings-icon-button"
+          @click="MarketSettingDialog = true"
+        />
+      </template>
+    </VHeaderTab>
 
     <VWindow v-model="activeTab" class="mt-5 disable-tab-transition" :touch="false">
       <!-- 我的插件 -->
-      <VWindowItem value="installed">
+      <VWindowItem value="我的插件">
         <transition name="fade-slide" appear>
           <div>
+            <VPageContentTitle v-if="installedFilter" :title="`筛选：${installedFilter}`" />
             <LoadingBanner v-if="!isRefreshed" class="mt-12" />
             <draggable
-              v-if="dataList.length > 0"
-              v-model="dataList"
+              v-if="filteredDataList.length > 0"
+              v-model="filteredDataList"
               @end="savePluginOrder"
               handle=".cursor-move"
               item-key="id"
@@ -433,76 +625,48 @@ onMounted(async () => {
               </template>
             </draggable>
             <NoDataFound
-              v-if="dataList.length === 0 && isRefreshed"
+              v-if="filteredDataList.length === 0 && isRefreshed"
               error-code="404"
-              error-title="没有安装插件"
-              error-description="点击右下角按钮，前往插件市场安装插件。"
+              error-title="没有数据"
+              :error-description="
+                installedFilter || hasUpdateFilter
+                  ? '没有匹配到相关内容，请更换筛选条件。'
+                  : '请先前往插件市场安装插件。'
+              "
             />
           </div>
         </transition>
       </VWindowItem>
       <!-- 插件市场 -->
-      <VWindowItem value="market">
+      <VWindowItem value="插件市场">
         <transition name="fade-slide" appear>
           <div>
             <LoadingBanner v-if="!isAppMarketLoaded" class="mt-12" />
-            <!-- 过滤表单 -->
-            <div v-if="isAppMarketLoaded" class="bg-transparent mb-3 shadow-none">
-              <VRow>
-                <VCol cols="6" md="">
-                  <VTextField v-model="filterForm.name" size="small" density="compact" label="名称" clearable />
-                </VCol>
-                <VCol v-if="authorFilterOptions.length > 0" cols="6" md="">
-                  <VSelect
-                    v-model="filterForm.author"
-                    :items="authorFilterOptions"
-                    size="small"
-                    density="compact"
-                    chips
-                    label="作者"
-                    multiple
-                    clearable
-                  />
-                </VCol>
-                <VCol v-if="labelFilterOptions.length > 0" cols="6" md="">
-                  <VSelect
-                    v-model="filterForm.label"
-                    :items="labelFilterOptions"
-                    size="small"
-                    density="compact"
-                    chips
-                    label="标签"
-                    multiple
-                    clearable
-                  />
-                </VCol>
-                <VCol v-if="repoFilterOptions.length > 0" cols="6" md="">
-                  <VSelect
-                    v-model="filterForm.repo"
-                    :items="repoFilterOptions"
-                    size="small"
-                    density="compact"
-                    chips
-                    label="插件库"
-                    multiple
-                    clearable
-                  />
-                </VCol>
-                <VCol v-if="repoFilterOptions.length > 0" cols="6" md="">
-                  <VSelect v-model="activeSort" :items="sortOptions" size="small" density="compact" label="排序" />
-                </VCol>
-              </VRow>
-            </div>
-            <div v-if="isAppMarketLoaded" class="grid gap-4 grid-plugin-card">
-              <template v-for="(data, index) in sortedUninstalledList" :key="`${data.id}_v${data.plugin_version}`">
-                <PluginAppCard :plugin="data" :count="PluginStatistics[data.id || '0']" @install="pluginInstalled" />
-              </template>
-            </div>
+            <!-- 资源列表 -->
+            <VInfiniteScroll
+              v-if="isAppMarketLoaded"
+              mode="intersect"
+              side="end"
+              :items="displayUninstalledList"
+              @load="loadMarketMore"
+              class="overflow-visible"
+            >
+              <template #loading />
+              <template #empty />
+              <div class="grid gap-4 grid-plugin-card">
+                <template
+                  v-for="(data, index) in displayUninstalledList"
+                  :key="`${data.id}_v${data.plugin_version}_${index}`"
+                >
+                  <PluginAppCard :plugin="data" :count="PluginStatistics[data.id || '0']" @install="pluginInstalled" />
+                </template>
+              </div>
+            </VInfiniteScroll>
             <NoDataFound
-              v-if="uninstalledList.length === 0 && isAppMarketLoaded"
+              v-if="displayUninstalledList.length === 0 && isAppMarketLoaded"
               error-code="404"
-              error-title="没有未安装插件"
-              error-description="所有可用插件均已安装。"
+              error-title="没有数据"
+              error-description="所有可用插件均已安装，如有筛选请调整筛选条件。"
             />
           </div>
         </transition>
@@ -513,6 +677,7 @@ onMounted(async () => {
   <div v-if="isRefreshed">
     <!-- 插件搜索图标 -->
     <VFab
+      v-if="!appMode"
       icon="mdi-magnify"
       color="info"
       location="bottom"
@@ -521,18 +686,6 @@ onMounted(async () => {
       app
       appear
       @click="SearchDialog = true"
-      :class="appMode ? 'mb-28' : 'mb-16'"
-    />
-    <!-- 插件市场设置图标 -->
-    <VFab
-      icon="mdi-store-cog"
-      color="warning"
-      location="bottom"
-      size="x-large"
-      fixed
-      app
-      appear
-      @click="MarketSettingDialog = true"
       :class="{ 'mb-12': appMode }"
     />
   </div>
@@ -566,7 +719,7 @@ onMounted(async () => {
           class="mx-1"
         />
       </VToolbar>
-      <DialogCloseBtn @click="closeSearchDialog" />
+      <VDialogCloseBtn @click="closeSearchDialog" />
       <VList v-if="filterPlugins.length > 0" lines="three">
         <VVirtualScroll :items="filterPlugins">
           <template #default="{ item }">

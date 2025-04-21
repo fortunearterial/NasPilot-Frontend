@@ -100,9 +100,9 @@ function doDelete() {
         <VCard
           v-bind="hover.props"
           :key="props.media?.id"
-          class="flex flex-col rounded-lg h-full"
+          class="flex flex-col h-full"
           :class="{
-            'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
+            'transition transform-cpu duration-300 -translate-y-1 shadow-lg': hover.isHovering,
           }"
           min-height="170"
           @click="showForkSubscribe"
@@ -177,7 +177,7 @@ function doDelete() {
     />
   </div>
 </template>
-<style lang="scss">
+<style lang="scss" scoped>
 .subscribe-card-background {
   background-image: linear-gradient(90deg, rgba(31, 41, 55, 47%) 0%, rgb(31, 41, 55) 100%);
 }

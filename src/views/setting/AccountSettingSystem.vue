@@ -369,7 +369,7 @@ onDeactivated(() => {
               <VCol cols="12" md="3">
                 <VSelect
                   v-model="SystemSettings.Basic.WALLPAPER"
-                  label="登录首页壁纸"
+                  label="背景壁纸"
                   hint="选择登陆页面背景来源"
                   persistent-hint
                   :items="wallpaperItems"
@@ -481,13 +481,13 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
-                    <VListItem variant="plain" @click="addDownloader('thunder')">
+                    <VListItem @click="addDownloader('thunder')">
                       <VListItemTitle>迅雷</VListItemTitle>
                     </VListItem>
-                    <VListItem variant="plain" @click="addDownloader('qbittorrent')">
+                    <VListItem @click="addDownloader('qbittorrent')">
                       <VListItemTitle>Qbittorrent</VListItemTitle>
                     </VListItem>
-                    <VListItem variant="plain" @click="addDownloader('transmission')">
+                    <VListItem @click="addDownloader('transmission')">
                       <VListItemTitle>Transmission</VListItemTitle>
                     </VListItem>
                   </VList>
@@ -532,14 +532,17 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
-                    <VListItem variant="plain" @click="addMediaServer('emby')">
+                    <VListItem @click="addMediaServer('emby')">
                       <VListItemTitle>Emby</VListItemTitle>
                     </VListItem>
-                    <VListItem variant="plain" @click="addMediaServer('jellyfin')">
+                    <VListItem @click="addMediaServer('jellyfin')">
                       <VListItemTitle>Jellyfin</VListItemTitle>
                     </VListItem>
-                    <VListItem variant="plain" @click="addMediaServer('plex')">
+                    <VListItem @click="addMediaServer('plex')">
                       <VListItemTitle>Plex</VListItemTitle>
+                    </VListItem>
+                    <VListItem @click="addMediaServer('trimemedia')">
+                      <VListItemTitle>飞牛影视</VListItemTitle>
                     </VListItem>
                   </VList>
                 </VMenu>
@@ -554,7 +557,7 @@ onDeactivated(() => {
   <VDialog v-if="advancedDialog" v-model="advancedDialog" scrollable max-width="60rem" persistent>
     <VCard>
       <VCardItem>
-        <DialogCloseBtn @click="advancedDialog = false" />
+        <VDialogCloseBtn @click="advancedDialog = false" />
         <VCardTitle>高级设置</VCardTitle>
         <VCardSubtitle>系统进阶设置，特殊情况下才需要调整</VCardSubtitle>
       </VCardItem>

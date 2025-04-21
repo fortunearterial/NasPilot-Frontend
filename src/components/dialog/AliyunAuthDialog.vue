@@ -1,9 +1,8 @@
 <script lang="ts" setup>
-import QrcodeVue from 'qrcode.vue'
 import api from '@/api'
 
 // 定义输入
-const props = defineProps({
+defineProps({
   conf: {
     type: Object as PropType<{ [key: string]: any }>,
     required: true,
@@ -14,13 +13,7 @@ const props = defineProps({
 const emit = defineEmits(['done', 'close'])
 
 // 二维码内容
-const qrCodeContent = ref('')
-
-// ck参数
-const ck = ref('')
-
-// t参数
-const t = ref('')
+const qrCodeUrl = ref('')
 
 // 下方的提示信息
 const text = ref('请用阿里云盘 App 扫码')
@@ -34,9 +27,6 @@ let timeoutTimer: NodeJS.Timeout | undefined = undefined
 // 完成
 async function handleDone() {
   clearTimeout(timeoutTimer)
-  if (props.conf?.refreshToken) {
-    await savaAliPanConfig()
-  }
   emit('done')
 }
 
@@ -45,9 +35,8 @@ async function getQrcode() {
   try {
     const result: { [key: string]: any } = await api.get('/storage/qrcode/alipan')
     if (result.success && result.data) {
-      qrCodeContent.value = result.data.codeContent
-      ck.value = result.data.ck
-      t.value = result.data.t
+      qrCodeUrl.value = result.data.codeUrl
+      timeoutTimer = setTimeout(checkQrcode, 3000)
     } else {
       text.value = result.message
     }
@@ -59,23 +48,21 @@ async function getQrcode() {
 // 调用/aliyun/check api验证二维码
 async function checkQrcode() {
   try {
-    const result: { [key: string]: any } = await api.get('/storage/check/alipan', {
-      params: { ck: ck.value, t: t.value },
-    })
+    const result: { [key: string]: any } = await api.get('/storage/check/alipan')
     if (result.success && result.data) {
-      const qrCodeStatus = result.data.qrCodeStatus
+      const qrCodeStatus = result.data.status
       text.value = result.data.tip
-      if (qrCodeStatus == 'CONFIRMED') {
-        // 已确认完成
+      if (qrCodeStatus == 'LoginSuccess') {
+        // 登录成功
         alertType.value = 'success'
         handleDone()
-      } else if (qrCodeStatus == 'NEW' || qrCodeStatus == 'SCANED') {
+      } else if (qrCodeStatus == 'WaitLogin' || qrCodeStatus == 'ScanSuccess') {
+        // 等待登录扫码成功
         alertType.value = 'info'
-        // 新建、待扫码
         clearTimeout(timeoutTimer)
         timeoutTimer = setTimeout(checkQrcode, 3000)
       } else {
-        // 过期或者已取消
+        // 二维码过期
         alertType.value = 'error'
       }
     } else {
@@ -87,18 +74,8 @@ async function checkQrcode() {
   }
 }
 
-// 保存cookie设置
-async function savaAliPanConfig() {
-  try {
-    await api.post(`storage/save/alipan`, props.conf)
-  } catch (e) {
-    console.error(e)
-  }
-}
-
 onMounted(async () => {
   await getQrcode()
-  timeoutTimer = setTimeout(checkQrcode, 3000)
 })
 
 onUnmounted(() => {
@@ -109,21 +86,20 @@ onUnmounted(() => {
 <template>
   <VDialog width="40rem" scrollable max-height="85vh">
     <VCard title="阿里云盘登录" class="rounded-t">
-      <DialogCloseBtn @click="emit('close')" />
+      <VDialogCloseBtn @click="emit('close')" />
       <VCardText class="pt-2 flex flex-col items-center">
         <div class="my-6 shadow-lg rounded text-center p-3 border">
-          <QrcodeVue class="mx-auto" :value="qrCodeContent" :size="200" />
+          <VImg class="mx-auto" :src="qrCodeUrl" width="200" height="200">
+            <template #placeholder>
+              <div class="w-full h-full">
+                <VSkeletonLoader class="object-cover aspect-w-1 aspect-h-1" />
+              </div>
+            </template>
+          </VImg>
         </div>
         <VAlert variant="tonal" :type="alertType" class="my-4 text-center" :text="text">
           <template #prepend />
         </VAlert>
-      </VCardText>
-      <VCardText>
-        <VRow>
-          <VCol class="mt-2">
-            <VTextField label="自定义refreshToken" v-model="props.conf.refreshToken" outlined dense />
-          </VCol>
-        </VRow>
       </VCardText>
       <VCardActions>
         <VSpacer />

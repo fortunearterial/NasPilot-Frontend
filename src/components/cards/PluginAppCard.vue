@@ -147,78 +147,87 @@ const dropdownItems = ref([
 
 <template>
   <div>
-    <VCard :width="props.width" :height="props.height" @click="detailDialog = true" class="flex flex-col h-full">
-      <div
-        class="relative flex flex-row items-start pa-3 justify-between grow"
-        :style="{ background: `${backgroundColor}` }"
-      >
-        <div
-          class="absolute inset-0 bg-cover bg-center"
-          :style="{ background: `${backgroundColor}`, filter: 'brightness(0.5)' }"
-        ></div>
-        <div class="relative flex-1 min-w-0">
-          <VCardTitle class="text-white text-lg px-2 text-shadow whitespace-nowrap overflow-hidden text-ellipsis ...">
-            {{ props.plugin?.plugin_name }}
-            <span class="text-sm text-gray-200">v{{ props.plugin?.plugin_version }}</span>
-          </VCardTitle>
-          <VCardText class="text-white text-sm px-2 py-0 text-shadow overflow-hidden line-clamp-3 ...">
-            {{ props.plugin?.plugin_desc }}
+    <VHover>
+      <template #default="hover">
+        <VCard
+          v-bind="hover.props"
+          :width="props.width"
+          :height="props.height"
+          @click="detailDialog = true"
+          class="flex flex-col h-full"
+          :class="{
+            'transition transform-cpu duration-300 -translate-y-1 shadow-lg': hover.isHovering,
+          }"
+        >
+          <div
+            class="relative flex flex-row items-start pa-3 justify-between grow"
+            :style="{ background: `${backgroundColor}` }"
+          >
+            <div
+              class="absolute inset-0 bg-cover bg-center"
+              :style="{ background: `${backgroundColor}`, filter: 'brightness(0.5)' }"
+            ></div>
+            <div class="relative flex-1 min-w-0">
+              <VCardTitle
+                class="text-white text-lg px-2 text-shadow whitespace-nowrap overflow-hidden text-ellipsis ..."
+              >
+                {{ props.plugin?.plugin_name }}
+                <span class="text-sm text-gray-200">v{{ props.plugin?.plugin_version }}</span>
+              </VCardTitle>
+              <VCardText class="text-white text-sm px-2 py-0 text-shadow overflow-hidden line-clamp-3 ...">
+                {{ props.plugin?.plugin_desc }}
+              </VCardText>
+            </div>
+            <div class="relative flex-shrink-0 self-center">
+              <VAvatar size="64">
+                <VImg
+                  ref="imageRef"
+                  :src="iconPath"
+                  aspect-ratio="4/3"
+                  cover
+                  :class="{ shadow: isImageLoaded }"
+                  @load="imageLoaded"
+                  @error="imageLoadError = true"
+                />
+              </VAvatar>
+            </div>
+          </div>
+          <VCardText class="flex flex-none align-self-baseline py-3 w-full align-end">
+            <span>
+              <VIcon icon="mdi-github" class="me-1" />
+              <a :href="props.plugin?.author_url" target="_blank" @click.stop>
+                {{ props.plugin?.plugin_author }}
+              </a>
+            </span>
+            <span v-if="props.count" class="ms-3">
+              <VIcon icon="mdi-download" />
+              <span class="text-sm ms-1 mt-1">{{ props.count?.toLocaleString() }}</span>
+            </span>
+            <div class="me-n3 absolute bottom-1 right-3">
+              <IconBtn>
+                <VIcon icon="mdi-dots-vertical" />
+                <VMenu activator="parent" close-on-content-click>
+                  <VList>
+                    <VListItem v-for="(item, i) in dropdownItems" v-show="item.show" :key="i" @click="item.props.click">
+                      <template #prepend>
+                        <VIcon :icon="item.props.prependIcon" />
+                      </template>
+                      <VListItemTitle v-text="item.title" />
+                    </VListItem>
+                  </VList>
+                </VMenu>
+              </IconBtn>
+            </div>
           </VCardText>
-        </div>
-        <div class="relative flex-shrink-0 self-center">
-          <VAvatar size="64">
-            <VImg
-              ref="imageRef"
-              :src="iconPath"
-              aspect-ratio="4/3"
-              cover
-              :class="{ shadow: isImageLoaded }"
-              @load="imageLoaded"
-              @error="imageLoadError = true"
-            />
-          </VAvatar>
-        </div>
-      </div>
-      <VCardText class="flex flex-none align-self-baseline py-3 w-full align-end">
-        <span>
-          <VIcon icon="mdi-github" class="me-1" />
-          <a :href="props.plugin?.author_url" target="_blank" @click.stop>
-            {{ props.plugin?.plugin_author }}
-          </a>
-        </span>
-        <span v-if="props.count" class="ms-3">
-          <VIcon icon="mdi-download" />
-          <span class="text-sm ms-1 mt-1">{{ props.count?.toLocaleString() }}</span>
-        </span>
-        <div class="me-n3 absolute bottom-1 right-3">
-          <IconBtn>
-            <VIcon icon="mdi-dots-vertical" />
-            <VMenu activator="parent" close-on-content-click>
-              <VList>
-                <VListItem
-                  v-for="(item, i) in dropdownItems"
-                  v-show="item.show"
-                  :key="i"
-                  variant="plain"
-                  @click="item.props.click"
-                >
-                  <template #prepend>
-                    <VIcon :icon="item.props.prependIcon" />
-                  </template>
-                  <VListItemTitle v-text="item.title" />
-                </VListItem>
-              </VList>
-            </VMenu>
-          </IconBtn>
-        </div>
-      </VCardText>
-    </VCard>
+        </VCard>
+      </template>
+    </VHover>
     <!-- 安装插件进度框 -->
     <ProgressDialog v-if="progressDialog" v-model="progressDialog" :text="progressText" />
     <!-- 更新日志 -->
     <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" scrollable>
       <VCard :title="`${props.plugin?.plugin_name} 更新说明`">
-        <DialogCloseBtn @click="releaseDialog = false" />
+        <VDialogCloseBtn @click="releaseDialog = false" />
         <VDivider />
         <VersionHistory :history="props.plugin?.history" />
       </VCard>
@@ -226,7 +235,7 @@ const dropdownItems = ref([
     <!-- 插件详情-->
     <VDialog v-if="detailDialog" v-model="detailDialog" max-width="30rem">
       <VCard>
-        <DialogCloseBtn @click="detailDialog = false" />
+        <VDialogCloseBtn @click="detailDialog = false" />
         <VCardText>
           <VCol>
             <div class="d-flex justify-space-between flex-wrap flex-md-nowrap flex-column flex-md-row">

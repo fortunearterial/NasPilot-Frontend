@@ -335,6 +335,9 @@ watch(
           :height="props.height"
           @click="openPluginDetail"
           class="flex flex-col h-full"
+          :class="{
+            'transition transform-cpu duration-300 -translate-y-1 shadow-lg': hover.isHovering,
+          }"
         >
           <div
             class="relative flex flex-row items-start pa-3 justify-between grow"
@@ -354,7 +357,7 @@ watch(
                 {{ props.plugin?.plugin_desc }}
               </VCardText>
             </div>
-            <div class="relative flex-shrink-0 self-center">
+            <div class="relative flex-shrink-0 self-center cursor-move">
               <VAvatar size="64">
                 <VImg
                   ref="imageRef"
@@ -390,7 +393,6 @@ watch(
                       v-for="(item, i) in dropdownItems"
                       v-show="item.show"
                       :key="i"
-                      variant="plain"
                       :base-color="item.props.color"
                       @click="item.props.click"
                     >
@@ -404,10 +406,7 @@ watch(
               </IconBtn>
             </div>
           </VCardText>
-          <div v-if="hover.isHovering" class="me-n3 absolute top-0 right-5">
-            <VIcon class="cursor-move text-white">mdi-drag</VIcon>
-          </div>
-          <div v-else-if="props.plugin?.has_update" class="me-n3 absolute top-0 right-5">
+          <div v-if="props.plugin?.has_update" class="me-n3 absolute top-0 right-5">
             <VIcon icon="mdi-new-box" class="text-white" />
           </div>
         </VCard>
@@ -439,7 +438,7 @@ watch(
     <!-- 更新日志 -->
     <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" scrollable>
       <VCard :title="`${props.plugin?.plugin_name} 更新说明`">
-        <DialogCloseBtn @click="releaseDialog = false" />
+        <VDialogCloseBtn @click="releaseDialog = false" />
         <VDivider />
         <VersionHistory :history="props.plugin?.history" />
         <VDivider />

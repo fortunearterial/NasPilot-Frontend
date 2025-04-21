@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Axios, AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig } from 'axios'
 import type { EndPoints, FileItem } from '@/api/types'
 import { useDisplay } from 'vuetify'
 
@@ -20,7 +20,7 @@ const inProps = defineProps({
   },
   endpoints: Object as PropType<EndPoints>,
   axios: {
-    type: Object as PropType<Axios>,
+    type: Function,
     required: true,
   },
 })
@@ -115,9 +115,9 @@ const sortIcon = computed(() => {
 </script>
 
 <template>
-  <VToolbar flat dense>
+  <VToolbar flat dense class="rounded-t-lg border-b overflow-hidden">
     <VToolbarItems class="overflow-hidden">
-      <VMenu v-if="inProps.storages?.length || 0 > 1" offset-y>
+      <VMenu v-if="storages?.length || 0 > 1" offset-y>
         <template #activator="{ props }">
           <VBtn v-bind="props">
             <VIcon icon="mdi-arrow-down-drop-circle-outline" />
@@ -131,7 +131,7 @@ const sortIcon = computed(() => {
             @click="changeStorage(item.value)"
           >
             <template #prepend>
-              <Icon :icon="item.icon" />
+              <VIcon :icon="item.icon" />
             </template>
             <VListItemTitle>{{ item.title }}</VListItemTitle>
           </VListItem>
@@ -155,32 +155,20 @@ const sortIcon = computed(() => {
       </template>
     </VToolbarItems>
     <div class="flex-grow-1" />
-    <VTooltip text="调整排序">
+    <IconBtn @click="changeSort">
+      <VIcon :icon="sortIcon" />
+    </IconBtn>
+    <IconBtn @click="goUp">
+      <VIcon icon="mdi-arrow-up-bold-outline" />
+    </IconBtn>
+    <VDialog v-model="newFolderPopper" max-width="35rem">
       <template #activator="{ props }">
-        <IconBtn v-bind="props" @click="changeSort">
-          <VIcon :icon="sortIcon" />
-        </IconBtn>
-      </template>
-    </VTooltip>
-    <VTooltip text="返回上一级" v-if="pathSegments.length > 0">
-      <template #activator="{ props }">
-        <IconBtn v-bind="props" @click="goUp">
-          <VIcon icon="mdi-arrow-up-bold-outline" />
-        </IconBtn>
-      </template>
-    </VTooltip>
-    <VDialog v-if="newFolderPopper" v-model="newFolderPopper" max-width="50rem">
-      <template #activator="{ props }">
-        <IconBtn v-bind="props">
-          <VTooltip text="新建文件夹">
-            <template #activator="{ props: _props }">
-              <VIcon v-bind="_props" icon="mdi-folder-plus-outline" />
-            </template>
-          </VTooltip>
+        <IconBtn>
+          <VIcon v-bind="props" icon="mdi-folder-plus-outline" />
         </IconBtn>
       </template>
       <VCard title="新建文件夹">
-        <DialogCloseBtn @click="newFolderPopper = false" />
+        <VDialogCloseBtn @click="newFolderPopper = false" />
         <VDivider />
         <VCardText>
           <VTextField v-model="newFolderName" label="名称" />

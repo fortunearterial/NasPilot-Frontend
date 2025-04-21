@@ -8,9 +8,11 @@ import NoDataFound from '@/components/NoDataFound.vue'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { formatSeason } from '@/@core/utils/formatters'
 import router from '@/router'
-import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'
 import { useUserStore } from '@/stores'
+import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
+import SearchSiteDialog from '@/components/dialog/SearchSiteDialog.vue'
+import { useTheme } from 'vuetify'
 
 // 输入参数
 const mediaProps = defineProps({
@@ -28,6 +30,9 @@ const userStore = useUserStore()
 
 // 提示框
 const $toast = useToast()
+
+// 获取主题信息
+const theme = useTheme()
 
 // 媒体详情
 const mediaDetail = ref<MediaInfo>({} as MediaInfo)
@@ -67,6 +72,14 @@ const selectedSites = ref<number[]>([])
 
 // 搜索方式 title/imdbid
 const searchType = ref('title')
+
+// 选择站点对话框
+const chooseSiteDialog = ref(false)
+
+// 计算主题是否为透明
+const isNonTransparentTheme = computed(() => {
+  return theme.name.value !== 'transparent'
+})
 
 // 查询所有站点
 async function querySites() {
@@ -491,10 +504,20 @@ function onSubscribeEditRemove() {
 }
 
 // 点击搜索
-async function clickSearch() {
-  if (allSites.value?.length > 0) return
-  querySites()
-  querySelectedSites()
+async function clickSearch(type: string) {
+  searchType.value = type
+  if (allSites.value?.length == 0) {
+    querySites()
+    querySelectedSites()
+  }
+  chooseSiteDialog.value = true
+}
+
+// 搜索多站点
+function searchSites(sites: number[]) {
+  chooseSiteDialog.value = false
+  selectedSites.value = sites
+  handleSearch()
 }
 
 onBeforeMount(() => {
@@ -505,7 +528,7 @@ onBeforeMount(() => {
 <template>
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <div v-if="mediaDetail.tmdb_id || mediaDetail.douban_id || mediaDetail.bangumi_id" class="max-w-8xl mx-auto px-4">
-    <template v-if="getBackdropUrl || getPosterUrl">
+    <template v-if="(getBackdropUrl || getPosterUrl) && isNonTransparentTheme">
       <div class="vue-media-back absolute left-0 top-0 w-full h-96">
         <VImg class="h-96" position="top" :src="getBackdropUrl || getPosterUrl" cover />
       </div>
@@ -558,37 +581,18 @@ onBeforeMount(() => {
             variant="tonal"
             color="info"
             class="mb-2"
-            @click="clickSearch"
           >
             <template #prepend>
               <VIcon icon="mdi-magnify" />
             </template>
             搜索资源
-            <VMenu activator="parent" close-on-content-click max-width="450">
+            <VMenu activator="parent" close-on-content-click>
               <VList>
-                <VListItem>
-                  <VBtnToggle v-model="searchType" color="primary" @click.stop>
-                    <VBtn value="title">标题</VBtn>
-                    <VBtn value="imdbid" v-show="mediaDetail.imdb_id">IMDB链接</VBtn>
-                  </VBtnToggle>
+                <VListItem @click="clickSearch('title')">
+                  <VListItemTitle>标题</VListItemTitle>
                 </VListItem>
-                <VListItem>
-                  <VChipGroup v-model="selectedSites" column multiple @click.stop>
-                    <VChip
-                      v-for="site in allSites"
-                      :key="site.id"
-                      :color="selectedSites.includes(site.id) ? 'primary' : ''"
-                      filter
-                      variant="outlined"
-                      :value="site.id"
-                      size="small"
-                    >
-                      {{ site.name }}
-                    </VChip>
-                  </VChipGroup>
-                </VListItem>
-                <VListItem>
-                  <VBtn @click="handleSearch" block>搜索</VBtn>
+                <VListItem @click="clickSearch('imdb')">
+                  <VListItemTitle>IMDB链接</VListItemTitle>
                 </VListItem>
               </VList>
             </VMenu>
@@ -957,9 +961,18 @@ onBeforeMount(() => {
     @save="subscribeEditDialog = false"
     @remove="onSubscribeEditRemove"
   />
+  <!-- 站点选择对话框 -->
+  <SearchSiteDialog
+    v-if="chooseSiteDialog"
+    v-model="chooseSiteDialog"
+    :sites="allSites"
+    :selected="selectedSites"
+    @search="searchSites"
+    @close="chooseSiteDialog = false"
+  />
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .vue-media-back {
   background-image: linear-gradient(
       180deg,
@@ -968,7 +981,6 @@ onBeforeMount(() => {
     ),
     linear-gradient(90deg, rgba(var(--v-theme-background), 0) 50%, rgba(var(--v-theme-background), 1) 100%),
     linear-gradient(270deg, rgba(var(--v-theme-background), 0) 50%, rgba(var(--v-theme-background), 1) 100%);
-  box-shadow: 0 0 0 2px rgb(var(--v-theme-background));
   margin-block-start: calc(-70px - env(safe-area-inset-top));
 }
 

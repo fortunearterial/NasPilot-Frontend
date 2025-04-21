@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Axios, AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig } from 'axios'
 import type { PropType } from 'vue'
 import { useConfirm } from 'vuetify-use-dialog'
 import { useToast } from 'vue-toast-notification'
@@ -14,16 +14,13 @@ import MediaInfoDialog from '../dialog/MediaInfoDialog.vue'
 // 显示器宽度
 const display = useDisplay()
 
-// APP
-const appMode = inject('pwaMode') && display.mdAndDown.value
-
 // 输入参数
 const inProps = defineProps({
   icons: Object,
   storage: String,
   endpoints: Object as PropType<EndPoints>,
   axios: {
-    type: Object as PropType<Axios>,
+    type: Function,
     required: true,
   },
   refreshpending: Boolean,
@@ -32,10 +29,20 @@ const inProps = defineProps({
     required: true,
   },
   sort: String,
+  listStyle: String,
+  showTree: Boolean,
 })
 
 // 对外事件
-const emit = defineEmits(['loading', 'pathchanged', 'refreshed', 'filedeleted', 'renamed'])
+const emit = defineEmits([
+  'loading',
+  'pathchanged',
+  'refreshed',
+  'filedeleted',
+  'renamed',
+  'items-updated',
+  'switch-tree',
+])
 
 // 确认框
 const createConfirm = useConfirm()
@@ -112,13 +119,6 @@ const transferItems = ref<FileItem[]>([])
 // 当前图片地址
 const currentImgLink = ref('')
 
-// 大小控制
-const scrollStyle = computed(() => {
-  return appMode
-    ? 'height: calc(100vh - 15.5rem - env(safe-area-inset-bottom) - 3.5rem)'
-    : 'height: calc(100vh - 14.5rem - env(safe-area-inset-bottom)'
-})
-
 // 是否为图片文件
 const isImage = computed(() => {
   const ext = inProps.item.path?.split('.').pop()?.toLowerCase()
@@ -149,6 +149,9 @@ async function list_files() {
   items.value = (await inProps.axios.request(config)) ?? []
   emit('loading', false)
   loading.value = false
+
+  // 通知父组件文件列表更新
+  emit('items-updated', items.value)
 }
 
 // 删除项目
@@ -375,6 +378,11 @@ function formatTime(timestape: number) {
   return new Date(timestape * 1000).toLocaleString()
 }
 
+// 切换文件树显示
+function switchFileTree(state: boolean) {
+  emit('switch-tree', state)
+}
+
 // 监听refreshPending变化
 watch(
   () => inProps.refreshpending,
@@ -539,19 +547,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <VCard class="d-flex flex-column">
-    <VToolbar v-if="!loading" density="compact" flat color="gray">
+  <VCard class="d-flex flex-column w-full h-full rounded-t-0" :class="{ 'rounded-s-0': showTree }">
+    <div v-if="!loading" class="flex">
+      <IconBtn v-if="display.mdAndUp.value">
+        <VIcon v-if="showTree" icon="mdi-file-tree" @click="switchFileTree(false)" />
+        <VIcon v-else icon="mdi-file-tree-outline" @click="switchFileTree(true)" />
+      </IconBtn>
       <VTextField
         v-if="!isFile"
         v-model="filter"
         hide-details
         flat
         density="compact"
-        variant="solo-filled"
+        variant="plain"
         placeholder="搜索 ..."
         prepend-inner-icon="mdi-filter-outline"
         class="me-2"
-        rounded="0"
+        rounded
       />
       <VSpacer v-if="isFile" />
       <IconBtn v-if="!isFile" @click="changeSelectMode">
@@ -579,7 +591,7 @@ onMounted(() => {
           <VIcon icon="mdi-delete-outline" color="error" />
         </IconBtn>
       </span>
-    </VToolbar>
+    </div>
     <VCardText v-if="loading" class="text-center flex flex-col items-center">
       <VProgressCircular size="48" indeterminate color="primary" />
     </VCardText>
@@ -604,8 +616,8 @@ onMounted(() => {
     </VCardText>
     <!-- 目录和文件列表 -->
     <VCardText v-else-if="dirs.length || files.length" class="p-0">
-      <VList subheader>
-        <VVirtualScroll :items="[...dirs, ...files]" :style="scrollStyle">
+      <VList class="text-high-emphasis">
+        <VVirtualScroll :items="[...dirs, ...files]" :style="listStyle">
           <template #default="{ item }">
             <VHover>
               <template #default="hover">
@@ -619,7 +631,7 @@ onMounted(() => {
                         v-if="inProps.icons && item.extension"
                         :icon="inProps.icons[item.extension.toLowerCase()] || inProps.icons?.other"
                       />
-                      <VIcon v-else-if="item.type == 'dir'" icon="mdi-folder-outline" />
+                      <VIcon v-else-if="item.type == 'dir'" icon="mdi-folder" />
                       <VIcon v-else icon="mdi-file-outline" />
                     </template>
                   </template>
@@ -633,12 +645,7 @@ onMounted(() => {
                       <VMenu activator="parent" close-on-content-click>
                         <VList>
                           <template v-for="(menu, i) in dropdownItems" :key="i">
-                            <VListItem
-                              v-if="menu.show"
-                              variant="plain"
-                              :base-color="menu.props.color"
-                              @click="menu.props.click(item)"
-                            >
+                            <VListItem v-if="menu.show" :base-color="menu.props.color" @click="menu.props.click(item)">
                               <template #prepend>
                                 <VIcon :icon="menu.props.prependIcon" />
                               </template>
@@ -649,41 +656,21 @@ onMounted(() => {
                       </VMenu>
                     </IconBtn>
                     <span v-if="hover.isHovering && display.mdAndUp.value && !selectMode" class="flex">
-                      <VTooltip text="识别">
-                        <template #activator="{ props }">
-                          <IconBtn v-bind="props" @click.stop="recognize(item.path)">
-                            <VIcon icon="mdi-text-recognition" />
-                          </IconBtn>
-                        </template>
-                      </VTooltip>
-                      <VTooltip text="刮削">
-                        <template #activator="{ props }">
-                          <IconBtn v-bind="props" @click.stop="scrape(item)">
-                            <VIcon icon="mdi-auto-fix" />
-                          </IconBtn>
-                        </template>
-                      </VTooltip>
-                      <VTooltip text="重命名">
-                        <template #activator="{ props }">
-                          <IconBtn v-bind="props" @click.stop="showRenmae(item)">
-                            <VIcon icon="mdi-rename" />
-                          </IconBtn>
-                        </template>
-                      </VTooltip>
-                      <VTooltip text="整理">
-                        <template #activator="{ props }">
-                          <IconBtn v-bind="props" @click.stop="showTransfer(item)">
-                            <VIcon icon="mdi-folder-arrow-right" />
-                          </IconBtn>
-                        </template>
-                      </VTooltip>
-                      <VTooltip text="删除">
-                        <template #activator="{ props }">
-                          <IconBtn v-bind="props" @click.stop="deleteItem(item)">
-                            <VIcon icon="mdi-delete-outline" color="error" />
-                          </IconBtn>
-                        </template>
-                      </VTooltip>
+                      <IconBtn @click.stop="recognize(item.path)">
+                        <VIcon icon="mdi-text-recognition" />
+                      </IconBtn>
+                      <IconBtn @click.stop="scrape(item)">
+                        <VIcon icon="mdi-auto-fix" />
+                      </IconBtn>
+                      <IconBtn @click.stop="showRenmae(item)">
+                        <VIcon icon="mdi-rename" />
+                      </IconBtn>
+                      <IconBtn @click.stop="showTransfer(item)">
+                        <VIcon icon="mdi-folder-arrow-right" />
+                      </IconBtn>
+                      <IconBtn @click.stop="deleteItem(item)">
+                        <VIcon icon="mdi-delete-outline" color="error" />
+                      </IconBtn>
                     </span>
                   </template>
                 </VListItem>
@@ -699,16 +686,16 @@ onMounted(() => {
     <VCardText v-else-if="!loading" class="grow d-flex justify-center align-center grey--text py-5"> 空目录 </VCardText>
   </VCard>
   <!-- 重命名弹窗 -->
-  <VDialog v-if="renamePopper" v-model="renamePopper" max-width="50rem">
+  <VDialog v-if="renamePopper" v-model="renamePopper" max-width="35rem">
     <VCard title="重命名">
-      <DialogCloseBtn @click="renamePopper = false" />
+      <VDialogCloseBtn @click="renamePopper = false" />
       <VDivider />
       <VCardText>
         <VRow>
           <VCol cols="12">
             <VTextField v-model="newName" label="新名称" :loading="renameLoading" />
           </VCol>
-          <VCol cols="12" md="6" v-if="currentItem && currentItem.type == 'dir'">
+          <VCol cols="12" v-if="currentItem && currentItem.type == 'dir'">
             <VSwitch v-model="renameAll" label="自动重命名目录内所有媒体文件" />
           </VCol>
         </VRow>
@@ -742,13 +729,3 @@ onMounted(() => {
     @close="nameTestDialog = false"
   />
 </template>
-
-<style lang="scss" scoped>
-.v-card {
-  block-size: 100%;
-}
-
-.v-toolbar {
-  background: rgb(var(--v-table-header-background));
-}
-</style>

@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import type { Axios } from 'axios'
 import FileList from './filebrowser/FileList.vue'
 import FileToolbar from './filebrowser/FileToolbar.vue'
+import FileNavigator from './filebrowser/FileNavigator.vue'
 import type { EndPoints, FileItem, StorageConf } from '@/api/types'
 import { storageOptions } from '@/api/constants'
+import { useDisplay } from 'vuetify'
 
 // 输入参数
 const props = defineProps({
@@ -11,7 +12,7 @@ const props = defineProps({
   tree: Boolean,
   endpoints: Object as PropType<EndPoints>,
   axios: {
-    type: Object as PropType<Axios>,
+    type: Function,
     required: true,
   },
   axiosconfig: Object,
@@ -27,6 +28,12 @@ const props = defineProps({
 
 // 对外事件
 const emit = defineEmits(['pathchanged'])
+
+// 显示器宽度
+const display = useDisplay()
+
+// APP
+const appMode = inject('pwaMode') && display.mdAndDown.value
 
 const fileIcons = {
   // 压缩包
@@ -126,6 +133,9 @@ const refreshPending = ref(false)
 // 排序
 const sort = ref('name')
 
+// 是否显示目录树
+const showDirTree = ref(false)
+
 // 计算属性
 const storagesArray = computed(() => {
   const storageCodes = props.storages?.map(item => item.type)
@@ -154,10 +164,37 @@ function sortChanged(s: string) {
   sort.value = s
   refreshPending.value = true
 }
+
+// 切换目录树
+function switchDirTree(state: boolean) {
+  showDirTree.value = state
+}
+
+// 文件列表
+const fileListItems = ref<FileItem[]>([])
+
+// 文件列表数据更新
+function fileListUpdated(items: FileItem[]) {
+  fileListItems.value = items
+}
+
+// 外层DIV大小控制
+const scrollStyle = computed(() => {
+  return appMode
+    ? 'height: calc(100vh - 10rem - env(safe-area-inset-bottom) - 7rem)'
+    : 'height: calc(100vh - 10rem - env(safe-area-inset-bottom)'
+})
+
+// 文件列表大小限制
+const fileListStyle = computed(() => {
+  return appMode
+    ? 'height: calc(100vh - 14rem - env(safe-area-inset-bottom) - 7rem)'
+    : 'height: calc(100vh - 14rem - env(safe-area-inset-bottom)'
+})
 </script>
 
 <template>
-  <VCard class="mx-auto" :loading="loading > 0">
+  <div class="mx-auto" :loading="loading > 0">
     <div v-if="activeStorage && item">
       <FileToolbar
         :item="item"
@@ -171,20 +208,35 @@ function sortChanged(s: string) {
         @foldercreated="refreshPending = true"
         @sortchanged="sortChanged"
       />
-      <FileList
-        :item="item"
-        :storage="activeStorage"
-        :icons="fileIcons"
-        :endpoints="endpoints"
-        :axios="axios"
-        :refreshpending="refreshPending"
-        :sort="sort"
-        @pathchanged="pathChanged"
-        @loading="loadingChanged"
-        @refreshed="refreshPending = false"
-        @filedeleted="refreshPending = true"
-        @renamed="refreshPending = true"
-      />
+      <div class="flex" :style="scrollStyle">
+        <FileNavigator
+          v-if="showDirTree"
+          :storage="activeStorage"
+          :currentPath="item.path"
+          :items="fileListItems"
+          :endpoints="endpoints"
+          :axios="axios"
+          @navigate="pathChanged"
+        />
+        <FileList
+          :item="item"
+          :storage="activeStorage"
+          :icons="fileIcons"
+          :endpoints="endpoints"
+          :axios="axios"
+          :refreshpending="refreshPending"
+          :sort="sort"
+          :listStyle="fileListStyle"
+          :showTree="showDirTree"
+          @pathchanged="pathChanged"
+          @loading="loadingChanged"
+          @refreshed="refreshPending = false"
+          @filedeleted="refreshPending = true"
+          @renamed="refreshPending = true"
+          @items-updated="fileListUpdated"
+          @switch-tree="switchDirTree"
+        />
+      </div>
     </div>
-  </VCard>
+  </div>
 </template>

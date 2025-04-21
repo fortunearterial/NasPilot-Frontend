@@ -101,6 +101,12 @@ export default defineComponent({
 @use '@layouts/styles/placeholders';
 @use '@layouts/styles/mixins';
 
+.layout-page-content {
+  position: relative;
+  z-index: 1;
+  margin-block-start: 0;
+}
+
 .layout-wrapper.layout-nav-type-vertical {
   // TODO(v2): Check why we need height in vertical nav & min-height in horizontal nav
   block-size: 100%;
@@ -116,8 +122,8 @@ export default defineComponent({
 
   .layout-navbar {
     position: fixed;
-    width: calc(100vw - variables.$layout-vertical-nav-width - 0.5rem);
     z-index: variables.$layout-vertical-nav-layout-navbar-z-index;
+    inline-size: calc(100vw - variables.$layout-vertical-nav-width);
     inset-block-start: 0;
 
     .navbar-content-container {
@@ -131,7 +137,7 @@ export default defineComponent({
             @include mixins.boxed-content;
           } @else {
             .navbar-content-container {
-              @include mixins.boxed-content;
+              // @include mixins.boxed-content;
             }
           }
         }
@@ -171,7 +177,7 @@ export default defineComponent({
   }
 
   &:not(.layout-overlay-nav) .layout-content-wrapper {
-    padding-inline-start: variables.$layout-vertical-nav-width;
+    padding-inline-start: calc(variables.$layout-vertical-nav-width);
   }
 
   // Adjust right column pl when vertical nav is collapsed
@@ -203,7 +209,8 @@ export default defineComponent({
 
 .layout-wrapper.layout-nav-type-vertical.layout-overlay-nav {
   .layout-navbar {
-    width: 100%;
+    inline-size: 100%;
+    padding-inline: 0;
   }
 }
 </style>

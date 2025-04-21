@@ -38,26 +38,24 @@ function logout() {
 
 // 执行重启操作
 async function restart() {
-  {
-    restartDialog.value = false
-    // 调用API重启
-    try {
-      // 显示等待框
-      progressDialog.value = true
-      const result: { [key: string]: any } = await api.get('system/restart')
-      if (!result?.success) {
-        // 隐藏等待框
-        progressDialog.value = false
-        // 重启不成功
-        $toast.error(result.message)
-        return
-      }
-    } catch (error) {
-      console.error(error)
+  restartDialog.value = false
+  // 调用API重启
+  try {
+    // 显示等待框
+    progressDialog.value = true
+    const result: { [key: string]: any } = await api.get('system/restart')
+    if (!result?.success) {
+      // 隐藏等待框
+      progressDialog.value = false
+      // 重启不成功
+      $toast.error(result.message)
+      return
     }
-    // 注销
-    logout()
+  } catch (error) {
+    console.error(error)
   }
+  // 注销
+  logout()
 }
 
 // 显示重启确认对话框
@@ -87,75 +85,77 @@ const userLevel = computed(() => userStore.level)
   <VAvatar class="cursor-pointer ms-3" color="primary" variant="tonal">
     <VImg :src="avatar" />
 
-    <VMenu activator="parent" width="230" location="bottom end" offset="14px">
-      <VList>
+    <VMenu activator="parent" width="230" location="bottom end" offset="14px" class="user-menu" scrim>
+      <VList class="pt-0">
         <!-- 👉 User Avatar & Name -->
-        <VListItem>
+        <VListItem class="py-4" bg-color="primary" bg-opacity="0.05">
           <template #prepend>
-            <VListItemAction start>
-              <VAvatar color="primary" variant="tonal">
-                <VImg :src="avatar" />
-              </VAvatar>
-            </VListItemAction>
+            <VAvatar size="60" color="primary" rounded="sm" class="border-2 border-opacity-10">
+              <VImg :src="avatar" />
+            </VAvatar>
           </template>
-
-          <VListItemTitle class="font-weight-semibold">
-            {{ superUser ? '管理员' : '普通用户' }}
-          </VListItemTitle>
-          <VListItemSubtitle>{{ userName }}</VListItemSubtitle>
+          <div>
+            <span class="text-primary text-sm font-medium d-block">
+              {{ superUser ? '管理员' : '普通用户' }}
+            </span>
+            <span class="text-high-emphasis text-lg font-weight-bold">
+              {{ userName }}
+            </span>
+          </div>
         </VListItem>
+        <VDivider class="mb-2" />
+        <div class="px-2">
+          <!-- 👉 Profile -->
+          <VListItem link @click="router.push('/profile')" class="mb-1 rounded-lg" hover>
+            <template #prepend>
+              <VIcon icon="mdi-account-outline" />
+            </template>
+            <VListItemTitle>个人信息</VListItemTitle>
+          </VListItem>
 
-        <VDivider class="my-2" />
+          <VListItem link @click="router.push('/setting')" class="mb-1 rounded-lg" hover>
+            <template #prepend>
+              <VIcon icon="mdi-cog-outline" />
+            </template>
+            <VListItemTitle>系统设定</VListItemTitle>
+          </VListItem>
 
-        <!-- 👉 Profile -->
-        <VListItem link @click="router.push('/profile')">
-          <template #prepend>
-            <VIcon class="me-2" icon="mdi-account-outline" size="22" />
-          </template>
-          <VListItemTitle>个人信息</VListItemTitle>
-        </VListItem>
+          <!-- 👉 Site Auth -->
+          <VListItem v-if="userLevel < 2 && superUser" link @click="showSiteAuthDialog" class="mb-1 rounded-lg" hover>
+            <template #prepend>
+              <VIcon icon="mdi-lock-check-outline" />
+            </template>
+            <VListItemTitle>用户认证</VListItemTitle>
+          </VListItem>
 
-        <VListItem link @click="router.push('/apps')">
-          <template #prepend>
-            <VIcon class="me-2" icon="mdi-view-grid-outline" size="22" />
-          </template>
-          <VListItemTitle>功能视图</VListItemTitle>
-        </VListItem>
+          <!-- 👉 FAQ -->
+          <VListItem href="https://wiki.movie-pilot.org" target="_blank" class="mb-1 rounded-lg" hover>
+            <template #prepend>
+              <VIcon icon="mdi-help-circle-outline" />
+            </template>
+            <VListItemTitle>帮助文档</VListItemTitle>
+          </VListItem>
 
-        <!-- 👉 Site Auth -->
-        <VListItem v-if="userLevel < 2 && superUser" link @click="showSiteAuthDialog">
-          <template #prepend>
-            <VIcon class="me-2" icon="mdi-lock-check-outline" size="22" />
-          </template>
-          <VListItemTitle>用户认证</VListItemTitle>
-        </VListItem>
+          <!-- Divider -->
+          <VDivider v-if="superUser" class="my-3" />
 
-        <!-- 👉 FAQ -->
-        <VListItem href="https://wiki.movie-pilot.org" target="_blank">
-          <template #prepend>
-            <VIcon class="me-2" icon="mdi-help-circle-outline" size="22" />
-          </template>
-          <VListItemTitle>帮助文档</VListItemTitle>
-        </VListItem>
-
-        <!-- Divider -->
-        <VDivider v-if="superUser" class="my-2" />
-
-        <!-- 👉 restart -->
-        <VListItem v-if="superUser" @click="showRestartDialog">
-          <template #prepend>
-            <VIcon class="me-2" icon="mdi-restart" size="22" />
-          </template>
-          <VListItemTitle>重启</VListItemTitle>
-        </VListItem>
-
+          <!-- 👉 restart -->
+          <VListItem v-if="superUser" @click="showRestartDialog" class="mb-1 rounded-lg" hover>
+            <template #prepend>
+              <VIcon icon="mdi-restart" />
+            </template>
+            <VListItemTitle>重启</VListItemTitle>
+          </VListItem>
+        </div>
         <!-- 👉 Logout -->
-        <VListItem @click="logout">
-          <VBtn color="error" block>
-            <template #append> <VIcon size="small" icon="mdi-logout" /> </template>
+        <div class="px-2 mt-3 mb-2">
+          <VBtn color="error" block class="py-3" elevation="2" @click="logout">
+            <template #prepend>
+              <VIcon icon="mdi-logout" />
+            </template>
             退出登录
           </VBtn>
-        </VListItem>
+        </div>
       </VList>
     </VMenu>
     <!-- !SECTION -->
@@ -168,21 +168,21 @@ const userLevel = computed(() => userStore.level)
   <VDialog v-if="restartDialog" v-model="restartDialog" max-width="25rem">
     <VCard>
       <VCardItem>
-        <div class="flex items-center justify-center mt-3">
+        <div class="d-flex align-center justify-center mt-3">
           <VAvatar color="warning" variant="text" size="x-large">
             <VIcon size="x-large" icon="mdi-alert" />
           </VAvatar>
           <div class="ms-3">
-            <p class="font-bold text-xl text-high-emphasis">确认重启系统吗？</p>
+            <p class="font-weight-bold text-xl text-high-emphasis">确认重启系统吗？</p>
             <p>重启后，您将被注销并需要重新登录。</p>
           </div>
         </div>
       </VCardItem>
       <VCardActions class="mx-auto">
-        <VBtn variant="elevated" color="error" @click="restart" prepend-icon="mdi-restart" class="px-5"> 确定 </VBtn>
         <VBtn variant="tonal" color="secondary" class="px-5" @click="restartDialog = false">取消</VBtn>
+        <VBtn variant="elevated" color="error" @click="restart" prepend-icon="mdi-restart" class="px-5"> 确定 </VBtn>
       </VCardActions>
-      <DialogCloseBtn @click="restartDialog = false" />
+      <VDialogCloseBtn @click="restartDialog = false" />
     </VCard>
   </VDialog>
 </template>

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import api from '@/api'
 import QrcodeVue from 'qrcode.vue'
-import { VCardItem, VTextField } from 'vuetify/lib/components/index.mjs'
 
 // 定义输入
 const props = defineProps({
@@ -18,7 +17,7 @@ const emit = defineEmits(['done', 'close'])
 const qrCodeContent = ref('')
 
 // 下方的提示信息
-const text = ref('请使用微信或115客户端扫码，或在下方输入Cookie')
+const text = ref('请使用微信或115客户端扫码')
 
 // 提醒类型
 const alertType = ref<'success' | 'info' | 'error' | 'warning' | undefined>('info')
@@ -29,9 +28,6 @@ let timeoutTimer: NodeJS.Timeout | undefined = undefined
 // 完成
 async function handleDone() {
   clearTimeout(timeoutTimer)
-  if (props.conf?.cookie) {
-    await savaU115Config()
-  }
   emit('done')
 }
 
@@ -41,6 +37,7 @@ async function getQrcode() {
     const result: { [key: string]: any } = await api.get('/storage/qrcode/u115')
     if (result.success && result.data) {
       qrCodeContent.value = result.data.codeContent
+      timeoutTimer = setTimeout(checkQrcode, 3000)
     } else {
       text.value = result.message
     }
@@ -84,18 +81,8 @@ async function checkQrcode() {
   }
 }
 
-// 保存cookie设置
-async function savaU115Config() {
-  try {
-    await api.post(`storage/save/u115`, props.conf)
-  } catch (e) {
-    console.error(e)
-  }
-}
-
 onMounted(async () => {
   await getQrcode()
-  timeoutTimer = setTimeout(checkQrcode, 3000)
 })
 
 onUnmounted(() => {
@@ -106,7 +93,7 @@ onUnmounted(() => {
 <template>
   <VDialog width="40rem" scrollable max-height="85vh">
     <VCard title="115网盘登录" class="rounded-t">
-      <DialogCloseBtn @click="emit('close')" />
+      <VDialogCloseBtn @click="emit('close')" />
       <VCardText class="pt-2 flex flex-col items-center">
         <div class="my-6 shadow-lg rounded text-center p-3 border">
           <QrcodeVue class="mx-auto" :value="qrCodeContent" :size="200" />
@@ -114,13 +101,6 @@ onUnmounted(() => {
         <VAlert variant="tonal" :type="alertType" class="my-4 text-center" :text="text">
           <template #prepend />
         </VAlert>
-      </VCardText>
-      <VCardText>
-        <VRow>
-          <VCol class="mt-2">
-            <VTextField label="自定义Cookie" v-model="props.conf.cookie" outlined dense />
-          </VCol>
-        </VRow>
       </VCardText>
       <VCardActions>
         <VSpacer />

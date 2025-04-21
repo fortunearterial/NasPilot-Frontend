@@ -4,10 +4,10 @@ import api from '@/api'
 import type { Subscribe } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import SubscribeCard from '@/components/cards/SubscribeCard.vue'
-import SubscribeEditDialog from '@/components/dialog/SubscribeEditDialog.vue'
 import SubscribeHistoryDialog from '@/components/dialog/SubscribeHistoryDialog.vue'
 import { useUserStore } from '@/stores'
 import { useDisplay } from 'vuetify'
+import { useDynamicButton } from '@/composables/useDynamicButton'
 
 // APP
 const display = useDisplay()
@@ -16,10 +16,15 @@ const appMode = inject('pwaMode') && display.mdAndDown.value
 // 用户 Store
 const userStore = useUserStore()
 
+// 从 Store 中获取用户信息
+const superUser = userStore.superUser
+const userName = userStore.userName
+
 // 输入参数
 const props = defineProps({
   type: String,
   subid: String,
+  keyword: String,
 })
 
 // 是否刷新过
@@ -35,9 +40,6 @@ const loading = ref(false)
 // 数据列表
 const dataList = ref<Subscribe[]>([])
 
-// 弹窗
-const subscribeEditDialog = ref(false)
-
 // 历史记录弹窗
 const historyDialog = ref(false)
 
@@ -48,12 +50,19 @@ const orderConfig = ref<{ id: number }[]>([])
 const displayList = ref<Subscribe[]>([])
 
 // 监听dataList变化，同步更新displayList
-watch(dataList, () => {
-  // 从 Store 中获取用户信息
-  const superUser = userStore.superUser
-  const userName = userStore.userName
-  if (superUser) displayList.value = dataList.value.filter(data => data.type === props.type)
-  else displayList.value = dataList.value.filter(data => data.type === props.type && data.username === userName)
+watch([dataList, () => props.keyword], () => {
+  if (superUser)
+    displayList.value = dataList.value.filter(
+      data =>
+        data.type === props.type && (!props.keyword || data.name.toLowerCase().includes(props.keyword.toLowerCase())),
+    )
+  else
+    displayList.value = dataList.value.filter(
+      data =>
+        data.type === props.type &&
+        data.username === userName &&
+        (!props.keyword || data.name.toLowerCase().includes(props.keyword.toLowerCase())),
+    )
   // 排序
   sortSubscribeOrder()
 })
@@ -140,9 +149,18 @@ onActivated(async () => {
     fetchData()
   }
 })
+
+// 使用动态按钮钩子
+useDynamicButton({
+  icon: 'mdi-history',
+  onClick: () => {
+    historyDialog.value = true
+  },
+})
 </script>
 
 <template>
+  <VPageContentTitle v-if="keyword" :title="`筛选：${keyword}`" />
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
   <draggable
     v-if="displayList.length > 0"
@@ -151,7 +169,7 @@ onActivated(async () => {
     handle=".cursor-move"
     item-key="id"
     tag="div"
-    :component-data="{ class: 'mx-3 grid gap-4 grid-subscribe-card p-1' }"
+    :component-data="{ class: 'grid gap-4 grid-subscribe-card' }"
   >
     <template #item="{ element }">
       <SubscribeCard :key="element.id" :media="element" @remove="fetchData" @save="fetchData" />
@@ -160,28 +178,17 @@ onActivated(async () => {
   <NoDataFound
     v-if="displayList.length === 0 && isRefreshed"
     error-code="404"
-    error-title="没有订阅"
-    error-description="请通过搜索添加电影、电视剧订阅。"
+    error-title="没有数据"
+    :error-description="keyword ? '没有筛选到相关内容，请更换筛选条件。' : '请通过搜索添加电影、电视剧订阅。'"
   />
   <!-- 底部操作按钮 -->
   <div v-if="isRefreshed">
     <VFab
-      v-if="userStore.superUser"
-      icon="mdi-clipboard-edit"
-      location="bottom"
-      size="x-large"
-      fixed
-      app
-      appear
-      @click="subscribeEditDialog = true"
-      :class="{ 'mb-12': appMode }"
-    />
-    <VFab
-      v-if="userStore.superUser"
+      v-if="userStore.superUser && !appMode"
       icon="mdi-history"
       color="info"
       location="bottom"
-      :class="appMode ? 'mb-28' : 'mb-16'"
+      :class="{ 'mb-12': appMode }"
       size="x-large"
       fixed
       app
@@ -189,15 +196,6 @@ onActivated(async () => {
       @click="historyDialog = true"
     />
   </div>
-  <!-- 订阅编辑弹窗 -->
-  <SubscribeEditDialog
-    v-if="subscribeEditDialog"
-    v-model="subscribeEditDialog"
-    :default="true"
-    :type="props.type"
-    @save="subscribeEditDialog = false"
-    @close="subscribeEditDialog = false"
-  />
   <!-- 历史记录弹窗 -->
   <SubscribeHistoryDialog
     v-if="historyDialog"

@@ -109,10 +109,10 @@ async function fetchData({ done }: { done: any }) {
 
 <template>
   <LoadingBanner v-if="!isRefreshed" class="mt-12" />
-  <VInfiniteScroll mode="intersect" side="end" :items="dataList" class="overflow-hidden" @load="fetchData">
+  <VInfiniteScroll mode="intersect" side="end" :items="dataList" class="overflow-visible pt-3" @load="fetchData">
     <template #loading />
     <template #empty />
-    <div v-if="dataList.length > 0" class="grid gap-4 grid-media-card mx-3" tabindex="0">
+    <div v-if="dataList.length > 0" class="grid gap-4 grid-media-card" tabindex="0">
       <MediaCard v-for="data in dataList" :key="data.tmdb_id || data.douban_id" :media="data" />
     </div>
     <NoDataFound

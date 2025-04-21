@@ -54,6 +54,8 @@ const historyChartOptions = computed(() => {
       parentHeightOffset: 0,
       toolbar: { show: false },
       animations: { enabled: true },
+      background: currentTheme.value.surface, // 新增背景色同步
+      foreColor: currentTheme.value.onSurface, // 新增文字颜色同步
       dataLabels: {
         enabled: true,
       },
@@ -61,12 +63,19 @@ const historyChartOptions = computed(() => {
         autoScaleYaxis: true,
       },
     },
+    theme: {
+      mode: vuetifyTheme.global.current.value.dark ? 'dark' : 'light', // 同步主题模式
+    },
     tooltip: {
       enabled: true,
       tooltip: {
         x: {
           format: 'dd MMM yyyy',
         },
+      },
+      style: {
+        background: currentTheme.value.background, // 提示框背景色同步
+        color: currentTheme.value.onBackground, // 文字颜色同步
       },
     },
     grid: {
@@ -140,9 +149,14 @@ const seedingChartOptions = computed(() => {
       parentHeightOffset: 0,
       toolbar: { show: false },
       animations: { enabled: true },
+      background: currentTheme.value.surface, // 新增背景色同步
+      foreColor: currentTheme.value.onSurface, // 新增文字颜色同步
       zoom: {
         autoScaleYaxis: true,
       },
+    },
+    theme: {
+      mode: vuetifyTheme.global.current.value.dark ? 'dark' : 'light', // 同步主题模式
     },
     tooltip: {
       enabled: true,
@@ -150,6 +164,10 @@ const seedingChartOptions = computed(() => {
         formatter: function (val: number) {
           return '数量：' + val.toLocaleString()
         },
+      },
+      style: {
+        background: currentTheme.value.background, // 提示框背景色同步
+        color: currentTheme.value.onBackground, // 文字颜色同步
       },
     },
     grid: {
@@ -267,7 +285,7 @@ onBeforeMount(async () => {
           >{{ `数据 - ${props.site?.name}` }}
           <IconBtn @click.stop="refreshSiteData" color="info"><VIcon icon="mdi-refresh" /></IconBtn>
         </VCardTitle>
-        <DialogCloseBtn @click="emit('close')" />
+        <VDialogCloseBtn @click="emit('close')" />
       </VCardItem>
       <VDivider />
       <VCardText class="pt-5">
@@ -277,7 +295,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">用户等级</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ siteData?.user_level || '无' }}
@@ -295,7 +313,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">积分</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ siteData?.bonus?.toLocaleString() }}
@@ -337,7 +355,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">总上传量</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ formatFileSize(siteData?.upload || 0) }}
@@ -358,7 +376,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">总下载量</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ formatFileSize(siteData?.download || 0) }}
@@ -379,7 +397,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">总做种数</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ siteData?.seeding?.toLocaleString() }}
@@ -400,7 +418,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">总做种体积</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ formatFileSize(siteData?.seeding_size || 0) }}
@@ -421,7 +439,7 @@ onBeforeMount(async () => {
             <VCard>
               <VCardText class="d-flex align-center">
                 <div class="d-flex justify-space-between" style="inline-size: 100%">
-                  <div class="d-flex flex-column gap-y-1">
+                  <div class="d-flex flex-column gap-y-1 overflow-hidden">
                     <span class="text-base">加入时间</span>
                     <h5 class="text-h5 d-flex align-center gap-2 text-wrap">
                       {{ siteData?.join_at?.split(' ')[0] }}

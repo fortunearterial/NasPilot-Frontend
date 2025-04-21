@@ -8,26 +8,24 @@ html.v-overlay-scroll-blocked {
   position: fixed;
 }
 
-html.v-overlay-scroll-blocked body {
-  --v-body-scroll-y: 0px !important;
-}
-
-@media (max-width: 768px){
+@media (width <= 768px){
   html.v-overlay-scroll-blocked {
     position: relative;
+
+    --v-body-scroll-y: 0px !important;
   }
 }
 
 @mixin hide-scrollbar {
-  scrollbar-width: none;
   -ms-overflow-style: none;
+  scrollbar-width: none;
   
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   html,body {
     @include hide-scrollbar;
   }
@@ -39,9 +37,9 @@ html.v-overlay-scroll-blocked body {
 }
 
 #nprogress .peg {
-  width: 5px;
   box-shadow: 0 0 10px rgb(var(--v-theme-primary)), 0 0 5px rgb(var(--v-theme-primary)) !important;
-      transform: rotate(0deg) translate(0, 0px);
+  inline-size: 5px;
+      transform: rotate(0deg) translate(0, 0);
 }
 
 .v-toast--bottom {
@@ -52,18 +50,6 @@ html.v-overlay-scroll-blocked body {
 .v-toast--top {
   z-index: 2500;
   margin-block-start: env(safe-area-inset-top);
-}
-
-.v-dialog > .v-overlay__content {
-  margin-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
-}
-
-.v-bottom-sheet > .v-bottom-sheet__content.v-overlay__content > .v-card {
-  padding-block-end: env(safe-area-inset-bottom);
-}
-
-.v-dialog--fullscreen > .v-overlay__content > .v-card {
-  padding-block-end: calc(env(safe-area-inset-top) + env(safe-area-inset-bottom));
 }
 
 /* router view transition fade-slide */
@@ -222,6 +208,31 @@ html.v-overlay-scroll-blocked body {
   padding-block-end: 1rem;
 }
 
+@media (width <= 600px) {
+  .user-list-container {
+    padding: 12px;
+  }
+
+  .grid-user-card {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width >= 601px) and (width <= 960px) {
+  .grid-user-card{
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (width >= 961px) {
+  .grid-user-card {
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
 .grid-app-card {
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
   padding-block-end: 1rem;
@@ -235,37 +246,172 @@ html.v-overlay-scroll-blocked body {
   padding-block-end: env(safe-area-inset-bottom);
 }
 
-.v-overlay__content .v-list{
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  background-color: rgb(var(--v-theme-surface), 0.9) !important;
-}
-
-.v-overlay__content .v-card:not(.bg-primary){
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  background-color: rgb(var(--v-theme-surface), 0.95) !important;
-
-  .v-list, .v-table {
-    /* stylelint-disable-next-line property-no-vendor-prefix */
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background-color: transparent !important;
-  }
-}
-
 .text-shadow {
   text-shadow: 1px 1px #777;
 }
 
 .card-cover-blurred::before {
   position: absolute;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   background: rgba(29, 39, 59, 48%);
   content: '';
   inset: 0;
+}
+
+.v-overlay__content .v-list{
+  backdrop-filter: blur(6px);
+  background-color: rgb(var(--v-theme-surface), 0.9) !important;
+}
+
+.v-overlay__content .v-card:not(.bg-primary){
+  backdrop-filter: blur(8px);
+  background-color: rgb(var(--v-theme-surface), 0.95) !important;
+
+  .v-list, .v-table {
+    backdrop-filter: none;
+    background-color: transparent !important;
+  }
+}
+
+.v-menu {
+  .v-list-item:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
+  }
+}
+
+.v-btn.v-btn--icon {
+  transition: opacity 0.15s ease;
+}
+
+.v-btn.v-btn--icon:hover {
+  opacity: 0.85;
+}
+
+.v-overlay__content {
+  margin-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
+  transition: opacity 0.2s ease !important;
+}
+
+.v-menu > .v-overlay__content {
+  overflow: hidden;
+}
+
+.v-dialog--fullscreen > .v-overlay__content > .v-card {
+  padding-block-end: calc(env(safe-area-inset-top) + env(safe-area-inset-bottom));
+}
+
+.v-dialog > .v-overlay__content {
+  margin-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
+}
+
+.v-bottom-sheet > .v-bottom-sheet__content.v-overlay__content > .v-card {
+  padding-block-end: env(safe-area-inset-bottom);
+}
+
+.settings-icon-button {
+  flex-shrink: 0;
+  min-inline-size: auto;
+}
+
+
+.v-infinite-scroll__side {
+  padding: 0;
+}
+
+
+// 透明主题特殊样式
+.transparent-app {
+  // 先将所有全局组件定义放在前面，避免CSS优先级问题
+  .v-application, .v-layout, .v-main, .layout-page-content {
+    background: transparent;
+  }
+  
+  // 侧边导航栏
+  .layout-vertical-nav {
+    backdrop-filter: blur(16px);
+    background-color: rgba(var(--v-theme-surface), 0.2);
+    border-inline-end: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+  }
+
+  // 列表
+  .v-list {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+  
+  // 卡片
+  .v-card:not(.no-blur) {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+
+    .v-list {
+      backdrop-filter: none;
+      background-color: transparent;
+    }
+  }
+
+  // 工具栏
+  .v-toolbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+  
+  // 表格
+  .v-table {
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+  
+  // 页脚
+  .v-footer {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+
+  // Sheet
+  .v-sheet {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+  
+  // 页面容器
+  .layout-content-wrapper {
+    background: transparent;
+  }
+  
+  // 无内容区域的背景设为透明
+  .page-content-container {
+    background: transparent;
+  }
+  
+  // 对话框和菜单蒙层样式
+  .v-overlay__scrim {
+    background: rgba(var(--v-overlay-scrim-background), var(--v-overlay-scrim-opacity));
+  }
+
+  // 折叠面板
+  .v-expansion-panel {
+    backdrop-filter: blur(10px);
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
+}
+
+// 透明主题下的弹出窗口样式
+html[data-theme="transparent"] {
+  .v-overlay__content {
+    backdrop-filter: blur(10px) !important;    
+
+    .v-list {
+      backdrop-filter: blur(10px);
+      background-color: rgb(var(--v-theme-surface), 0.5) !important;
+    }
+
+    .v-card:not(.bg-primary) {
+      backdrop-filter: blur(10px);
+      background-color: rgb(var(--v-theme-surface), 0.5) !important;
+    }
+
+    .v-table thead {
+      background-color: rgb(var(--v-theme-surface), 0.5) !important;
+    }
+  }
 }

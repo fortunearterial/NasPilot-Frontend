@@ -27,6 +27,8 @@ import VueApexCharts from 'vue3-apexcharts'
 
 // 6. 注册自定义组件
 import DialogCloseBtn from '@/@core/components/DialogCloseBtn.vue'
+import ScrollToTopBtn from '@/@core/components/ScrollToTopBtn.vue'
+import PageContentTitle from './@core/components/PageContentTitle.vue'
 import MediaCard from './components/cards/MediaCard.vue'
 import PosterCard from './components/cards/PosterCard.vue'
 import BackdropCard from './components/cards/BackdropCard.vue'
@@ -36,6 +38,7 @@ import TorrentCard from './components/cards/TorrentCard.vue'
 import MediaIdSelector from './components/misc/MediaIdSelector.vue'
 import CronField from './components/field/CronField.vue'
 import PathField from './components/field/PathField.vue'
+import HeaderTab from './layouts/components/HeaderTab.vue'
 
 // 7. 样式文件
 import '@core/scss/template/libs/vuetify/index.scss'
@@ -82,6 +85,7 @@ initializeApp().then(() => {
     .component('VApexChart', VueApexCharts)
     .component('VCronVuetify', CronVuetify)
     .component('VDialogCloseBtn', DialogCloseBtn)
+    .component('VScrollToTopBtn', ScrollToTopBtn)
     .component('VMediaCard', MediaCard)
     .component('VPosterCard', PosterCard)
     .component('VBackdropCard', BackdropCard)
@@ -91,6 +95,8 @@ initializeApp().then(() => {
     .component('VMediaIdSelector', MediaIdSelector)
     .component('VCronField', CronField)
     .component('VPathField', PathField)
+    .component('VHeaderTab', HeaderTab)
+    .component('VPageContentTitle', PageContentTitle)
 
   // 5. 注册其他插件
   app

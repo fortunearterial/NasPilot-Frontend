@@ -295,10 +295,10 @@ function onSubscribeEditRemove() {
         <VCard
           v-bind="hover.props"
           :key="props.media?.id"
-          class="flex flex-col rounded-lg h-full"
+          class="flex flex-col h-full"
           :class="{
             'outline-dashed outline-1': props.media?.best_version && imageLoaded,
-            'transition transform-cpu duration-300 scale-105 shadow-lg': hover.isHovering,
+            'transition transform-cpu duration-300 -translate-y-1 shadow-lg': hover.isHovering,
             'opacity-70': subscribeState === 'S',
           }"
           min-height="170"
@@ -311,12 +311,7 @@ function onSubscribeEditRemove() {
               <VMenu activator="parent" close-on-content-click>
                 <VList>
                   <template v-for="(item, i) in dropdownItems" :key="i">
-                    <VListItem
-                      v-if="item.show !== false"
-                      variant="plain"
-                      :base-color="item.props.color"
-                      @click="item.props.click"
-                    >
+                    <VListItem v-if="item.show !== false" :base-color="item.props.color" @click="item.props.click">
                       <template #prepend>
                         <VIcon :icon="item.props.prependIcon" />
                       </template>
@@ -339,9 +334,12 @@ function onSubscribeEditRemove() {
             <div v-if="subscribeState === 'P'" class="absolute inset-0 bg-yellow-900 opacity-80 pointer-events-none" />
           </template>
           <div>
-            <VCardText class="flex items-center">
-              <div class="h-auto w-12 flex-shrink-0 overflow-hidden rounded-md shadow-lg" v-if="imageLoaded">
-                <VImg :src="posterUrl" aspect-ratio="2/3" cover @click.stop="viewMediaDetail">
+            <VCardText class="flex items-center py-3">
+              <div
+                class="h-auto w-16 flex-shrink-0 overflow-hidden rounded-md shadow-lg cursor-move"
+                v-if="imageLoaded"
+              >
+                <VImg :src="posterUrl" aspect-ratio="2/3" cover>
                   <template #placeholder>
                     <div class="w-full h-full">
                       <VSkeletonLoader class="object-cover aspect-w-2 aspect-h-3" />
@@ -357,7 +355,7 @@ function onSubscribeEditRemove() {
                 </div>
               </div>
             </VCardText>
-            <VCardText class="flex justify-space-between align-center flex-wrap">
+            <VCardText class="flex justify-space-between align-center flex-wrap py-3">
               <div class="flex align-center">
                 <IconBtn
                   v-if="props.media?.total_episode"
@@ -387,9 +385,6 @@ function onSubscribeEditRemove() {
                 bg-color="success"
                 color="success"
               />
-            </div>
-            <div v-if="hover.isHovering" class="me-n3 absolute top-1 right-10">
-              <IconBtn><VIcon class="cursor-move text-white">mdi-drag</VIcon></IconBtn>
             </div>
           </div>
         </VCard>
@@ -421,7 +416,7 @@ function onSubscribeEditRemove() {
     />
   </div>
 </template>
-<style lang="scss">
+<style lang="scss" scoped>
 .subscribe-card-background {
   background-image: linear-gradient(90deg, rgba(31, 41, 55, 47%) 0%, rgb(31, 41, 55) 100%);
 }

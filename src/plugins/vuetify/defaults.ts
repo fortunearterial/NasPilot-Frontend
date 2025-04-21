@@ -26,12 +26,30 @@ export default {
   VBtn: {
     // set v-btn default color to primary
     color: 'primary',
+    elevation: 0,
+  },
+  VCard: {
+    elevation: 0,
+    rounded: 'lg',
+  },
+  VMenu: {
+    elevation: 0,
   },
   VChip: {
     elevation: 0,
   },
+  VBottomSheet: {
+    elevation: 0,
+  },
+  VExpansionPanels: {
+    elevation: 0,
+  },
   VList: {
     color: 'primary',
+    elevation: 0,
+  },
+  VListItem: {
+    rounded: 'md',
   },
   VPagination: {
     activeColor: 'primary',

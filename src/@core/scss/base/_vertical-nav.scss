@@ -12,6 +12,7 @@
 
     @extend %nav;
 
+
     @at-root {
       // ℹ️ Add styles for collapsed vertical nav
       .layout-vertical-nav-collapsed#{$sl-layout-nav-type-vertical}.hovered {
@@ -60,9 +61,9 @@
       z-index: 1;
       background:
         linear-gradient(
-          rgb(#{variables.$vertical-nav-background-color-rgb}) 5%,
-          rgba(#{variables.$vertical-nav-background-color-rgb}, 75%) 45%,
-          rgba(#{variables.$vertical-nav-background-color-rgb}, 20%) 80%,
+          rgb(var(--v-theme-surface)) 5%,
+          rgba(var(--v-theme-surface), 75%) 45%,
+          rgba(var(--v-theme-surface), 20%) 80%,
           transparent
         );
       block-size: 55px;
@@ -85,8 +86,8 @@
     }
 
     .ps__rail-y {
-      // ℹ️ Setting z-index: 1 will make perfect scrollbar thumb appear on top of vertical nav items shadow
-      z-index: 1;
+      // ℹ️ Setting z-index: 1 will make perfect scrollbar thumb appear on top of vertical nav items shadow;Settingz-indexSettingz-indexSettingz-indexSettingz-index
+      z-index: 1z-indexz-indexz-index
     }
 
     // 👉 Nav section title

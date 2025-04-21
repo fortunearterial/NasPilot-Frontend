@@ -10,6 +10,7 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import { useDisplay } from 'vuetify'
 import { storageDict } from '@/api/constants'
+import { formatFileSize } from '@/@core/utils/formatters'
 
 // APP
 const display = useDisplay()
@@ -58,6 +59,11 @@ const headers = [
     sortable: true,
   },
   {
+    title: '大小',
+    key: 'size',
+    sortable: true,
+  },
+  {
     title: '时间',
     key: 'date',
     sortable: true,
@@ -89,6 +95,11 @@ const groupHeaders = [
   {
     title: '转移方式',
     key: 'mode',
+    sortable: true,
+  },
+  {
+    title: '大小',
+    key: 'size',
     sortable: true,
   },
   {
@@ -178,8 +189,8 @@ const TransferDict: { [key: string]: string } = {
 
 const tableStyle = computed(() => {
   return appMode
-    ? 'height: calc(100vh - 15.5rem - env(safe-area-inset-bottom) - 3.5rem)'
-    : 'height: calc(100vh - 14.5rem - env(safe-area-inset-bottom)'
+    ? 'height: calc(100vh - 14rem - env(safe-area-inset-bottom) - 7.5rem)'
+    : 'height: calc(100vh - 14rem - env(safe-area-inset-bottom)'
 })
 
 // 分页提示
@@ -431,22 +442,19 @@ onMounted(fetchData)
               label="搜索整理记录"
               prepend-inner-icon="mdi-magnify"
               variant="solo-filled"
+              max-width="25rem"
               single-line
               hide-details
               flat
-              rounded
+              rounded="pill"
               clearable
             />
           </VCol>
           <VCol cols="4" md="6" class="text-end">
-            <VBtn
-              color="primary"
-              prepend-icon="mdi-tray-full"
-              append-icon="mdi-dots-horizontal"
-              @click="transferQueueDialog = true"
-            >
-              <span v-if="display.mdAndUp.value" class="ms-2">整理队列</span>
-            </VBtn>
+            <VBtnGroup variant="outlined" divided rounded>
+              <VBtn icon="mdi-timer-sand-paused" @click="transferQueueDialog = true" />
+              <VBtn :icon="group ? 'mdi-format-list-bulleted' : 'mdi-format-list-group'" @click="group = !group" />
+            </VBtnGroup>
           </VCol>
         </VRow>
       </VCardTitle>
@@ -523,6 +531,9 @@ onMounted(fetchData)
           </template>
         </VTooltip>
       </template>
+      <template #item.size="{ item }">
+        <small>{{ formatFileSize(item?.src_fileitem?.size || 0) }}</small>
+      </template>
       <template #item.date="{ item }">
         <small>{{ item?.date }}</small>
       </template>
@@ -534,7 +545,6 @@ onMounted(fetchData)
               <VListItem
                 v-for="(menu, i) in dropdownItems"
                 :key="i"
-                variant="plain"
                 :base-color="menu.props.color"
                 @click="menu.props.click(item)"
               >
@@ -607,6 +617,9 @@ onMounted(fetchData)
           </template>
         </VTooltip>
       </template>
+      <template #item.size="{ item }">
+        <small>{{ formatFileSize(item?.src_fileitem?.size || 0) }}</small>
+      </template>
       <template #item.date="{ item }">
         <small>{{ item?.date }}</small>
       </template>
@@ -618,7 +631,6 @@ onMounted(fetchData)
               <VListItem
                 v-for="(menu, i) in dropdownItems"
                 :key="i"
-                variant="plain"
                 :base-color="menu.props.color"
                 @click="menu.props.click(item)"
               >
@@ -633,11 +645,10 @@ onMounted(fetchData)
       </template>
       <template #no-data> 没有数据 </template>
     </VDataTableVirtual>
-    <!-- 分页 -->
     <VDivider />
     <div class="flex items-center justify-between">
       <div class="w-auto">
-        <VSelect v-model="itemsPerPage" :items="pageRange" density="compact" variant="solo" flat />
+        <VSelect v-model="itemsPerPage" :items="pageRange" density="compact" flat />
       </div>
       <div class="w-auto text-sm">{{ pageTip.begin }} - {{ pageTip.end }} / {{ totalItems }}</div>
       <VPagination
@@ -663,10 +674,10 @@ onMounted(fetchData)
       app
       appear
       @click="removeHistoryBatch"
-      :class="{ 'mb-12': appMode }"
+      :class="appMode ? 'mb-28' : 'mb-16'"
     />
     <VFab
-      :class="appMode ? 'mb-28' : 'mb-16'"
+      :class="appMode ? 'mb-44' : 'mb-32'"
       icon="mdi-redo-variant"
       location="bottom"
       size="x-large"
@@ -676,23 +687,10 @@ onMounted(fetchData)
       @click="retransferBatch"
     />
   </div>
-  <div v-else-if="isRefreshed">
-    <VFab
-      :icon="group ? 'mdi-format-list-bulleted' : 'mdi-format-list-group'"
-      color="primary"
-      location="bottom"
-      size="x-large"
-      fixed
-      app
-      appear
-      @click="group = !group"
-      :class="{ 'mb-12': appMode }"
-    />
-  </div>
   <!-- 底部弹窗 -->
   <VBottomSheet v-model="deleteConfirmDialog" inset>
     <VCard class="text-center rounded-t">
-      <DialogCloseBtn @click="deleteConfirmDialog = false" />
+      <VDialogCloseBtn @click="deleteConfirmDialog = false" />
       <VCardTitle class="pe-10">
         {{ confirmTitle }}
       </VCardTitle>
@@ -726,5 +724,9 @@ onMounted(fetchData)
 <style lang="scss">
 .v-table th {
   white-space: nowrap;
+}
+
+.v-table__wrapper {
+  border-radius: 0;
 }
 </style>

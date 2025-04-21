@@ -66,7 +66,6 @@ const notificationTypes = [
 function openNotificationInfoDialog() {
   // 替换成深复制，避免修改时影响原数据
   notificationInfo.value = cloneDeep(props.notification)
-  console.log(`当前卡片的通知信息：${JSON.stringify(notificationInfo.value)}`)
   notificationInfoDialog.value = true
 }
 
@@ -120,7 +119,7 @@ function onClose() {
           <VIcon class="cursor-move" icon="mdi-drag" />
         </IconBtn>
       </span>
-      <DialogCloseBtn @click="onClose" />
+      <VDialogCloseBtn @click="onClose" />
       <VCardText class="flex justify-space-between align-center gap-3">
         <div class="align-self-start">
           <div class="flex items-center">
@@ -134,7 +133,7 @@ function onClose() {
     </VCard>
     <VDialog v-if="notificationInfoDialog" v-model="notificationInfoDialog" scrollable max-width="40rem" persistent>
       <VCard :title="`${props.notification.name} - 配置`" class="rounded-t">
-        <DialogCloseBtn v-model="notificationInfoDialog" />
+        <VDialogCloseBtn v-model="notificationInfoDialog" />
         <VDivider />
         <VCardText>
           <VForm>

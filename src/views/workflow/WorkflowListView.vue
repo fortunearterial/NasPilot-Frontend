@@ -5,7 +5,7 @@ import { useDisplay } from 'vuetify'
 import WorkflowAddEditDialog from '@/components/dialog/WorkflowAddEditDialog.vue'
 import WorkflowTaskCard from '@/components/cards/WorkflowTaskCard.vue'
 import NoDataFound from '@/components/NoDataFound.vue'
-
+import { useDynamicButton } from '@/composables/useDynamicButton'
 // APP
 const display = useDisplay()
 const appMode = inject('pwaMode') && display.mdAndDown.value
@@ -42,10 +42,18 @@ onMounted(() => {
 onActivated(() => {
   fetchData()
 })
-</script>
 
+// 使用动态按钮钩子 新增
+useDynamicButton({
+  icon: 'mdi-plus',
+  onClick: () => {
+    addDialog.value = true
+  },
+})
+</script>
 <template>
   <div>
+    <VPageContentTitle title="工作流" />
     <LoadingBanner v-if="!isRefreshed" class="mt-12" />
     <VRow v-if="workflowList.length > 0" class="match-height">
       <VCol cols="12" md="6" lg="4" v-for="item in workflowList" :key="item.id">
@@ -62,7 +70,7 @@ onActivated(() => {
 
   <!-- 新增按钮 -->
   <VFab
-    v-if="isRefreshed"
+    v-if="isRefreshed && !appMode"
     icon="mdi-plus"
     location="bottom"
     size="x-large"

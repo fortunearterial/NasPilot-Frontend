@@ -4,6 +4,7 @@ import { useToast } from 'vue-toast-notification'
 import emby_image from '@images/logos/emby.png'
 import jellyfin_image from '@images/logos/jellyfin.png'
 import plex_image from '@images/logos/plex.png'
+import trimemedia_image from '@images/logos/trimemedia.png'
 import api from '@/api'
 import { cloneDeep } from 'lodash-es'
 
@@ -101,6 +102,8 @@ const getIcon = computed(() => {
       return emby_image
     case 'jellyfin':
       return jellyfin_image
+    case 'trimemedia':
+      return trimemedia_image
     default:
       return plex_image
   }
@@ -172,7 +175,7 @@ onMounted(() => {
 <template>
   <div>
     <VCard variant="tonal" @click="openMediaServerInfoDialog">
-      <DialogCloseBtn @click="onClose" />
+      <VDialogCloseBtn @click="onClose" />
       <VCardText class="flex justify-space-between align-center gap-3">
         <div class="align-self-start flex-1">
           <div class="text-h6 mb-1">{{ mediaserver.name }}</div>
@@ -187,7 +190,7 @@ onMounted(() => {
     </VCard>
     <VDialog v-if="mediaServerInfoDialog" v-model="mediaServerInfoDialog" scrollable max-width="40rem" persistent>
       <VCard :title="`${props.mediaserver.name} - 配置`" class="rounded-t">
-        <DialogCloseBtn v-model="mediaServerInfoDialog" />
+        <VDialogCloseBtn v-model="mediaServerInfoDialog" />
         <VDivider />
         <VCardText>
           <VForm>
@@ -276,6 +279,44 @@ onMounted(() => {
                   persistent-hint
                   active
                 />
+              </VCol>
+            </VRow>
+            <VRow v-if="mediaServerInfo.type == 'trimemedia'">
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="mediaServerInfo.name"
+                  label="名称"
+                  placeholder="必填；不可与其他名称重名"
+                  hint="媒体服务器的别名"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="mediaServerInfo.config.host"
+                  label="地址"
+                  placeholder="http(s)://ip:port"
+                  hint="服务端地址，格式：http(s)://ip:port"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12">
+                <VTextField
+                  v-model="mediaServerInfo.config.play_host"
+                  label="外网播放地址"
+                  placeholder="http(s)://domain:port"
+                  hint="跳转播放页面使用的地址，格式：http(s)://domain:port"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField v-model="mediaServerInfo.config.username" label="用户名" active />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField type="password" v-model="mediaServerInfo.config.password" label="密码" active />
               </VCol>
             </VRow>
             <VRow v-if="mediaServerInfo.type == 'plex'">

@@ -57,6 +57,7 @@ const accountInfo = ref<User>({
   is_otp: false,
   permissions: {},
   settings: {},
+  nickname: '',
 })
 
 // 二维码信息
@@ -102,17 +103,16 @@ function restoreCurrentAvatar() {
   $toast.success('已还原当前使用头像！')
 }
 
-// 调用API，加载当前用户数据
-async function loadAccountInfo() {
+// 加载当前用户信息
+async function fetchUserInfo() {
   try {
-    const user: User = await api.get('user/current')
-    console.log(user)
-    accountInfo.value = user
-    if (!accountInfo.value.avatar) {
-      accountInfo.value.avatar = avatar1
+    const result: User = await api.get(`user/${userStore.userName}`)
+    if (result) {
+      accountInfo.value = result
+      accountInfo.value.avatar = accountInfo.value.avatar ? accountInfo.value.avatar : avatar1
+      currentUserName.value = accountInfo.value.name
+      currentAvatar.value = accountInfo.value.avatar
     }
-    currentAvatar.value = accountInfo.value.avatar
-    currentUserName.value = accountInfo.value.name
   } catch (error) {
     console.log(error)
   }
@@ -135,13 +135,26 @@ async function saveAccountInfo() {
     }
     accountInfo.value.password = newPassword.value
   }
+
+  // 将nickname保存到settings中，后端可以直接处理JSON对象
+  if (accountInfo.value.nickname) {
+    if (!accountInfo.value.settings) {
+      accountInfo.value.settings = {}
+    }
+    accountInfo.value.settings.nickname = accountInfo.value.nickname
+  }
+
   const oldUserName = accountInfo.value.name
   const oldAvatar = accountInfo.value.avatar
   accountInfo.value.avatar = currentAvatar.value
   accountInfo.value.name = currentUserName.value
   isSaving.value = true
   try {
-    const result: { [key: string]: any } = await api.put('user/', accountInfo.value)
+    // 创建一个临时对象来保存用户数据，确保所有字段都会发送
+    const userData = { ...accountInfo.value }
+
+    const result: { [key: string]: any } = await api.put('user/', userData)
+
     if (result.success) {
       if (oldUserName !== currentUserName.value) {
         $toast.success(`【${oldUserName}】更名【${currentUserName.value}】，用户信息保存成功！`)
@@ -167,7 +180,7 @@ async function saveAccountInfo() {
       accountInfo.value.avatar = oldAvatar
     }
   } catch (error) {
-    console.log(error)
+    console.log('保存失败:', error)
   }
   isSaving.value = false
 }
@@ -230,7 +243,7 @@ async function judgeOtpPassword() {
 
 // 加载当前用户数据
 onMounted(() => {
-  loadAccountInfo()
+  fetchUserInfo()
 })
 
 // 监听 localStorage 中的用户头像变化
@@ -298,7 +311,7 @@ watch(
             <!-- 👉 Form -->
             <VForm class="mt-6">
               <VRow>
-                <VCol md="6" cols="12">
+                <VCol cols="12" md="6">
                   <VTextField v-model="currentUserName" density="comfortable" readonly label="用户名" />
                 </VCol>
                 <VCol cols="12" md="6">
@@ -311,7 +324,7 @@ watch(
                     :type="isNewPasswordVisible ? 'text' : 'password'"
                     :append-inner-icon="isNewPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                     clearable
-                    label="新密码"
+                    label="密码"
                     autocomplete=""
                     @click:append-inner="isNewPasswordVisible = !isNewPasswordVisible"
                   />
@@ -324,8 +337,17 @@ watch(
                     :type="isConfirmPasswordVisible ? 'text' : 'password'"
                     :append-inner-icon="isConfirmPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                     clearable
-                    label="确认新密码"
+                    label="确认密码"
                     @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
+                  />
+                </VCol>
+                <VCol cols="12" md="6">
+                  <VTextField
+                    v-model="accountInfo.nickname"
+                    density="comfortable"
+                    clearable
+                    label="昵称"
+                    placeholder="显示昵称，优先于用户名显示"
                   />
                 </VCol>
               </VRow>
@@ -400,10 +422,10 @@ watch(
     </VRow>
 
     <!-- 双重验证弹窗 -->
-    <VDialog v-if="otpDialog" v-model="otpDialog" max-width="45rem" persistent scrollable>
+    <VDialog v-if="otpDialog" v-model="otpDialog" max-width="45rem" scrollable>
       <!-- 开启双重验证弹窗内容 -->
       <VCard>
-        <DialogCloseBtn @click="otpDialog = false" />
+        <VDialogCloseBtn @click="otpDialog = false" />
         <VCardText>
           <h4 class="text-h4 text-center mb-6 mt-5">登录双重验证</h4>
           <h5 class="text-h5 font-weight-medium mb-2">身份验证器</h5>

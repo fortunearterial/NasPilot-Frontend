@@ -6,6 +6,7 @@ import { DashboardItem } from '@/api/types'
 import { useUserStore } from '@/stores'
 import DashboardElement from '@/components/misc/DashboardElement.vue'
 import { useDisplay } from 'vuetify'
+import { useDynamicButton } from '@/composables/useDynamicButton'
 
 // APP
 const display = useDisplay()
@@ -140,6 +141,14 @@ const pluginDashboardRefreshStatus = ref<{ [key: string]: boolean }>({})
 
 // 弹窗
 const dialog = ref(false)
+
+// 使用动态按钮钩子
+useDynamicButton({
+  icon: 'mdi-view-dashboard-edit',
+  onClick: () => {
+    dialog.value = true
+  },
+})
 
 // 加载用户监控面板配置（本地无配置时才加载）
 async function loadDashboardConfig() {
@@ -297,7 +306,7 @@ onBeforeMount(async () => {
   getPluginDashboardMeta()
 })
 
-onActivated(async () => {
+onActivated(() => {
   isRequest.value = true
 })
 
@@ -327,8 +336,9 @@ onDeactivated(() => {
     </template>
   </draggable>
 
-  <!-- 底部操作按钮 -->
+  <!-- 底部操作按钮（只在非移动设备上显示） -->
   <VFab
+    v-if="!appMode"
     icon="mdi-view-dashboard-edit"
     location="bottom"
     size="x-large"
@@ -336,41 +346,55 @@ onDeactivated(() => {
     app
     appear
     @click="dialog = true"
-    :class="{ 'mb-12': appMode }"
   />
 
   <!-- 弹窗，根据配置生成选项 -->
   <VDialog v-if="dialog" v-model="dialog" max-width="35rem" scrollable>
     <VCard>
       <VCardItem>
-        <VCardTitle>设置仪表板</VCardTitle>
+        <VCardTitle>
+          <VIcon icon="mdi-tune" size="small" class="me-2" />
+          设置仪表板
+        </VCardTitle>
+        <VDialogCloseBtn @click="dialog = false" />
       </VCardItem>
       <VDivider />
       <VCardText>
-        <VRow>
-          <VCol
+        <p class="settings-hint">选择您想在页面显示的内容</p>
+        <div class="settings-grid">
+          <div
             v-for="item in dashboardConfigs"
             :key="buildPluginDashboardId(item.id, item.key)"
-            cols="6"
-            md="4"
-            sm="4"
+            class="setting-item"
+            :class="{
+              'enabled': enableConfig[buildPluginDashboardId(item.id, item.key)],
+            }"
+            @click="
+              enableConfig[buildPluginDashboardId(item.id, item.key)] =
+                !enableConfig[buildPluginDashboardId(item.id, item.key)]
+            "
           >
-            <VCheckbox
-              v-model="enableConfig[buildPluginDashboardId(item.id, item.key)]"
-              :label="item.attrs?.title ?? item.name"
-            />
-          </VCol>
-        </VRow>
-        <VRow>
-          <VCol cols="12" md="6">
-            <VSwitch v-model="isElevated" label="自适应组件高度" />
-          </VCol>
-        </VRow>
+            <div class="setting-item-inner">
+              <div class="setting-check">
+                <VIcon
+                  :icon="
+                    enableConfig[buildPluginDashboardId(item.id, item.key)] ? 'mdi-check-circle' : 'mdi-circle-outline'
+                  "
+                  :color="enableConfig[buildPluginDashboardId(item.id, item.key)] ? 'primary' : undefined"
+                  size="small"
+                />
+              </div>
+              <span class="setting-label">{{ item.attrs?.title ?? item.name }}</span>
+            </div>
+          </div>
+        </div>
+        <p class="mt-3">
+          <VSwitch v-model="isElevated" label="自适应组件高度" />
+        </p>
       </VCardText>
       <VDivider />
       <VCardText class="pt-5 text-end">
         <VSpacer />
-        <VBtn variant="outlined" color="secondary" class="me-4" @click="dialog = false"> 关闭 </VBtn>
         <VBtn @click="saveDashboardConfig">
           <template #prepend>
             <VIcon icon="mdi-content-save" />
@@ -381,3 +405,74 @@ onDeactivated(() => {
     </VCard>
   </VDialog>
 </template>
+<style lang="scss" scoped>
+.settings-card-header {
+  padding-block: 16px;
+  padding-inline: 20px;
+}
+
+.settings-hint {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.9rem;
+  margin-block-end: 16px;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.setting-label {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.setting-item {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 8px;
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+  cursor: pointer;
+  padding-block: 10px;
+  padding-inline: 12px;
+  transition: all 0.2s ease;
+
+  &::before {
+    position: absolute;
+    background-color: transparent;
+    block-size: 100%;
+    content: '';
+    inline-size: 4px;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transition: background-color 0.3s ease;
+  }
+
+  &:hover {
+    border-color: rgba(var(--v-theme-on-surface), 0.15);
+    background-color: rgba(var(--v-theme-surface-variant), 0.6);
+  }
+
+  &.enabled {
+    border-color: rgba(var(--v-theme-primary), 0.5);
+    background-color: rgba(var(--v-theme-primary), 0.05);
+
+    .setting-label {
+      color: rgb(var(--v-theme-primary));
+      font-weight: 500;
+    }
+  }
+}
+
+.setting-item-inner {
+  display: flex;
+  align-items: center;
+}
+
+.setting-check {
+  margin-inline-end: 8px;
+}
+</style>
