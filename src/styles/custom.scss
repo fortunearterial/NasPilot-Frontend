@@ -318,6 +318,10 @@ html.v-overlay-scroll-blocked {
   padding: 0;
 }
 
+.v-menu .v-overlay__content {
+  box-shadow: none !important;
+}
+
 
 // 透明主题特殊样式
 .transparent-app {
@@ -358,6 +362,7 @@ html.v-overlay-scroll-blocked {
   
   // 表格
   .v-table {
+    border-radius: 0;
     background-color: rgba(var(--v-theme-surface), 0.3);
   }
   
@@ -393,12 +398,18 @@ html.v-overlay-scroll-blocked {
     backdrop-filter: blur(10px);
     background-color: rgba(var(--v-theme-surface), 0.3);
   }
+
+  // 加载占位
+  .v-skeleton-loader {
+    background-color: rgba(var(--v-theme-surface), 0.3);
+  }
 }
 
 // 透明主题下的弹出窗口样式
 html[data-theme="transparent"] {
-  .v-overlay__content {
-    backdrop-filter: blur(10px) !important;    
+  .v-overlay__content {    
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
 
     .v-list {
       backdrop-filter: blur(10px);

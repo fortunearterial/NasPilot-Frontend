@@ -20,7 +20,7 @@ const inProps = defineProps({
   storage: String,
   endpoints: Object as PropType<EndPoints>,
   axios: {
-    type: Function,
+    type: Object as PropType<any>,
     required: true,
   },
   refreshpending: Boolean,
@@ -562,7 +562,7 @@ onMounted(() => {
         variant="plain"
         placeholder="搜索 ..."
         prepend-inner-icon="mdi-filter-outline"
-        class="me-2"
+        class="mx-2"
         rounded
       />
       <VSpacer v-if="isFile" />
@@ -598,7 +598,7 @@ onMounted(() => {
     <!-- 文件详情 -->
     <VCardText v-else-if="isFile && !isImage && items.length > 0" class="text-center break-all">
       <div v-if="items[0]?.thumbnail" class="flex justify-center">
-        <VImg max-width="15rem" cover :src="items[0]?.thumbnail" class="rounded border shadow-lg">
+        <VImg max-width="15rem" cover :src="items[0]?.thumbnail" class="rounded border">
           <template #placeholder>
             <VSkeletonLoader class="object-cover w-full h-full" />
           </template>

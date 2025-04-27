@@ -336,7 +336,7 @@ watch(
           @click="openPluginDetail"
           class="flex flex-col h-full"
           :class="{
-            'transition transform-cpu duration-300 -translate-y-1 shadow-lg': hover.isHovering,
+            'transition transform-cpu duration-300 -translate-y-1': hover.isHovering,
           }"
         >
           <div
@@ -364,7 +364,6 @@ watch(
                   :src="iconPath"
                   aspect-ratio="4/3"
                   cover
-                  :class="{ shadow: isImageLoaded }"
                   @load="imageLoaded"
                   @error="imageLoadError = true"
                 />
@@ -436,7 +435,7 @@ watch(
     <ProgressDialog v-if="progressDialog" v-model="progressDialog" :text="progressText" />
 
     <!-- 更新日志 -->
-    <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" scrollable>
+    <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" max-height="80vh" scrollable>
       <VCard :title="`${props.plugin?.plugin_name} 更新说明`">
         <VDialogCloseBtn @click="releaseDialog = false" />
         <VDivider />

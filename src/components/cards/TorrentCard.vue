@@ -70,7 +70,11 @@ async function handleAddDownload(item: Context | null = null) {
 }
 
 // 打开种子详情页面
-function openTorrentDetail() {
+function openTorrentDetail(item: Context | null = null) {
+  if (item && !isNullOrEmptyObject(item) && !isNullOrEmptyObject(item.torrent_info)) {
+    window.open(item.torrent_info.page_url, '_blank')
+    return
+  }
   window.open(torrent.value?.page_url, '_blank')
 }
 
@@ -252,10 +256,10 @@ onMounted(() => {
 
         <!-- 体积和详情按钮并排 -->
         <div class="d-flex align-center">
-          <VChip v-if="torrent?.size" color="secondary" size="x-small" variant="elevated" class="rounded-sm mr-2">
+          <VChip v-if="torrent?.size" color="primary" size="x-small" variant="elevated" class="rounded-sm mr-2">
             {{ formatFileSize(torrent.size) }}
           </VChip>
-          <VBtn icon size="small" variant="text" color="primary" @click.stop="openTorrentDetail">
+          <VBtn icon size="small" variant="text" color="primary" @click.stop="openTorrentDetail()">
             <VIcon icon="mdi-information-outline"></VIcon>
           </VBtn>
         </div>
@@ -263,9 +267,9 @@ onMounted(() => {
     </VCard>
 
     <!-- 更多来源对话框 -->
-    <VDialog v-model="showMoreTorrents" max-width="380px" location="center">
+    <VDialog v-model="showMoreTorrents" max-width="25rem" location="center">
       <VCard>
-        <VCardTitle class="py-2 d-flex align-center">
+        <VCardTitle class="py-3 d-flex align-center">
           <span>其他来源</span>
           <VSpacer />
           <VBtn variant="text" size="small" icon="mdi-close" @click.stop="showMoreTorrents = false"></VBtn>
@@ -273,7 +277,7 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardText class="more-sources-content">
+        <VCardText class="more-sources-content pa-0">
           <VList lines="one" density="compact">
             <VListItem
               v-for="(item, index) in props.more"
@@ -283,7 +287,7 @@ onMounted(() => {
             >
               <template v-slot:prepend>
                 <div class="d-flex align-center gap-1">
-                  <img
+                  <VImg
                     v-if="siteIcons[item.torrent_info?.site || 0]"
                     :src="siteIcons[item.torrent_info?.site || 0]"
                     :alt="item.torrent_info?.site_name"
@@ -330,6 +334,15 @@ onMounted(() => {
                   <span class="d-flex align-center text-caption font-weight-bold">
                     <VIcon size="small" color="success" icon="mdi-arrow-up" class="mr-1"></VIcon>
                     {{ item.torrent_info?.seeders }}
+                  </span>
+                  <span>
+                    <VIcon
+                      @click.stop="openTorrentDetail(item)"
+                      size="small"
+                      color="secondary"
+                      icon="mdi-arrow-top-right"
+                      class="mr-1"
+                    ></VIcon>
                   </span>
                 </div>
               </template>

@@ -188,7 +188,7 @@ onMounted(async () => {
 
 <template>
   <VBottomSheet inset scrollable>
-    <VCard class="rounded-t">
+    <VCard>
       <VDialogCloseBtn @click="emit('close')" />
       <VCardItem>
         <VCardTitle class="pe-10"> 订阅 - {{ props.media?.title }} </VCardTitle>
@@ -212,7 +212,7 @@ onMounted(async () => {
                   width="60"
                   :src="getSeasonPoster(item.poster_path || '')"
                   aspect-ratio="2/3"
-                  class="object-cover rounded shadow ring-gray-500 me-3"
+                  class="object-cover rounded ring-gray-500 me-3"
                   cover
                 >
                   <template #placeholder>

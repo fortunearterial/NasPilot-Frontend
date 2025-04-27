@@ -334,10 +334,14 @@ function goMediaDetail(isHovering = false) {
 // 点击搜索
 async function clickSearch() {
   if (allSites.value?.length == 0) {
-    querySites()
-    querySelectedSites()
+    await querySites()
+    await querySelectedSites()
   }
-  chooseSiteDialog.value = true
+  if (allSites.value?.length > 0) {
+    chooseSiteDialog.value = true
+  } else {
+    handleSearch()
+  }
 }
 
 // 开始搜索
@@ -429,7 +433,7 @@ function onRemoveSubscribe() {
           v-bind="hover.props"
           :height="props.height"
           :width="props.width"
-          class="outline-none shadow ring-gray-500 media-card"
+          class="outline-none ring-gray-500 media-card"
           :class="{
             'transition transform-cpu duration-300  -translate-y-1': hover.isHovering,
             'ring-1': isImageLoaded,
@@ -476,7 +480,7 @@ function onRemoveSubscribe() {
             variant="elevated"
             size="small"
             :class="getChipColor(props.media?.type || '')"
-            class="absolute left-2 top-2 bg-opacity-80 shadow-md text-white font-bold"
+            class="absolute left-2 top-2 bg-opacity-80 text-white font-bold"
           >
             {{ props.media?.type }}
           </VChip>
@@ -488,7 +492,7 @@ function onRemoveSubscribe() {
             variant="elevated"
             size="small"
             :class="getChipColor('rating')"
-            class="absolute right-2 top-2 bg-opacity-80 shadow-md text-white font-bold"
+            class="absolute right-2 top-2 bg-opacity-80 text-white font-bold"
           >
             {{ formatRating(props.media?.vote_average) }}
           </VChip>
