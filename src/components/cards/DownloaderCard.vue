@@ -207,16 +207,6 @@ onUnmounted(() => {
                   active
                 />
               </VCol>
-              <!-- <VCol cols="12" md="6">
-                <VTextField
-                  v-model="downloaderInfo.config.host"
-                  label="程序地址"
-                  placeholder="C:\Program Files (x86)\Thunder Network\Thunder\Program\Thunder.exe"
-                  hint="迅雷程序地址，格式：C:\Program Files (x86)\Thunder Network\Thunder\Program\Thunder.exe"
-                  persistent-hint
-                  active
-                />
-              </VCol> -->
             </VRow>
             <VRow v-if="downloaderInfo.type == 'qbittorrent'">
               <VCol cols="12" md="6">

@@ -164,6 +164,12 @@ function login() {
     })
 }
 
+// 登录获取token事件
+function logon() {
+  // 跳转注册页
+  router.push('/logon')
+}
+
 // 自动登录
 onMounted(async () => {
   // 获取token和remember状态
@@ -238,6 +244,10 @@ onMounted(async () => {
                 <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-3">
                   {{ errorMessage }}
                 </VAlert>
+              </VCol>
+              <VCol cols="12">
+                <!-- logon button -->
+                <VBtn block variant="text" @click="logon"> 没有账号，立即注册 </VBtn>
               </VCol>
             </VRow>
           </VForm>
