@@ -11,7 +11,7 @@ defineProps({
         class="ms-1 truncate text-2xl font-bold leading-7 text-gray-100 sm:overflow-visible sm:text-3xl sm:leading-9 md:mb-0"
         data-testid="page-header"
       >
-        <span class="text-moviepilot">{{ title }}</span>
+        <span class="text-naspilot">{{ title }}</span>
       </h2>
     </div>
   </div>

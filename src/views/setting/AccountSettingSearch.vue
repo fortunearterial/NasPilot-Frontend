@@ -22,7 +22,7 @@ const SystemSettings = ref<any>({
     SEARCH_MULTIPLE_NAME: false,
     DOWNLOAD_SUBTITLE: false,
     AUTO_DOWNLOAD_USER: null,
-    TORRENT_TAG: 'MOVIEPILOT',
+    TORRENT_TAG: 'NASPILOT',
   },
 })
 
@@ -225,7 +225,7 @@ onMounted(() => {
               <VTextField
                 v-model="SystemSettings.Basic.TORRENT_TAG"
                 :label="t('setting.search.downloadLabel')"
-                placeholder="MOVIEPILOT"
+                placeholder="NASPILOT"
                 :hint="t('setting.search.downloadLabelHint')"
                 persistent-hint
               />

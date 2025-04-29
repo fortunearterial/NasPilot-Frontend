@@ -82,7 +82,7 @@ export default {
     deviceNotSupport: '當前設備不支持監聽系統主題變化',
   },
   app: {
-    moviepilot: 'MoviePilot',
+    naspilot: 'NasPilot',
     recommend: '推薦',
     subscribeMovie: '電影訂閱',
     subscribeTv: '電視劇訂閱',
@@ -813,7 +813,7 @@ export default {
   },
   setting: {
     about: {
-      title: '關於 MoviePilot',
+      title: '關於 NasPilot',
       softwareVersion: '軟件版本',
       frontendVersion: '前端版本',
       authVersion: '認證資源版本',
@@ -831,7 +831,7 @@ export default {
       currentVersion: '當前版本',
       viewChangelog: '查看變更日誌',
       changelog: '變更日誌',
-      dataDirectory: '/moviepilot',
+      dataDirectory: '/naspilot',
     },
     system: {
       basicSettings: '基礎設置',
@@ -849,7 +849,7 @@ export default {
       numbersOnly: '僅支持輸入數字，請勿輸入其他字符',
       minInterval: '間隔不能小於1個小時',
       apiToken: 'API令牌',
-      apiTokenHint: '設置外部請求MoviePilot API時使用的token值',
+      apiTokenHint: '設置外部請求NasPilot API時使用的token值',
       apiTokenMinChars: '不能小於16位字符',
       apiTokenRequired: '必填項；請輸入API Token',
       apiTokenLength: 'API Token不得低於16位',
@@ -988,7 +988,7 @@ export default {
       e2ePassword: '端對端加密密碼',
       e2ePasswordHint: 'CookieCloud瀏覽器插件生成的端對端加密密碼',
       autoSyncInterval: '自動同步間隔',
-      autoSyncIntervalHint: '從CookieCloud服務器自動同步站點Cookie到MoviePilot的時間間隔',
+      autoSyncIntervalHint: '從CookieCloud服務器自動同步站點Cookie到NasPilot的時間間隔',
       syncBlacklist: '同步域名黑名單',
       syncBlacklistPlaceholder: '多個域名,分割',
       syncBlacklistHint: 'CookieCloud同步域名黑名單，多個域名,分割',
@@ -1125,7 +1125,7 @@ export default {
       filterRuleGroupHint: '搜索媒體信息時按選定的過濾規則組對結果進行過濾',
       downloadUserPlaceholder: '用戶ID1,用戶ID2',
       downloadUserHint: '使用Telegram、微信等搜索時是否自動下載，使用逗號分割，設置為 all 代表所有用戶自動擇優下載',
-      downloadLabelPlaceholder: 'MOVIEPILOT',
+      downloadLabelPlaceholder: 'NASPILOT',
     },
     directory: {
       storage: '存儲',
@@ -1487,7 +1487,7 @@ export default {
     pluginMarketSetting: {
       title: '插件市場設置',
       repoUrl: '插件倉庫地址',
-      repoPlaceholder: '格式：https://github.com/jxxghp/MoviePilot-Plugins/,https://github.com/xxxx/xxxxxx/',
+      repoPlaceholder: '格式：https://github.com/jxxghp/NasPilot-Plugins/,https://github.com/xxxx/xxxxxx/',
       repoHint: '多個地址使用逗號分隔，僅支援Github倉庫',
       close: '關閉',
       save: '儲存',
