@@ -481,6 +481,9 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
+                    <VListItem variant="plain" @click="addDownloader('thunder')">
+                      <VListItemTitle>迅雷</VListItemTitle>
+                    </VListItem>
                     <VListItem variant="plain" @click="addDownloader('qbittorrent')">
                       <VListItemTitle>Qbittorrent</VListItemTitle>
                     </VListItem>

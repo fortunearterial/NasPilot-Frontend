@@ -1019,7 +1019,7 @@ export interface SystemNotification {
 export interface DownloaderConf {
   // 名称
   name: string
-  // 类型 qbittorrent/transmission
+  // 类型 qbittorrent/transmission/thunder
   type: string
   // 是否默认
   default: boolean
