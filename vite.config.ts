@@ -66,8 +66,8 @@ export default defineConfig({
         type: 'module',
       },
       manifest: {
-        'name': 'MoviePilot',
-        'short_name': 'MoviePilot',
+        'name': 'NasPilot',
+        'short_name': 'NasPilot',
         'start_url': './',
         'display': 'standalone',
         'icons': [
@@ -183,7 +183,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/v1': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:13001',
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: 'localhost',

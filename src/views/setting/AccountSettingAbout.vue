@@ -68,7 +68,7 @@ onMounted(() => {
   <div class="px-3">
     <div class="section">
       <div>
-        <h3 class="heading">关于 MoviePilot</h3>
+        <h3 class="heading">关于 NasPilot</h3>
       </div>
       <div class="section border-t border-gray-800">
         <dl>
@@ -80,7 +80,7 @@ onMounted(() => {
                   <code class="truncate">{{ systemEnv.VERSION }}</code>
                   <a
                     v-if="latestRelease === systemEnv.VERSION"
-                    href="https://github.com/jxxghp/MoviePilot/releases"
+                    href="https://github.com/jxxghp/NasPilot/releases"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -136,7 +136,7 @@ onMounted(() => {
             <div class="max-w-6xl py-4 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt class="block text-sm font-bold">数据目录</dt>
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
-                <span class="flex-grow undefined"><code>/moviepilot</code></span>
+                <span class="flex-grow undefined"><code>/naspilot</code></span>
               </dd>
             </div>
           </div>
@@ -182,12 +182,12 @@ onMounted(() => {
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow undefined">
                   <a
-                    href="https://github.com/jxxghp/MoviePilot/issues/new/choose"
+                    href="https://github.com/jxxghp/NasPilot/issues/new/choose"
                     target="_blank"
                     rel="noreferrer"
                     class="text-indigo-500 transition duration-300 hover:underline"
                   >
-                    https://github.com/jxxghp/MoviePilot/issues/new/choose
+                    https://github.com/jxxghp/NasPilot/issues/new/choose
                   </a>
                 </span>
               </dd>
@@ -199,12 +199,12 @@ onMounted(() => {
               <dd class="flex text-sm sm:col-span-2 sm:mt-0">
                 <span class="flex-grow undefined">
                   <a
-                    href="https://t.me/moviepilot_channel"
+                    href="https://t.me/naspilot_channel"
                     target="_blank"
                     rel="noreferrer"
                     class="text-indigo-500 transition duration-300 hover:underline"
                   >
-                    https://t.me/moviepilot_channel
+                    https://t.me/naspilot_channel
                   </a>
                 </span>
               </dd>

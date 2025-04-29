@@ -1,6 +1,6 @@
-# MoviePilot-Frontend
+# NasPilot-Frontend
 
-[MoviePilot](https://github.com/jxxghp/MoviePilot) 的前端项目，NodeJS版本：>= `v20.12.1`。
+[NasPilot](https://github.com/jxxghp/NasPilot) 的前端项目，NodeJS版本：>= `v20.12.1`。
 
 ## 推荐的IDE设置
 
