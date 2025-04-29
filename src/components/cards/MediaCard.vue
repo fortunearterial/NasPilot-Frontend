@@ -13,6 +13,11 @@ import { useUserStore } from '@/stores'
 import SubscribeEditDialog from '../dialog/SubscribeEditDialog.vue'
 import SearchSiteDialog from '@/components/dialog/SearchSiteDialog.vue'
 import SubscribeSeasonDialog from '../dialog/SubscribeSeasonDialog.vue'
+import { useI18n } from 'vue-i18n'
+import { getMediaTypeText } from '@/types/i18n-type'
+
+// 国际化
+const { t } = useI18n()
 
 // 输入参数
 const props = defineProps({
@@ -180,11 +185,11 @@ async function addSubscribe(season: number = 0, best_version: number = 0) {
 function showSubscribeAddToast(result: boolean, title: string, season: number, message: string, best_version: number) {
   if (season) title = `${title} ${formatSeason(season.toString())}`
 
-  let subname = '订阅'
-  if (best_version > 0) subname = '洗版订阅'
+  let subname = t('subscribe.normalSub')
+  if (best_version > 0) subname = t('subscribe.versionSub')
 
-  if (result) $toast.success(`${title} 添加${subname}成功！`)
-  else if (!result) $toast.error(`${title} 添加${subname}失败：${message}！`)
+  if (result) $toast.success(`${title} ${t('subscribe.addSuccess', { name: subname })}`)
+  else if (!result) $toast.error(`${title} ${t('subscribe.addFailed', { name: subname, message: message })}`)
 }
 
 // 调用API取消订阅
@@ -202,9 +207,9 @@ async function removeSubscribe() {
 
     if (result.success) {
       isSubscribed.value = false
-      $toast.success(`${props.media?.title} 已取消订阅！`)
+      $toast.success(`${props.media?.title} ${t('subscribe.cancelSuccess')}`)
     } else {
-      $toast.error(`${props.media?.title} 取消订阅失败：${result.message}！`)
+      $toast.error(`${props.media?.title} ${t('subscribe.cancelFailed', { message: result.message })}`)
     }
   } catch (error) {
     console.error(error)
@@ -482,7 +487,7 @@ function onRemoveSubscribe() {
             :class="getChipColor(props.media?.type || '')"
             class="absolute left-2 top-2 bg-opacity-80 text-white font-bold"
           >
-            {{ props.media?.type }}
+            {{ getMediaTypeText(props.media?.type) }}
           </VChip>
           <!-- 本地存在标识 -->
           <ExistIcon v-if="isExists && !hover.isHovering" />

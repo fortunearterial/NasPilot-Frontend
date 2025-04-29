@@ -9,9 +9,13 @@ import PluginCard from '@/components/cards/PluginCard.vue'
 import noImage from '@images/logos/plugin.png'
 import { useDisplay } from 'vuetify'
 import { isNullOrEmptyObject } from '@/@core/utils'
-import { PluginTabs } from '@/router/menu'
+import { getPluginTabs } from '@/router/i18n-menu'
 import PluginMarketSettingDialog from '@/components/dialog/PluginMarketSettingDialog.vue'
 import { useDynamicButton } from '@/composables/useDynamicButton'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 
 const route = useRoute()
 
@@ -22,7 +26,10 @@ const display = useDisplay()
 const appMode = inject('pwaMode') && display.mdAndDown.value
 
 // 当前标签
-const activeTab = ref('我的插件')
+const activeTab = ref('installed')
+
+// 获取插件标签页
+const pluginTabs = computed(() => getPluginTabs())
 
 // 插件ID参数
 const pluginId = ref(route.query.id)
@@ -34,13 +41,13 @@ const activeSort = ref(null)
 const orderConfig = ref<{ id: string }[]>([])
 
 // 排序选项
-const sortOptions = [
-  { title: '热门', value: 'count' },
-  { title: '插件名称', value: 'plugin_name' },
-  { title: '作者', value: 'plugin_author' },
-  { title: '插件仓库', value: 'repo_url' },
-  { title: '最新发布', value: 'add_time' },
-]
+const sortOptions = computed(() => [
+  { title: t('plugin.sort.popular'), value: 'count' },
+  { title: t('plugin.sort.name'), value: 'plugin_name' },
+  { title: t('plugin.sort.author'), value: 'plugin_author' },
+  { title: t('plugin.sort.repository'), value: 'repo_url' },
+  { title: t('plugin.sort.latest'), value: 'add_time' },
+])
 
 // 加载中
 const loading = ref(false)
@@ -102,7 +109,7 @@ const $toast = useToast()
 const progressDialog = ref(false)
 
 // 进度框文本
-const progressText = ref('正在安装插件...')
+const progressText = ref(t('plugin.installingPlugin'))
 
 // 过滤表单
 const filterForm = reactive({
@@ -214,7 +221,7 @@ async function installPlugin(item: Plugin) {
   try {
     // 显示等待提示框
     progressDialog.value = true
-    progressText.value = `正在安装 ${item?.plugin_name} v${item?.plugin_version} ...`
+    progressText.value = t('plugin.installing', { name: item?.plugin_name, version: item?.plugin_version })
 
     const result: { [key: string]: any } = await api.get(`plugin/install/${item?.id}`, {
       params: {
@@ -227,12 +234,12 @@ async function installPlugin(item: Plugin) {
     progressDialog.value = false
 
     if (result.success) {
-      $toast.success(`插件 ${item?.plugin_name} 安装成功！`)
+      $toast.success(t('plugin.installSuccess', { name: item?.plugin_name }))
 
       // 刷新
       refreshData()
     } else {
-      $toast.error(`插件 ${item?.plugin_name} 安装失败：${result.message}`)
+      $toast.error(t('plugin.installFailed', { name: item?.plugin_name, message: result.message }))
     }
   } catch (error) {
     console.error(error)
@@ -326,7 +333,7 @@ async function fetchUninstalledPlugins() {
     loading.value = false
     isRefreshed.value = true
     // 更新插件市场列表
-    // 排除已安装且有更新的，上面的问题在于“本地存在未安装的旧版本插件且云端有更新时”不会在插件市场展示
+    // 排除已安装且有更新的，上面的问题在于"本地存在未安装的旧版本插件且云端有更新时"不会在插件市场展示
     marketList.value = uninstalledList.value.filter(item => !(item.has_update && item.installed))
     // 初始化过滤选项
     marketList.value.forEach(initOptions)
@@ -467,10 +474,10 @@ useDynamicButton({
 
 <template>
   <div>
-    <VHeaderTab :items="PluginTabs" v-model="activeTab">
+    <VHeaderTab :items="pluginTabs" v-model="activeTab">
       <template #append>
         <VMenu
-          v-if="activeTab === '我的插件'"
+          v-if="activeTab === 'installed'"
           v-model="filterInstalledPluginDialog"
           width="20rem"
           :close-on-content-click="false"
@@ -490,7 +497,7 @@ useDynamicButton({
             <VCardItem>
               <VCardTitle>
                 <VIcon icon="mdi-filter-multiple-outline" class="mr-2" />
-                筛选插件
+                {{ t('plugin.filterPlugins') }}
               </VCardTitle>
               <VDialogCloseBtn @click="filterInstalledPluginDialog = false" />
             </VCardItem>
@@ -500,20 +507,20 @@ useDynamicButton({
                   <VCombobox
                     v-model="installedFilter"
                     :items="installedPluginNames"
-                    label="名称"
+                    :label="t('plugin.name')"
                     density="comfortable"
                     clearable
                   />
                 </VCol>
                 <VCol cols="12">
-                  <VSwitch v-model="hasUpdateFilter" label="有新版本" />
+                  <VSwitch v-model="hasUpdateFilter" :label="t('plugin.hasNewVersion')" />
                 </VCol>
               </VRow>
             </VCardText>
           </VCard>
         </VMenu>
         <VMenu
-          v-if="activeTab === '插件市场'"
+          v-if="activeTab === 'market'"
           v-model="filterMarketPluginDialog"
           width="25rem"
           :close-on-content-click="false"
@@ -533,7 +540,7 @@ useDynamicButton({
             <VCardItem>
               <VCardTitle>
                 <VIcon icon="mdi-filter-multiple-outline" class="mr-2" />
-                筛选插件
+                {{ t('plugin.filterPlugins') }}
               </VCardTitle>
               <VDialogCloseBtn @click="filterMarketPluginDialog = false" />
             </VCardItem>
@@ -542,7 +549,7 @@ useDynamicButton({
               <div v-if="isAppMarketLoaded">
                 <VRow>
                   <VCol cols="12" md="6">
-                    <VTextField v-model="filterForm.name" density="comfortable" label="名称" clearable />
+                    <VTextField v-model="filterForm.name" density="comfortable" :label="t('plugin.name')" clearable />
                   </VCol>
                   <VCol v-if="authorFilterOptions.length > 0" cols="12" md="6">
                     <VSelect
@@ -550,7 +557,7 @@ useDynamicButton({
                       :items="authorFilterOptions"
                       density="comfortable"
                       chips
-                      label="作者"
+                      :label="t('plugin.author')"
                       multiple
                       clearable
                     />
@@ -561,7 +568,7 @@ useDynamicButton({
                       :items="labelFilterOptions"
                       density="comfortable"
                       chips
-                      label="标签"
+                      :label="t('plugin.label')"
                       multiple
                       clearable
                     />
@@ -572,13 +579,18 @@ useDynamicButton({
                       :items="repoFilterOptions"
                       density="comfortable"
                       chips
-                      label="插件库"
+                      :label="t('plugin.repository')"
                       multiple
                       clearable
                     />
                   </VCol>
                   <VCol v-if="sortOptions.length > 0" cols="12" md="6">
-                    <VSelect v-model="activeSort" :items="sortOptions" density="comfortable" label="排序" />
+                    <VSelect
+                      v-model="activeSort"
+                      :items="sortOptions"
+                      density="comfortable"
+                      :label="t('plugin.sort')"
+                    />
                   </VCol>
                 </VRow>
               </div>
@@ -586,7 +598,7 @@ useDynamicButton({
           </VCard>
         </VMenu>
         <VBtn
-          v-if="activeTab === '插件市场'"
+          v-if="activeTab === 'market'"
           icon="mdi-store-cog"
           variant="text"
           color="gray"
@@ -599,10 +611,10 @@ useDynamicButton({
 
     <VWindow v-model="activeTab" class="mt-5 disable-tab-transition" :touch="false">
       <!-- 我的插件 -->
-      <VWindowItem value="我的插件">
+      <VWindowItem value="installed">
         <transition name="fade-slide" appear>
           <div>
-            <VPageContentTitle v-if="installedFilter" :title="`筛选：${installedFilter}`" />
+            <VPageContentTitle v-if="installedFilter" :title="t('plugin.filter', { name: installedFilter })" />
             <LoadingBanner v-if="!isRefreshed" class="mt-12" />
             <draggable
               v-if="filteredDataList.length > 0"
@@ -627,18 +639,16 @@ useDynamicButton({
             <NoDataFound
               v-if="filteredDataList.length === 0 && isRefreshed"
               error-code="404"
-              error-title="没有数据"
+              :error-title="t('common.noData')"
               :error-description="
-                installedFilter || hasUpdateFilter
-                  ? '没有匹配到相关内容，请更换筛选条件。'
-                  : '请先前往插件市场安装插件。'
+                installedFilter || hasUpdateFilter ? t('plugin.noMatchingContent') : t('plugin.pleaseInstallFromMarket')
               "
             />
           </div>
         </transition>
       </VWindowItem>
       <!-- 插件市场 -->
-      <VWindowItem value="插件市场">
+      <VWindowItem value="market">
         <transition name="fade-slide" appear>
           <div>
             <LoadingBanner v-if="!isAppMarketLoaded" class="mt-12" />
@@ -665,8 +675,8 @@ useDynamicButton({
             <NoDataFound
               v-if="displayUninstalledList.length === 0 && isAppMarketLoaded"
               error-code="404"
-              error-title="没有数据"
-              error-description="所有可用插件均已安装，如有筛选请调整筛选条件。"
+              :error-title="t('common.noData')"
+              :error-description="t('plugin.allPluginsInstalled')"
             />
           </div>
         </transition>
@@ -710,9 +720,9 @@ useDynamicButton({
       <VToolbar flat class="p-0">
         <VTextField
           v-model="keyword"
-          label="搜索插件"
+          :label="t('plugin.searchPlugins')"
           single-line
-          placeholder="插件名称或描述"
+          :placeholder="t('plugin.searchPlaceholder')"
           variant="solo"
           prepend-inner-icon="mdi-magnify"
           flat

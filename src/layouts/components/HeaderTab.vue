@@ -2,10 +2,10 @@
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '* * * * *',
+    default: '',
   },
   items: {
-    type: Array as PropType<{ title: string; icon: string }[]>,
+    type: Array as PropType<{ title: string; icon: string; tab: string }[]>,
     default: () => [],
   },
 })
@@ -29,6 +29,23 @@ watch(
 const tabsContainerRef = ref<HTMLElement | null>(null)
 // State for showing the scroll indicator
 const showTabsScrollIndicator = ref(false)
+// State for showing the scroll buttons
+const showLeftButton = ref(false)
+const showRightButton = ref(false)
+
+// Function to scroll the tabs
+const scrollTabs = (direction: 'left' | 'right') => {
+  const el = tabsContainerRef.value
+  if (!el) return
+
+  const scrollAmount = 200 // 可以根据需要调整滚动量
+  const scrollPosition = direction === 'left' ? el.scrollLeft - scrollAmount : el.scrollLeft + scrollAmount
+
+  el.scrollTo({
+    left: scrollPosition,
+    behavior: 'smooth',
+  })
+}
 
 // Function to check and update the indicator state
 const updateTabsIndicator = () => {
@@ -38,8 +55,11 @@ const updateTabsIndicator = () => {
   const tolerance = 1 // Allow 1px tolerance
   const hasOverflow = el.scrollWidth > el.clientWidth + tolerance
   const isScrolledToEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - tolerance
+  const isScrolledToStart = el.scrollLeft <= tolerance
 
   showTabsScrollIndicator.value = hasOverflow && !isScrolledToEnd
+  showLeftButton.value = hasOverflow && !isScrolledToStart
+  showRightButton.value = hasOverflow && !isScrolledToEnd
 }
 
 // Debounce resize handler
@@ -71,18 +91,27 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="tab-header rounded-t-lg">
+    <VBtn v-if="showLeftButton" class="scroll-button left-button" @click="scrollTabs('left')" variant="text" icon>
+      <VIcon icon="tabler-chevron-left" size="small" color="secondary" />
+    </VBtn>
+
     <div ref="tabsContainerRef" class="header-tabs" :class="{ 'show-indicator': showTabsScrollIndicator }">
       <div
         v-for="(item, index) in items"
         :key="index"
         class="header-tab"
-        :class="{ 'active': currentValue === item.title }"
-        @click="currentValue = item.title"
+        :class="{ 'active': currentValue === item.tab }"
+        @click="currentValue = item.tab"
       >
         <VIcon v-if="item.icon" :icon="item.icon" size="small" class="header-tab-icon" />
         <span>{{ item.title }}</span>
       </div>
     </div>
+
+    <VBtn v-if="showRightButton" class="scroll-button right-button" @click="scrollTabs('right')" variant="text" icon>
+      <VIcon icon="tabler-chevron-right" size="small" color="secondary" />
+    </VBtn>
+
     <slot name="append" />
   </div>
 </template>
@@ -99,6 +128,28 @@ onUnmounted(() => {
   margin-block-end: 16px;
   padding-block: 8px;
   padding-inline: 16px;
+}
+
+.scroll-button {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  block-size: 28px;
+  cursor: pointer;
+  inline-size: 28px;
+  outline: none;
+  transition: background-color 0.2s ease;
+
+  &.left-button {
+    margin-inline-end: 6px;
+  }
+
+  &.right-button {
+    margin-inline-start: 6px;
+  }
 }
 
 .header-tabs {

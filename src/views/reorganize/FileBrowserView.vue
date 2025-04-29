@@ -179,7 +179,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .file-browser-view {
-  height: 100%;
   position: relative;
+  block-size: 100%;
 }
 </style>

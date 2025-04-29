@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DiscoverTabs } from '@/router/menu'
+import { getDiscoverTabs } from '@/router/i18n-menu'
 import draggable from 'vuedraggable'
 import TheMovieDbView from '@/views/discover/TheMovieDbView.vue'
 import DoubanView from '@/views/discover/DoubanView.vue'
@@ -7,7 +7,10 @@ import BangumiView from '@/views/discover/BangumiView.vue'
 import ExtraSourceView from '@/views/discover/ExtraSourceView.vue'
 import { DiscoverSource } from '@/api/types'
 import api from '@/api'
-import { or } from '@vueuse/math'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 
 const activeTab = ref('')
 
@@ -24,6 +27,7 @@ const discoverTabs = ref<DiscoverSource[]>([])
 const discoverTabItems = computed(() => {
   return discoverTabs.value.map(item => ({
     title: item.name,
+    tab: item.mediaid_prefix,
   }))
 })
 
@@ -35,7 +39,8 @@ const orderConfigDialog = ref(false)
 
 // 初始化发现标签
 function initDiscoverTabs() {
-  for (const tab of DiscoverTabs) {
+  const tabs = getDiscoverTabs()
+  for (const tab of tabs) {
     discoverTabs.value.push({
       name: tab.name,
       mediaid_prefix: tab.tab,
@@ -144,28 +149,28 @@ onActivated(async () => {
     </VHeaderTab>
 
     <VWindow v-model="activeTab" class="mt-5 disable-tab-transition" :touch="false">
-      <VWindowItem value="TheMovieDb">
+      <VWindowItem value="themoviedb">
         <transition name="fade-slide" appear>
           <div>
             <TheMovieDbView />
           </div>
         </transition>
       </VWindowItem>
-      <VWindowItem value="豆瓣">
+      <VWindowItem value="douban">
         <transition name="fade-slide" appear>
           <div>
             <DoubanView />
           </div>
         </transition>
       </VWindowItem>
-      <VWindowItem value="Bangumi">
+      <VWindowItem value="bangumi">
         <transition name="fade-slide" appear>
           <div>
             <BangumiView />
           </div>
         </transition>
       </VWindowItem>
-      <VWindowItem v-for="item in extraDiscoverSources" :key="item.mediaid_prefix" :value="item.name">
+      <VWindowItem v-for="item in extraDiscoverSources" :key="item.mediaid_prefix" :value="item.mediaid_prefix">
         <transition name="fade-slide" appear>
           <div>
             <ExtraSourceView :source="item" />
@@ -179,13 +184,13 @@ onActivated(async () => {
         <VCardItem>
           <VCardTitle>
             <VIcon icon="mdi-order-alphabetical-ascending" size="small" class="me-2" />
-            设置标签顺序
+            {{ t('discover.setTabOrder') }}
           </VCardTitle>
           <VDialogCloseBtn @click="orderConfigDialog = false" />
         </VCardItem>
         <VDivider />
         <VCardText>
-          <p class="settings-hint">拖动对标签页进行排序</p>
+          <p class="settings-hint">{{ t('discover.dragToReorder') }}</p>
           <draggable
             v-model="discoverTabs"
             handle=".cursor-move"
@@ -209,7 +214,7 @@ onActivated(async () => {
             <template #prepend>
               <VIcon icon="mdi-content-save" />
             </template>
-            保存
+            {{ t('common.save') }}
           </VBtn>
         </VCardText>
       </VCard>

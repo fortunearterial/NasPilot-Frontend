@@ -9,6 +9,7 @@ import { createApp } from 'vue'
 import vuetify from '@/plugins/vuetify'
 import router from '@/router'
 import pinia from '@/stores/index'
+import i18n from '@/plugins/i18n'
 
 // 3. 全局组件
 import App from '@/App.vue'
@@ -113,9 +114,10 @@ initializeApp().then(() => {
           color: 'secondary',
           class: 'me-3',
         },
-        confirmationText: '确认',
-        cancellationText: '取消',
+        confirmationText: i18n.global.t('common.confirm'),
+        cancellationText: i18n.global.t('common.cancel'),
       },
     })
+    .use(i18n)
     .mount('#app')
 })

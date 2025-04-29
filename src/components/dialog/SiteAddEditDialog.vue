@@ -6,6 +6,10 @@ import { numberValidator, requiredValidator } from '@/@validators'
 import { mediaTypeItems, httpOptions } from '@/api/constants'
 import api from '@/api'
 import { useDisplay } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 
 // 显示器宽度
 const display = useDisplay()
@@ -58,8 +62,8 @@ const isLimit = ref(false)
 
 // 状态下拉项
 const statusItems = [
-  { title: '启用', value: true },
-  { title: '停用', value: false },
+  { title: t('site.status.enabled'), value: true },
+  { title: t('site.status.disabled'), value: false },
 ]
 
 // 生成1到50的优先级下拉框选项
@@ -80,14 +84,14 @@ async function loadDownloaderSetting() {
   try {
     const downloaders: DownloaderConf[] = await api.get('download/clients')
     downloaderOptions.value = [
-      { title: '默认', value: '' },
+      { title: t('common.default'), value: '' },
       ...downloaders.map((item: { name: any }) => ({
         title: item.name,
         value: item.name,
       })),
     ]
   } catch (error) {
-    console.error('加载下载器设置失败:', error)
+    console.error(t('site.errors.loadDownloader'), error)
   }
 }
 
@@ -109,10 +113,10 @@ async function addSite() {
   try {
     const result: { [key: string]: string } = await api.post('site/', siteForm.value)
     if (result.success) {
-      $toast.success('新增站点成功')
+      $toast.success(t('site.messages.addSuccess'))
       emit('save')
     } else {
-      $toast.error(`新增站点失败：${result.message}`)
+      $toast.error(`${t('site.messages.addFailed')}：${result.message}`)
     }
   } catch (error) {
     console.error(error)
@@ -135,13 +139,13 @@ async function updateSiteInfo() {
     }
     const result: { [key: string]: any } = await api.put('site/', siteForm.value)
     if (result.success) {
-      $toast.success(`${siteForm.value?.name} 更新成功！`)
+      $toast.success(`${siteForm.value?.name} ${t('site.messages.updateSuccess')}`)
       emit('save')
     } else {
-      $toast.error(`${siteForm.value?.name} 更新失败：${result.message}`)
+      $toast.error(`${siteForm.value?.name} ${t('site.messages.updateFailed')}：${result.message}`)
     }
   } catch (error) {
-    $toast.error(`${siteForm.value?.name} 更新失败！`)
+    $toast.error(`${siteForm.value?.name} ${t('site.messages.updateFailed')}！`)
     console.error(error)
   }
   doneNProgress()
@@ -165,7 +169,9 @@ onMounted(async () => {
 <template>
   <VDialog scrollable :close-on-back="false" eager max-width="45rem" :fullscreen="!display.mdAndUp.value">
     <VCard
-      :title="`${props.oper === 'add' ? '新增' : '编辑'}站点${props.oper !== 'add' ? ` - ${siteForm.name}` : ''}`"
+      :title="`${props.oper === 'add' ? t('site.actions.add') : t('site.actions.edit')}${t('site.title')}${
+        props.oper !== 'add' ? ` - ${siteForm.name}` : ''
+      }`"
       class="rounded-t"
     >
       <VDialogCloseBtn @click="emit('close')" />
@@ -176,9 +182,9 @@ onMounted(async () => {
             <VCol cols="12" md="6">
               <VTextField
                 v-model="siteForm.url"
-                label="站点地址"
+                :label="t('site.fields.url')"
                 :rules="[requiredValidator]"
-                hint="格式：http://www.example.com/"
+                :hint="t('site.hints.url')"
                 persistent-hint
               />
             </VCol>
@@ -189,8 +195,8 @@ onMounted(async () => {
               <VSelect
                 v-model="siteForm.is_active"
                 :items="statusItems"
-                label="状态"
-                hint="站点启用/停用"
+                :label="t('site.fields.status')"
+                :hint="t('site.hints.status')"
                 persistent-hint
               />
             </VCol>
@@ -199,27 +205,27 @@ onMounted(async () => {
             <VCol cols="6" md="3">
               <VSelect
                 v-model="siteForm.pri"
-                label="优先级"
+                :label="t('site.fields.priority')"
                 :items="priorityItems"
                 :rules="[requiredValidator]"
-                hint="优先级越小越优先"
+                :hint="t('site.hints.priority')"
                 persistent-hint
               />
             </VCol>
             <VCol cols="6" md="3">
               <VTextField
                 v-model="siteForm.timeout"
-                label="超时时间（秒）"
-                hint="站点请求超时时间，为0时不限制"
+                :label="t('site.fields.timeout')"
+                :hint="t('site.hints.timeout')"
                 persistent-hint
               />
             </VCol>
             <VCol cols="12" md="6">
               <VSelect
                 v-model="siteForm.downloader"
-                label="下载器"
+                :label="t('site.fields.downloader')"
                 :items="downloaderOptions"
-                hint="此站点使用的下载器"
+                :hint="t('site.hints.downloader')"
                 persistent-hint
               />
             </VCol>
@@ -344,16 +350,16 @@ onMounted(async () => {
                 <VCol cols="12">
                   <VTextarea
                     v-model="siteForm.cookie"
-                    label="站点Cookie"
-                    hint="站点请求头中的Cookie信息"
+                    :label="t('site.fields.cookie')"
+                    :hint="t('site.hints.cookie')"
                     persistent-hint
                   />
                 </VCol>
                 <VCol cols="12">
                   <VTextField
                     v-model="siteForm.ua"
-                    label="站点User-Agent"
-                    hint="获取Cookie的浏览器对应的User-Agent"
+                    :label="t('site.fields.userAgent')"
+                    :hint="t('site.hints.userAgent')"
                     persistent-hint
                   />
                 </VCol>
@@ -364,16 +370,16 @@ onMounted(async () => {
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="siteForm.token"
-                    label="请求头（Authorization）"
-                    hint="站点请求头中的Authorization信息，特殊站点需要"
+                    :label="t('site.fields.authorization')"
+                    :hint="t('site.hints.authorization')"
                     persistent-hint
                   />
                 </VCol>
                 <VCol cols="12" md="6">
                   <VTextField
                     v-model="siteForm.apikey"
-                    label="令牌（API Key）"
-                    hint="站点的访问API Key，特殊站点需要"
+                    :label="t('site.fields.apiKey')"
+                    :hint="t('site.hints.apiKey')"
                     persistent-hint
                   />
                 </VCol>
@@ -382,47 +388,52 @@ onMounted(async () => {
           </VWindow>
           <VRow>
             <VCol cols="12" md="4">
-              <VSwitch v-model="isLimit" label="限制站点访问频率" />
+              <VSwitch v-model="isLimit" :label="t('site.fields.limitAccess')" />
             </VCol>
           </VRow>
           <VRow v-if="isLimit">
             <VCol cols="12" md="4">
               <VTextField
                 v-model="siteForm.limit_interval"
-                label="单位周期（秒）"
+                :label="t('site.fields.limitInterval')"
                 :rules="[numberValidator]"
-                hint="限流控制的单位周期时长"
+                :hint="t('site.hints.limitInterval')"
                 persistent-hint
               />
             </VCol>
             <VCol cols="12" md="4">
               <VTextField
                 v-model="siteForm.limit_count"
-                label="周期内访问次数"
+                :label="t('site.fields.limitCount')"
                 :rules="[numberValidator]"
-                hint="单位周期内允许的访问次数"
+                :hint="t('site.hints.limitCount')"
                 persistent-hint
               />
             </VCol>
             <VCol cols="12" md="4">
               <VTextField
                 v-model="siteForm.limit_seconds"
-                label="访问间隔（秒）"
+                :label="t('site.fields.limitSeconds')"
                 :rules="[numberValidator]"
-                hint="每次访问需要间隔的最小时间"
+                :hint="t('site.hints.limitSeconds')"
                 persistent-hint
               />
             </VCol>
           </VRow>
           <VRow>
             <VCol cols="12" md="6">
-              <VSwitch v-model="siteForm.proxy" label="使用代理访问" hint="使用代理服务器访问该站点" persistent-hint />
+              <VSwitch
+                v-model="siteForm.proxy"
+                :label="t('site.fields.useProxy')"
+                :hint="t('site.hints.useProxy')"
+                persistent-hint
+              />
             </VCol>
             <VCol cols="12" md="6">
               <VSwitch
                 v-model="siteForm.render"
-                label="浏览器仿真"
-                hint="使用浏览器模拟真实访问该站点"
+                :label="t('site.fields.browserSimulation')"
+                :hint="t('site.hints.browserSimulation')"
                 persistent-hint
               />
             </VCol>
@@ -439,7 +450,7 @@ onMounted(async () => {
           prepend-icon="mdi-plus"
           class="px-5"
         >
-          新增
+          {{ t('site.actions.add') }}
         </VBtn>
         <VBtn
           v-else
@@ -449,7 +460,7 @@ onMounted(async () => {
           prepend-icon="mdi-content-save"
           class="px-5"
         >
-          保存
+          {{ t('common.save') }}
         </VBtn>
       </VCardActions>
     </VCard>

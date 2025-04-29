@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { SystemNavMenus } from '@/router/menu'
+import { getNavMenus } from '@/router/i18n-menu'
 import { useDisplay } from 'vuetify'
+import { NavMenu } from '@/@layouts/types'
+import { useI18n } from 'vue-i18n'
 
 const display = useDisplay()
 const appMode = inject('pwaMode') && display.mdAndDown.value
+const { t, locale } = useI18n()
+
+// 判断当前是否为英文环境
+const isEnglish = computed(() => locale.value === 'en-US')
 
 const route = useRoute()
 
+// 获取导航菜单
+const navMenus = computed(() => getNavMenus())
+
 // 根据当前路径获取匹配的菜单路径
 function getMenuPathFromRoute(path: string): string {
-  const matchedMenu = SystemNavMenus.find(menu => menu.footer === true && path.startsWith(menu.to))
-  return matchedMenu ? matchedMenu.to : '/apps'
+  const matchedMenu = navMenus.value.find((menu: NavMenu) => menu.footer === true && path.startsWith(menu.to as string))
+  return matchedMenu ? (matchedMenu.to as string) : '/apps'
 }
 
 // 当前选中的菜单，初始值基于当前路由
@@ -18,7 +27,7 @@ const currentMenu = ref<string>(getMenuPathFromRoute(route.path))
 
 // 过滤出底部菜单项
 const footerMenus = computed(() => {
-  return SystemNavMenus.filter(menu => menu.footer === true)
+  return navMenus.value.filter((menu: NavMenu) => menu.footer === true)
 })
 
 // 监听路由变化来更新currentMenu
@@ -108,8 +117,8 @@ const showDynamicButton = computed(() => {
               :value="menu.to"
             >
               <div class="btn-content">
-                <VIcon :icon="menu.icon" size="24"></VIcon>
-                <span class="text-xs">{{ menu.title }}</span>
+                <VIcon :icon="menu.icon" :size="isEnglish ? 32 : 24"></VIcon>
+                <span v-if="!isEnglish" class="text-xs">{{ menu.title }}</span>
               </div>
             </VBtn>
 
@@ -125,8 +134,8 @@ const showDynamicButton = computed(() => {
               value="/apps"
             >
               <div class="btn-content">
-                <VIcon icon="mdi-dots-horizontal" size="24"></VIcon>
-                <span class="btn-text">更多</span>
+                <VIcon icon="mdi-dots-horizontal" :size="isEnglish ? 32 : 24"></VIcon>
+                <span v-if="!isEnglish" class="btn-text">{{ t('nav.more') }}</span>
               </div>
             </VBtn>
           </VBtnToggle>
@@ -216,6 +225,18 @@ const showDynamicButton = computed(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    inline-size: 100%;
+
+    span {
+      overflow: hidden;
+      font-size: 0.75rem;
+      max-inline-size: 100%;
+      scale: var(--text-scale, 1);
+      text-overflow: ellipsis;
+      transform-origin: center;
+      transition: scale 0.2s ease;
+      white-space: nowrap;
+    }
   }
 }
 

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { MediaServerPlayItem } from '@/api/types'
-
 // 输入参数
 const props = defineProps({
   media: Object as PropType<MediaServerPlayItem>,
