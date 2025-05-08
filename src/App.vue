@@ -2,7 +2,7 @@
 import { useTheme } from 'vuetify'
 import { checkPrefersColorSchemeIsDark } from '@/@core/utils'
 import { ensureRenderComplete, removeEl } from './@core/utils/dom'
-import api from '@/api'
+import { api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from 'vue-i18n'
 import { getBrowserLocale, setI18nLanguage } from './plugins/i18n'
@@ -131,10 +131,10 @@ function preloadImage(url: string): Promise<boolean> {
 function getImgUrl(url: string) {
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   // 如果地址中包含douban则使用中转代理
   if (url.includes('doubanio.com'))
-    return `${import.meta.env.VITE_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
   return url
 }
 

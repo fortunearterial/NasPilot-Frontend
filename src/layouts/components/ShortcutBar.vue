@@ -5,7 +5,7 @@ import LoggingView from '@/views/system/LoggingView.vue'
 import RuleTestView from '@/views/system/RuleTestView.vue'
 import ModuleTestView from '@/views/system/ModuleTestView.vue'
 import MessageView from '@/views/system/MessageView.vue'
-import api from '@/api'
+import { api } from '@/api'
 import { useDisplay } from 'vuetify'
 import { getQueryValue } from '@/@core/utils'
 import { useI18n } from 'vue-i18n'
@@ -111,7 +111,7 @@ function scrollMessageToEnd() {
 
 // 拼接全部日志url
 function allLoggingUrl() {
-  return `${import.meta.env.VITE_API_BASE_URL}system/logging?length=-1`
+  return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/logging?length=-1`
 }
 
 // 发送消息

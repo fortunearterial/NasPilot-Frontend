@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { requiredValidator } from '@/@validators'
-import api from '@/api'
+import { api } from '@/api'
 import { FilterRuleGroup } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

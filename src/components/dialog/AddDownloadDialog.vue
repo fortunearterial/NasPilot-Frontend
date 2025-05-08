@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useToast } from 'vue-toast-notification'
-import api from '@/api'
+import { api, localApi } from '@/api'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import type { DownloaderConf, MediaInfo, TorrentInfo, TransferDirectoryConf } from '@/api/types'
 import { formatFileSize } from '@/@core/utils/formatters'
@@ -98,7 +98,7 @@ async function addDownload() {
 
     const endpoint = props.media ? 'download/' : 'download/add'
 
-    result = await api.post(endpoint, payload)
+    result = await localApi.post(endpoint, payload)
 
     if (result && result.success) {
       // 添加下载成功

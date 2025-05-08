@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { VPullToRefresh } from 'vuetify/labs/VPullToRefresh'
-import api from '@/api'
+import { api } from '@/api'
 import type { DownloadingInfo } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import DownloadingCard from '@/components/cards/DownloadingCard.vue'

@@ -41,7 +41,7 @@ const backdropUrl = computed(() => {
   const url = props.media?.backdrop || props.media?.poster
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 
@@ -50,7 +50,7 @@ const posterUrl = computed(() => {
   const url = props.media?.poster
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 

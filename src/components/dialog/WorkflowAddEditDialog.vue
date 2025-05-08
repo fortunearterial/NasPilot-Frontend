@@ -3,7 +3,7 @@ import { useToast } from 'vue-toast-notification'
 import type { Workflow } from '@/api/types'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { requiredValidator } from '@/@validators'
-import api from '@/api'
+import { api } from '@/api'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 

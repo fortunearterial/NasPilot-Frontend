@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { FileItem } from '@/api/types'
 
 const props = defineProps({

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { formatFileSize } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import trophy from '@images/misc/storage.png'
 import triangleDark from '@images/misc/triangle-dark.png'
 import triangleLight from '@images/misc/triangle-light.png'

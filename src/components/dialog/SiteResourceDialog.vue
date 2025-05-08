@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Site } from '@/api/types'
-import api from '@/api'
+import { api } from '@/api'
 import type { TorrentInfo, SiteCategory } from '@/api/types'
 import { formatFileSize } from '@core/utils/formatters'
 import AddDownloadDialog from '../dialog/AddDownloadDialog.vue'

@@ -2,7 +2,7 @@
 import { useToast } from 'vue-toast-notification'
 import type { User } from '@/api/types'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
-import api from '@/api'
+import { api } from '@/api'
 import { useDisplay } from 'vuetify'
 import avatar1 from '@images/avatars/avatar-1.png'
 import { useUserStore } from '@/stores'

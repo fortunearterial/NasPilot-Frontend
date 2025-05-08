@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { formatSeconds } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import type { Process } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

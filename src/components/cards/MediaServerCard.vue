@@ -5,7 +5,7 @@ import emby_image from '@images/logos/emby.png'
 import jellyfin_image from '@images/logos/jellyfin.png'
 import plex_image from '@images/logos/plex.png'
 import trimemedia_image from '@images/logos/trimemedia.png'
-import api from '@/api'
+import { api } from '@/api'
 import { cloneDeep } from 'lodash-es'
 import { useI18n } from 'vue-i18n'
 

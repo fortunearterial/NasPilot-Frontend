@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import type { SubscribeShare } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import SubscribeShareCard from '@/components/cards/SubscribeShareCard.vue'
@@ -113,7 +113,7 @@ async function fetchData({ done }: { done: any }) {
 }
 
 // 将数据从列表中移除
-function removeData(id: number) {
+function removeData(id: string) {
   dataList.value = dataList.value.filter(item => item.id !== id)
 }
 </script>

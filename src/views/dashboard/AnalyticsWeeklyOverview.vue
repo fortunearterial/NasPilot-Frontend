@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
-import api from '@/api'
+import { api } from '@/api'
 import { hexToRgb } from '@layouts/utils'
 import { useUserStore } from '@/stores'
 import { useI18n } from 'vue-i18n'

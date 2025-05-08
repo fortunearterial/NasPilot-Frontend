@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import PersonCard from '@/components/cards/PersonCard.vue'
-import api from '@/api'
+import { api } from '@/api'
 import SlideView from '@/components/slide/SlideView.vue'
 
 // 输入参数

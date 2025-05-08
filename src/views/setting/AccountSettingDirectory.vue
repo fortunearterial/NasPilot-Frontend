@@ -3,7 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import draggable from 'vuedraggable'
 import { VRow } from 'vuetify/lib/components/index.mjs'
-import api from '@/api'
+import { api } from '@/api'
 import { TransferDirectoryConf, StorageConf } from '@/api/types'
 import DirectoryCard from '@/components/cards/DirectoryCard.vue'
 import StorageCard from '@/components/cards/StorageCard.vue'

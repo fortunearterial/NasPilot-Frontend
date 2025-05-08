@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import useDragAndDrop from '@core/utils/workflow'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'

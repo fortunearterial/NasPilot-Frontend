@@ -151,7 +151,7 @@ interface I18nLanguage {
 // avatar | text | icon
 // Thanks: https://stackoverflow.com/a/60617060/10796681
 type Notification = {
-  id: number
+  id: string
   title: string
   subtitle: string
   time: string

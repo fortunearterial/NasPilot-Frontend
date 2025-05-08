@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { isNullOrEmptyObject } from '@/@core/utils'
-import api from '@/api'
+import { api } from '@/api'
 import { useToast } from 'vue-toast-notification'
 import { useI18n } from 'vue-i18n'
 

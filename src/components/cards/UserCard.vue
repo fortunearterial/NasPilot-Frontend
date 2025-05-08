@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { Subscribe, User } from '@/api/types'
 import { useUserStore } from '@/stores'
 import avatar1 from '@images/avatars/avatar-1.png'

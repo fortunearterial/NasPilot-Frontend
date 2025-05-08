@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
-import api from '@/api'
+import { api } from '@/api'
 import { RecommendSource } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

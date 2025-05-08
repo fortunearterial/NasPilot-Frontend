@@ -6,7 +6,7 @@ import { useToast } from 'vue-toast-notification'
 import ReorganizeDialog from '../dialog/ReorganizeDialog.vue'
 import { formatBytes } from '@core/utils/formatters'
 import type { Context, EndPoints, FileItem } from '@/api/types'
-import api from '@/api'
+import { api } from '@/api'
 import ProgressDialog from '../dialog/ProgressDialog.vue'
 import { useDisplay } from 'vuetify'
 import MediaInfoDialog from '../dialog/MediaInfoDialog.vue'
@@ -533,7 +533,7 @@ async function batchScrape() {
 // 使用SSE监听加载进度
 function startLoadingProgress() {
   progressText.value = t('common.pleaseWait')
-  progressEventSource.value = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/progress/batchrename`)
+  progressEventSource.value = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/progress/batchrename`)
   progressEventSource.value.onmessage = event => {
     const progress = JSON.parse(event.data)
     if (progress) {

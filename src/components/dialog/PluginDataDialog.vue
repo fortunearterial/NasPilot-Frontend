@@ -2,7 +2,7 @@
 import { useDisplay } from 'vuetify'
 import type { Plugin } from '@/api/types'
 import PageRender from '@/components/render/PageRender.vue'
-import api from '@/api'
+import { api } from '@/api'
 
 // 输入参数
 const props = defineProps({

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { TransferDirectoryConf } from '@/api/types'
-import api from '@/api'
+import { api } from '@/api'
 import { nextTick } from 'vue'
 import { storageOptions } from '@/api/constants'
 import { useI18n } from 'vue-i18n'

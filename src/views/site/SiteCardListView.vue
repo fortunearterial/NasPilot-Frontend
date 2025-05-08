@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import draggable from 'vuedraggable'
-import api from '@/api'
+import { api } from '@/api'
 import type { Site, SiteUserData } from '@/api/types'
 import SiteCard from '@/components/cards/SiteCard.vue'
 import NoDataFound from '@/components/NoDataFound.vue'

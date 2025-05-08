@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import type { Site, Plugin, Subscribe } from '@/api/types'
 import { getNavMenus, getSettingTabs } from '@/router/i18n-menu'
 import { NavMenu } from '@/@layouts/types'

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import { MediaInfo, MediaSeason, NotExistMediaInfo } from '@/api/types'
 import { PropType } from 'vue'
 import NoDataFound from '@/components/NoDataFound.vue'

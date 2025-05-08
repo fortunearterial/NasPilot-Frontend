@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
-import api from '@/api'
+import { api } from '@/api'
 import type { FilterRuleGroup, Site } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

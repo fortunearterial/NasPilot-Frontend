@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
 import MediaIdSelector from '../misc/MediaIdSelector.vue'
-import api from '@/api'
+import { api } from '@/api'
 import { storageOptions, transferTypeOptions } from '@/api/constants'
 import { numberValidator } from '@/@validators'
 import { useDisplay } from 'vuetify'
@@ -164,7 +164,7 @@ async function handleTransferLog(logid: number, background: boolean = false) {
 // 使用SSE监听加载进度
 function startLoadingProgress() {
   progressText.value = t('dialog.reorganize.processing')
-  progressEventSource.value = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/progress/filetransfer`)
+  progressEventSource.value = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/progress/filetransfer`)
   progressEventSource.value.onmessage = event => {
     const progress = JSON.parse(event.data)
     if (progress) {

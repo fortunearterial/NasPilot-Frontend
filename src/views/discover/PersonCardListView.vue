@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import PersonCard from '@/components/cards/PersonCard.vue'
 import NoDataFound from '@/components/NoDataFound.vue'
 import { useI18n } from 'vue-i18n'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { DownloaderConf } from '@/api/types'
 import DownloadingListView from '@/views/reorganize/DownloadingListView.vue'
 import NoDataFound from '@/components/NoDataFound.vue'

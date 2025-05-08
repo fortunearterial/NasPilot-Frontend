@@ -656,6 +656,8 @@ export default {
     dragToReorder: '拖動對標籤頁進行排序',
   },
   downloading: {
+    noTasks: '沒有下載任務',
+    tasksWillShowHere: '下載任務將在這裡顯示',
     noDownloader: '沒有下載器',
     configureDownloader: '請先在設置中正確配置並啟用下載器。',
   },
@@ -1189,6 +1191,8 @@ export default {
       importHasId: '導入失敗！發現有規則存在相同ID，可能屬於自定義規則！',
     },
     scheduler: {
+      title: '定時作業',
+      subtitle: '包含系统内置服务以及插件提供的服务，手动执行不会影响作业正常的时间表。',
       scheduledTasks: '定時作業',
       scheduledTasksDesc: '包含系統內置服務以及插件提供的服務，手動執行不會影響作業正常的時間表。',
       provider: '提供者',

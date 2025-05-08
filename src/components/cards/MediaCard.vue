@@ -3,7 +3,7 @@ import noImage from '@images/no-image.jpeg'
 import tmdbImage from '@images/logos/tmdb.png'
 import doubanImage from '@images/logos/douban-black.png'
 import bangumiImage from '@images/logos/bangumi.png'
-import api from '@/api'
+import { api } from '@/api'
 import { useToast } from 'vue-toast-notification'
 import { formatSeason, formatRating } from '@/@core/utils/formatters'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
@@ -417,10 +417,10 @@ const getImgUrl: Ref<string> = computed(() => {
   const url = props.media?.poster_path?.replace('original', 'w500') ?? noImage
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   // 如果地址中包含douban则使用中转代理
   if (url.includes('doubanio.com'))
-    return `${import.meta.env.VITE_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
   return url
 })
 

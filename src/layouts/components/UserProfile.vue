@@ -2,7 +2,7 @@
 import { useToast } from 'vue-toast-notification'
 import router from '@/router'
 import avatar1 from '@images/avatars/avatar-1.png'
-import api from '@/api'
+import { api } from '@/api'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'
 import UserAuthDialog from '@/components/dialog/UserAuthDialog.vue'
 import { useAuthStore, useUserStore } from '@/stores'

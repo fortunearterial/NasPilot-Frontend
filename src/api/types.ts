@@ -1,7 +1,7 @@
 // 订阅
 export interface Subscribe {
   // 订阅ID
-  id: number
+  id: string
   // 订阅名称
   name: string
   // 订阅年份
@@ -147,7 +147,7 @@ export interface SubscribeShare {
 // 历史记录
 export interface TransferHistory {
   // ID
-  id: number
+  id: string
   // 源存储
   src_storage?: string
   // 目标存储
@@ -801,7 +801,7 @@ export interface Context {
 // 用户信息
 export interface User {
   // 用户ID
-  id: number
+  id: string
   // 用户名称
   name: string
   // 用户密码
@@ -1288,7 +1288,7 @@ export interface RecommendSource {
 
 // 站点资源分类
 export interface SiteCategory {
-  id: number
+  id: string
   cat: string
   desc: string
 }

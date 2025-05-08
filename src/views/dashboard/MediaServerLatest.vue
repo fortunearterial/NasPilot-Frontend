@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import api from '@/api'
+import { api } from '@/api'
 import type { MediaServerConf, MediaServerPlayItem } from '@/api/types'
 import PosterCard from '@/components/cards/PosterCard.vue'
 import { useI18n } from 'vue-i18n'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { useI18n } from 'vue-i18n'
 
 // 国际化

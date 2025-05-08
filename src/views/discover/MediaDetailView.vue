@@ -2,7 +2,7 @@
 import { useToast } from 'vue-toast-notification'
 import PersonCardSlideView from './PersonCardSlideView.vue'
 import MediaCardSlideView from './MediaCardSlideView.vue'
-import api from '@/api'
+import { api } from '@/api'
 import type { MediaInfo, NotExistMediaInfo, Site, Subscribe, TmdbEpisode } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
@@ -376,7 +376,7 @@ function getW500Image(url = '') {
   url = url.replace('original', 'w500')
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 }
 
@@ -385,10 +385,10 @@ const getPosterUrl: Ref<string> = computed(() => {
   const url = mediaDetail.value.poster_path ?? ''
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   // 如果地址中包含douban则使用中转代理
   if (url.includes('doubanio.com'))
-    return `${import.meta.env.VITE_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/0?imgurl=${encodeURIComponent(url)}`
   return url
 })
 
@@ -397,7 +397,7 @@ const getBackdropUrl: Ref<string> = computed(() => {
   const url = mediaDetail.value.backdrop_path ?? ''
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 

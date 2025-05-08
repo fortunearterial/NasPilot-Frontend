@@ -33,7 +33,7 @@ function getLogColor(level: string): string {
 
 // SSE持续获取日志
 function startSSELogging() {
-  eventSource = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/logging`)
+  eventSource = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/logging`)
   const buffer: string[] = []
   let timeoutId: number | null = null
 

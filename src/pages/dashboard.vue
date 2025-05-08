@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable'
-import api from '@/api'
+import { api } from '@/api'
 import { isNullOrEmptyObject } from '@/@core/utils'
 import { DashboardItem } from '@/api/types'
 import { useUserStore } from '@/stores'

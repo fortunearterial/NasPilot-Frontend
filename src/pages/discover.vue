@@ -6,7 +6,7 @@ import DoubanView from '@/views/discover/DoubanView.vue'
 import BangumiView from '@/views/discover/BangumiView.vue'
 import ExtraSourceView from '@/views/discover/ExtraSourceView.vue'
 import { DiscoverSource } from '@/api/types'
-import api from '@/api'
+import { api } from '@/api'
 import { useI18n } from 'vue-i18n'
 
 // 国际化

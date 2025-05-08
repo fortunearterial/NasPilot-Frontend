@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import type { MediaStatistic } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

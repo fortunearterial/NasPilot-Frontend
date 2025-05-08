@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { doneNProgress, startNProgress } from '@/api/nprogress'
 import { SubscribeShare } from '@/api/types'
 import router from '@/router'
@@ -87,7 +87,7 @@ const posterUrl = computed(() => {
   const url = props.media?.poster
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 

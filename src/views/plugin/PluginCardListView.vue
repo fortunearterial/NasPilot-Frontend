@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import draggable from 'vuedraggable'
 import { useToast } from 'vue-toast-notification'
-import api from '@/api'
+import { api } from '@/api'
 import type { Plugin } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import PluginAppCard from '@/components/cards/PluginAppCard.vue'
@@ -275,7 +275,7 @@ function pluginIcon(item: Plugin) {
   if (pluginIconLoaded.value[item.id || '0'] === false) return noImage
   // 如果是网络图片则使用代理后返回
   if (item?.plugin_icon?.startsWith('http'))
-    return `${import.meta.env.VITE_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(item?.plugin_icon)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(item?.plugin_icon)}`
 
   return `./plugin_icon/${item?.plugin_icon}`
 }

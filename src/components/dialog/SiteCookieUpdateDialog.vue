@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { Site } from '@/api/types'
 import { requiredValidator } from '@/@validators'
 import { useToast } from 'vue-toast-notification'

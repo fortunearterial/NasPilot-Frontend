@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import type { DownloadingInfo } from '@/api/types'
 import { formatFileSize } from '@/@core/utils/formatters'
 

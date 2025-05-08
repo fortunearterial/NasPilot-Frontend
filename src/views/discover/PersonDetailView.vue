@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MediaCardListView from './MediaCardListView.vue'
-import api from '@/api'
+import { api } from '@/api'
 import personIcon from '@images/misc/person.png'
 import type { Person } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
@@ -63,7 +63,7 @@ function getPersonImage() {
   }
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 }
 

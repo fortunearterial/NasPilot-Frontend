@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { formatFileSize } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import { FileItem, TransferQueue } from '@/api/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
@@ -94,7 +94,7 @@ async function remove_queue_task(fileitem: FileItem) {
 // 使用SSE监听加载进度
 function startLoadingProgress() {
   progressText.value = t('dialog.transferQueue.processing')
-  progressEventSource.value = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/progress/filetransfer`)
+  progressEventSource.value = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/progress/filetransfer`)
   progressEventSource.value.onmessage = event => {
     const progress = JSON.parse(event.data)
     if (progress) {

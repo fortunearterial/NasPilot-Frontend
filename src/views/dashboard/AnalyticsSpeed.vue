@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatFileSize } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import type { DownloaderInfo } from '@/api/types'
 import { useI18n } from 'vue-i18n'
 

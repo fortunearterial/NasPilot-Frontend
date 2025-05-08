@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import { useI18n } from 'vue-i18n'
 
 // 多语言支持

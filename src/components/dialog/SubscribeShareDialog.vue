@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
 import { requiredValidator } from '@/@validators'
-import api from '@/api'
+import { api } from '@/api'
 import type { Subscribe, SubscribeShare } from '@/api/types'
 import { useDisplay } from 'vuetify'
 import { formatSeason } from '@/@core/utils/formatters'

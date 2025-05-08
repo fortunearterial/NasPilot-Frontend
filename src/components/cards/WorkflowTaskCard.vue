@@ -4,7 +4,7 @@ import { useToast } from 'vue-toast-notification'
 import { useConfirm } from 'vuetify-use-dialog'
 import WorkflowAddEditDialog from '@/components/dialog/WorkflowAddEditDialog.vue'
 import WorkflowActionsDialog from '@/components/dialog/WorkflowActionsDialog.vue'
-import api from '@/api'
+import { api } from '@/api'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

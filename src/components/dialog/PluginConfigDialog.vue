@@ -2,7 +2,7 @@
 import { useDisplay } from 'vuetify'
 import type { Plugin } from '@/api/types'
 import { isNullOrEmptyObject } from '@/@core/utils'
-import api from '@/api'
+import { api } from '@/api'
 import { useToast } from 'vue-toast-notification'
 import FormRender from '../render/FormRender.vue'
 import ProgressDialog from '../dialog/ProgressDialog.vue'

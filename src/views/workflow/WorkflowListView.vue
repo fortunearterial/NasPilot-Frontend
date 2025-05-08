@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { Workflow } from '@/api/types'
 import { useDisplay } from 'vuetify'
 import WorkflowAddEditDialog from '@/components/dialog/WorkflowAddEditDialog.vue'

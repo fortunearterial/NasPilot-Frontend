@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { formatFileSize } from '@/@core/utils/formatters'
 import { DownloaderConf } from '@/api/types'
 import { useToast } from 'vue-toast-notification'

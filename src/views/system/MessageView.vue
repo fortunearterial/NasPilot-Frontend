@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Message } from '@/api/types'
 import MessageCard from '@/components/cards/MessageCard.vue'
-import api from '@/api'
+import { api } from '@/api'
 import { useI18n } from 'vue-i18n'
 
 // 国际化
@@ -32,7 +32,7 @@ let eventSource: EventSource | null = null
 
 // SSE持续获取消息
 function startSSEMessager() {
-  eventSource = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/message?role=user`)
+  eventSource = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/message?role=user`)
   eventSource.addEventListener('message', event => {
     const message = event.data
     if (message) {

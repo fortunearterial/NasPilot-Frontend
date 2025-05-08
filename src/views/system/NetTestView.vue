@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import douban from '@images/logos/douban.png'
 import github from '@images/logos/github.png'
 import slack from '@images/logos/slack.webp'

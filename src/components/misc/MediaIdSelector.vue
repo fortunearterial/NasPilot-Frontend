@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import type { MediaInfo } from '@/api/types'
 
 // 定义输入变量

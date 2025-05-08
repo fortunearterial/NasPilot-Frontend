@@ -38,7 +38,7 @@ function getPersonImage() {
     return personIcon
   }
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 }
 

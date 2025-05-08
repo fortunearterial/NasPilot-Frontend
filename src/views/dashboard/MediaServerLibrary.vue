@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import type { MediaServerConf, MediaServerLibrary } from '@/api/types'
 import LibraryCard from '@/components/cards/LibraryCard.vue'
 import { useI18n } from 'vue-i18n'

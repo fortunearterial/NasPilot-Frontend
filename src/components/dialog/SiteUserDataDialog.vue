@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Site, SiteUserData } from '@/api/types'
-import api from '@/api'
+import { api } from '@/api'
 import { useDisplay, useTheme } from 'vuetify'
 import { formatFileSize } from '@/@core/utils/formatters'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'

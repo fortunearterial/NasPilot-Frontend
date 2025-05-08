@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { Handle, Position } from '@vue-flow/core'
 import { useI18n } from 'vue-i18n'
 

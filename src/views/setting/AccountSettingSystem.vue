@@ -3,7 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import { VRow } from 'vuetify/lib/components/index.mjs'
 import draggable from 'vuedraggable'
-import api from '@/api'
+import { api } from '@/api'
 import { DownloaderConf, MediaServerConf } from '@/api/types'
 import DownloaderCard from '@/components/cards/DownloaderCard.vue'
 import MediaServerCard from '@/components/cards/MediaServerCard.vue'
@@ -92,7 +92,7 @@ const tmdbLanguageItems = [
 // 调用API查询下载器设置
 async function loadDownloaderSetting() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Downloaders')
+    const result: { [key: string]: any } = await api.get('user/config/Downloaders')
     downloaders.value = result.data?.value ?? []
   } catch (error) {
     console.log(error)
@@ -121,7 +121,7 @@ async function saveDownloaderSetting() {
     if (enabledDownloaders.length > 0) {
       downloaders.value = handleDefaultDownloaders(enabledDownloaders, downloaders.value)
     }
-    const result: { [key: string]: any } = await api.post('system/setting/Downloaders', downloaders.value)
+    const result: { [key: string]: any } = await api.post('user/config/Downloaders', downloaders.value)
     if (result.success) $toast.success(t('setting.system.downloaderSaveSuccess'))
     else $toast.error(t('setting.system.downloaderSaveFailed'))
 

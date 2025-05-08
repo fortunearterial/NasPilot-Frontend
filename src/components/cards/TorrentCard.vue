@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
 import { formatFileSize } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import type { Context } from '@/api/types'
 import AddDownloadDialog from '../dialog/AddDownloadDialog.vue'
 import { isNullOrEmptyObject } from '@/@core/utils'

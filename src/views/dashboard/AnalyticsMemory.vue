@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { hexToRgb } from '@layouts/utils'
-import api from '@/api'
+import { api } from '@/api'
 import { formatBytes } from '@/@core/utils/formatters'
 import { useI18n } from 'vue-i18n'
 

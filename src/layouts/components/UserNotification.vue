@@ -21,7 +21,7 @@ const appsMenu = ref(false)
 function startSSEMessager() {
   // 延迟 3 秒启动 SSE，避免相关认证信息尚未写入 Cookie 导致 403
   setTimeout(() => {
-    eventSource = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/message`)
+    eventSource = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/message`)
     eventSource.addEventListener('message', event => {
       if (event.data) {
         const noti: SystemNotification = JSON.parse(event.data)

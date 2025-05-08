@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
 import { numberValidator } from '@/@validators'
-import api from '@/api'
+import { api } from '@/api'
 import type { DownloaderConf, FilterRuleGroup, Site, Subscribe, TransferDirectoryConf } from '@/api/types'
 import { useDisplay } from 'vuetify'
 import { useConfirm } from 'vuetify-use-dialog'
@@ -70,7 +70,7 @@ const episodeGroups = ref<{ [key: string]: any }[]>([])
 
 // 剧集组选项
 const episodeGroupOptions = computed(() => {
-  return (episodeGroups.value as { id: number; name: string; group_count: number; episode_count: number }[]).map(
+  return (episodeGroups.value as { id: string; name: string; group_count: number; episode_count: number }[]).map(
     item => {
       return {
         title: item.name,

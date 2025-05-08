@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { isNullOrEmptyObject } from '@/@core/utils'
-import api from '@/api'
+import { api } from '@/api'
 import { type PropType } from 'vue'
 import ProgressDialog from '../dialog/ProgressDialog.vue'
 import { RenderProps } from '@/api/types'

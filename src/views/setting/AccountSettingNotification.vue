@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
-import api from '@/api'
+import { api } from '@/api'
 import draggable from 'vuedraggable'
 import type { NotificationConf, NotificationSwitchConf } from '@/api/types'
 import NotificationChannelCard from '@/components/cards/NotificationChannelCard.vue'

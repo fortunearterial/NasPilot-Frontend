@@ -5,7 +5,7 @@ import SubscribeEditDialog from '../dialog/SubscribeEditDialog.vue'
 import SubscribeFilesDialog from '../dialog/SubscribeFilesDialog.vue'
 import SubscribeShareDialog from '../dialog/SubscribeShareDialog.vue'
 import { formatDateDifference, formatSeason } from '@/@core/utils/formatters'
-import api from '@/api'
+import { api } from '@/api'
 import type { Subscribe } from '@/api/types'
 import router from '@/router'
 import { useI18n } from 'vue-i18n'
@@ -266,7 +266,7 @@ const backdropUrl = computed(() => {
   const url = props.media?.backdrop || props.media?.poster
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 
@@ -275,7 +275,7 @@ const posterUrl = computed(() => {
   const url = props.media?.poster
   // 使用图片缓存
   if (globalSettings.GLOBAL_IMAGE_CACHE && url)
-    return `${import.meta.env.VITE_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
   return url
 })
 

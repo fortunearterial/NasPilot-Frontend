@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import NoDataFound from '@/components/NoDataFound.vue'
-import api from '@/api'
+import { api } from '@/api'
 import type { Context } from '@/api/types'
 import TorrentCardListView from '@/views/torrent/TorrentCardListView.vue'
 import TorrentRowListView from '@/views/torrent/TorrentRowListView.vue'
@@ -64,7 +64,7 @@ const errorDescription = ref(t('resource.noResourceFound'))
 function startLoadingProgress() {
   progressText.value = t('resource.searching')
   progressValue.value = 10 // 初始进度设为10%，确保进度条显示
-  progressEventSource.value = new EventSource(`${import.meta.env.VITE_API_BASE_URL}system/progress/search`)
+  progressEventSource.value = new EventSource(`${import.meta.env.VITE_SERVER_API_BASE_URL}system/progress/search`)
   progressEventSource.value.onmessage = event => {
     const progress = JSON.parse(event.data)
     if (progress) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { requiredValidator } from '@/@validators'
-import api from '@/api'
+import { api } from '@/api'
 import type { Context } from '@/api/types'
 import MediaInfoCard from '@/components/cards/MediaInfoCard.vue'
 import { useI18n } from 'vue-i18n'

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useToast } from 'vue-toast-notification'
 import { useConfirm } from 'vuetify-use-dialog'
-import api from '@/api'
+import { api } from '@/api'
 import type { Plugin } from '@/api/types'
 import { isNullOrEmptyObject } from '@core/utils'
 import noImage from '@images/logos/plugin.png'
@@ -145,7 +145,9 @@ const iconPath: Ref<string> = computed(() => {
   if (imageLoadError.value) return noImage
   // 如果是网络图片则使用代理后返回
   if (props.plugin?.plugin_icon?.startsWith('http'))
-    return `${import.meta.env.VITE_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(props.plugin?.plugin_icon)}`
+    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(
+      props.plugin?.plugin_icon,
+    )}`
 
   return `./plugin_icon/${props.plugin?.plugin_icon}`
 })
@@ -153,7 +155,7 @@ const iconPath: Ref<string> = computed(() => {
 // 插件作者头像路径
 const authorPath: Ref<string> = computed(() => {
   // 网络图片则使用代理后返回
-  return `${import.meta.env.VITE_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(
+  return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/img/1?imgurl=${encodeURIComponent(
     props.plugin?.author_url + '.png',
   )}`
 })
@@ -220,7 +222,7 @@ function visitAuthorPage() {
 // 查看日志URL
 function openLoggerWindow() {
   const url = `${
-    import.meta.env.VITE_API_BASE_URL
+    import.meta.env.VITE_SERVER_API_BASE_URL
   }system/logging?length=-1&logfile=plugins/${props.plugin?.id?.toLowerCase()}.log`
   window.open(url, '_blank')
 }

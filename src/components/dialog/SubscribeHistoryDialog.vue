@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import api from '@/api'
+import { api } from '@/api'
 import { Subscribe } from '@/api/types'
 import { formatDateDifference } from '@core/utils/formatters'
 import { useDisplay } from 'vuetify'

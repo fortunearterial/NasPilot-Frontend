@@ -2,7 +2,7 @@
 import { useToast } from 'vue-toast-notification'
 import QrcodeVue from 'qrcode.vue'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import api from '@/api'
+import { api } from '@/api'
 import type { User } from '@/api/types'
 import avatar1 from '@images/avatars/avatar-1.png'
 import { useDisplay } from 'vuetify'

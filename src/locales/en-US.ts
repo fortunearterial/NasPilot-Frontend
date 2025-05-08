@@ -658,6 +658,8 @@ export default {
     dragToReorder: 'Drag to reorder tabs',
   },
   downloading: {
+    noTasks: 'No Tasks',
+    tasksWillShowHere: 'Tasks will show here',
     noDownloader: 'No Downloader',
     configureDownloader: 'Please configure and enable a downloader in settings first.',
   },

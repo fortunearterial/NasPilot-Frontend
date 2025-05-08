@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores'
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_SERVER_API_BASE_URL,
 })
 
 // 添加请求拦截器
@@ -40,7 +40,43 @@ api.interceptors.response.use(
   },
 )
 
-export default api
+// 创建axios实例
+const localApi = axios.create({
+  baseURL: import.meta.env.VITE_LOCAL_API_BASE_URL,
+})
+
+// 添加请求拦截器
+localApi.interceptors.request.use(config => {
+  // 认证 Store
+  const authStore = useAuthStore()
+  // 在请求头中添加token
+  if (authStore.token) {
+    config.headers.Authorization = `Bearer ${authStore.token}`
+  }
+  return config
+})
+
+// 添加响应拦截器
+localApi.interceptors.response.use(
+  response => {
+    return response.data
+  },
+  error => {
+    if (!error.response) {
+      // 请求超时
+      return Promise.reject(new Error(error))
+    } else if (error.response.status === 403) {
+      // 认证 Store
+      const authStore = useAuthStore()
+      // 清除登录状态信息
+      authStore.logout()
+    }
+
+    return Promise.reject(error)
+  },
+)
+
+export { api, localApi }
 
 export async function fetchGlobalSettings() {
   try {

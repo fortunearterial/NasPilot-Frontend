@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { SubscrbieInfo } from '@/api/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'

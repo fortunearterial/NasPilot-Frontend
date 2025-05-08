@@ -3,7 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import { copyToClipboard } from '@/@core/utils/navigator'
 import draggable from 'vuedraggable'
-import api from '@/api'
+import { api } from '@/api'
 import { CustomRule, FilterRuleGroup } from '@/api/types'
 import CustomerRuleCard from '@/components/cards/CustomRuleCard.vue'
 import FilterRuleGroupCard from '@/components/cards/FilterRuleGroupCard.vue'

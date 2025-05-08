@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import draggable from 'vuedraggable'
-import api from '@/api'
+import { api } from '@/api'
 import type { Subscribe } from '@/api/types'
 import NoDataFound from '@/components/NoDataFound.vue'
 import SubscribeCard from '@/components/cards/SubscribeCard.vue'
@@ -48,7 +48,7 @@ const dataList = ref<Subscribe[]>([])
 const historyDialog = ref(false)
 
 // 订阅顺序配置
-const orderConfig = ref<{ id: number }[]>([])
+const orderConfig = ref<{ id: string }[]>([])
 
 // 显示的订阅列表
 const displayList = ref<Subscribe[]>([])
@@ -95,8 +95,8 @@ function sortSubscribeOrder() {
     return
   }
   displayList.value.sort((a, b) => {
-    const aIndex = orderConfig.value.findIndex((item: { id: number }) => item.id === a.id)
-    const bIndex = orderConfig.value.findIndex((item: { id: number }) => item.id === b.id)
+    const aIndex = orderConfig.value.findIndex((item: { id: string }) => item.id === a.id)
+    const bIndex = orderConfig.value.findIndex((item: { id: string }) => item.id === b.id)
     return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex)
   })
 }
