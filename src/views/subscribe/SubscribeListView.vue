@@ -63,9 +63,7 @@ watch([dataList, () => props.keyword], () => {
   else
     displayList.value = dataList.value.filter(
       data =>
-        data.type === props.type &&
-        data.username === userName &&
-        (!props.keyword || data.name.toLowerCase().includes(props.keyword.toLowerCase())),
+        data.type === props.type && (!props.keyword || data.name.toLowerCase().includes(props.keyword.toLowerCase())),
     )
   // 排序
   sortSubscribeOrder()
