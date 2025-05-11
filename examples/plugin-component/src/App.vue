@@ -2,7 +2,7 @@
   <div class="app-container">
     <v-app>
       <v-app-bar color="primary" app>
-        <v-app-bar-title>MoviePilot插件组件示例</v-app-bar-title>
+        <v-app-bar-title>NasPilot插件组件示例</v-app-bar-title>
       </v-app-bar>
 
       <v-main>
@@ -40,7 +40,7 @@
       </v-main>
 
       <v-footer app color="primary" class="text-center d-flex justify-center">
-        <span class="text-white">MoviePilot 模块联邦示例 ©{{ new Date().getFullYear() }}</span>
+        <span class="text-white">NasPilot 模块联邦示例 ©{{ new Date().getFullYear() }}</span>
       </v-footer>
     </v-app>
 

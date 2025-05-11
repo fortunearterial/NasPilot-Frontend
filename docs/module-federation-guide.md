@@ -1,8 +1,8 @@
-# MoviePilot前端远程模块开发指南
+# NasPilot前端远程模块开发指南
 
 ## 1. 概述
 
-MoviePilot前端采用模块联邦(Module Federation)技术实现插件的动态加载和集成。本文档详细说明如何开发符合要求的远程模块，以便在MoviePilot中作为插件使用。
+NasPilot前端采用模块联邦(Module Federation)技术实现插件的动态加载和集成。本文档详细说明如何开发符合要求的远程模块，以便在NasPilot中作为插件使用。
 
 关联阅读后端插件开发文档：[第三方插件开发说明](https://github.com/jxxghp/MoviePilot-Plugins/blob/main/README.md)
 

@@ -1,8 +1,8 @@
-# MoviePilot-Frontend
+# NasPilot-Frontend
 
 *[中文](README.md) | English*
 
-Frontend project for [MoviePilot](https://github.com/jxxghp/MoviePilot), NodeJS version required: >= `v20.12.1`.
+Frontend project for [NasPilot](https://github.com/fortunearterial/NasPilot-Frontend), NodeJS version required: >= `v20.12.1`.
 
 ## Features
 
@@ -13,7 +13,7 @@ Frontend project for [MoviePilot](https://github.com/jxxghp/MoviePilot), NodeJS 
 
 ## Module Federation
 
-MoviePilot now supports Module Federation, allowing plugin developers to create dynamically loadable remote components for richer plugin user interfaces.
+NasPilot now supports Module Federation, allowing plugin developers to create dynamically loadable remote components for richer plugin user interfaces.
 
 ### Documentation
 

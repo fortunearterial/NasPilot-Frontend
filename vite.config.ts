@@ -33,7 +33,7 @@ export default defineConfig({
       include: [resolve(__dirname, 'src/locales/*.ts')],
     }),
     federation({
-      name: 'MoviePilot',
+      name: 'NasPilot',
       filename: 'remoteEntry.js',
       // @ts-ignore
       remotes: {

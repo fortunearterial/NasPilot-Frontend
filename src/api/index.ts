@@ -10,12 +10,12 @@ const api = axios.create({
 // 声明全局变量类型
 declare global {
   interface Window {
-    MoviePilotAPI: typeof api
+    NasPilotAPI: typeof api
   }
 }
 
 // 将 API 实例暴露到全局，供插件使用
-window.MoviePilotAPI = api
+window.NasPilotAPI = api
 
 // 添加请求拦截器
 api.interceptors.request.use(config => {

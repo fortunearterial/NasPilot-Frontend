@@ -3,7 +3,7 @@ export async function fetchGlobalSettings() {
   try {
     const result: { [key: string]: any } = await api.get('system/global', {
       params: {
-        token: 'moviepilot',
+        token: 'naspilot',
       },
     })
     return result.data || {}

@@ -1,10 +1,10 @@
-# MoviePilot 模块联邦问题排查指南
+# NasPilot 模块联邦问题排查指南
 
-本文档提供了针对 MoviePilot 项目中使用模块联邦时可能遇到的常见问题及解决方案。
+本文档提供了针对 NasPilot 项目中使用模块联邦时可能遇到的常见问题及解决方案。
 
 ## 远程组件注册机制
 
-MoviePilot 使用自动注册机制来加载远程组件：
+NasPilot 使用自动注册机制来加载远程组件：
 
 1. 对于使用 Vue 渲染模式的插件，自动注册其远程组件
 2. 每个远程组件根据插件 ID 唯一标识，确保不会冲突
@@ -104,7 +104,7 @@ localStorage.setItem('debug', 'vite:*')
 
 ## 其他资源
 
-- [MoviePilot 插件组件示例](../examples/plugin-component/) 
+- [NasPilot 插件组件示例](../examples/plugin-component/) 
 - [Vite 模块联邦插件文档](https://github.com/originjs/vite-plugin-federation)
 - [Vite 官方文档](https://vitejs.dev/guide/build.html)
 - [Origin.js 模块联邦示例](https://github.com/originjs/vite-plugin-federation/tree/main/packages/examples)

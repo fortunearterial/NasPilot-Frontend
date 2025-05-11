@@ -62,6 +62,12 @@ const confirmPasswordValidator = (value: string) => {
   return value === form.value.password || '两次输入的密码不一致'
 }
 
+// 添加手机号合规性校验函数
+const phoneValidator = (value: string) => {
+  const phoneRegex = /^1[3-9]\d{9}$/
+  return phoneRegex.test(value) || '请输入有效的手机号码'
+}
+
 // 订阅推送通知
 async function subscribeForPushNotifications() {
   if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -118,7 +124,7 @@ function logon() {
 
   // 请求token
   api
-    .post('/logon', formData, {
+    .post('/logon/mobile', formData, {
       headers: {
         Accept: 'application/json', // 设置 Accept 类型
       },
@@ -234,7 +240,7 @@ onMounted(async () => {
                   type="text"
                   name="username"
                   autocomplete="username"
-                  :rules="[requiredValidator]"
+                  :rules="[requiredValidator, phoneValidator]"
                 />
               </VCol>
               <!-- password -->

@@ -203,7 +203,7 @@ onUnmounted(() => {
     <!-- 精简标题栏 -->
     <VCard v-if="isRefreshed" class="search-header d-flex align-center mb-3">
       <div class="search-info-container">
-        <div class="search-title text-moviepilot">
+        <div class="search-title text-naspilot">
           {{ t('resource.searchResults') }}
         </div>
         <div class="search-tags d-flex flex-wrap mt-1">
