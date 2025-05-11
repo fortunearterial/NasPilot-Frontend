@@ -347,12 +347,8 @@ watch(
         >
           <div
             class="relative flex flex-row items-start pa-3 justify-between grow"
-            :style="{ background: `${backgroundColor}` }"
+            :style="`background: linear-gradient(rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.5) 100%), linear-gradient(${backgroundColor} 0%, ${backgroundColor} 100%)`"
           >
-            <div
-              class="absolute inset-0 bg-cover bg-center"
-              :style="{ background: `${backgroundColor}`, filter: 'brightness(0.5)' }"
-            />
             <div class="relative flex-1 min-w-0">
               <VCardTitle class="text-white text-lg px-2 text-shadow whitespace-nowrap overflow-hidden text-ellipsis">
                 <VBadge v-if="props.plugin?.state" dot inline color="success" />
@@ -441,7 +437,7 @@ watch(
     <ProgressDialog v-if="progressDialog" v-model="progressDialog" :text="progressText" />
 
     <!-- 更新日志 -->
-    <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" max-height="80vh" scrollable>
+    <VDialog v-if="releaseDialog" v-model="releaseDialog" width="600" max-height="85vh" scrollable>
       <VCard :title="t('plugin.updateHistoryTitle', { name: props.plugin?.plugin_name })">
         <VDialogCloseBtn @click="releaseDialog = false" />
         <VDivider />

@@ -648,6 +648,8 @@ export interface DashboardItem {
   cols: { [key: string]: number }
   // 页面元素
   elements: RenderProps[]
+  // 渲染方式
+  render_mode: string
 }
 
 // 种子信息

@@ -10,6 +10,7 @@ import MediaServerCard from '@/components/cards/MediaServerCard.vue'
 import { copyToClipboard } from '@/@core/utils/navigator'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'
 import { useI18n } from 'vue-i18n'
+import { downloaderOptions, mediaServerOptions } from '@/api/constants'
 
 // 国际化
 const { t } = useI18n()
@@ -42,6 +43,7 @@ const SystemSettings = ref<any>({
     META_CACHE_EXPIRE: 0,
     SCRAP_FOLLOW_TMDB: true,
     FANART_ENABLE: false,
+    TMDB_SCRAP_ORIGINAL_IMAGE: null,
     // 网络
     PROXY_HOST: null,
     GITHUB_PROXY: null,
@@ -250,8 +252,8 @@ async function copyValue(value: string) {
 const wallpaperItems = [
   { title: t('setting.system.wallpaperItems.tmdb'), value: 'tmdb' },
   { title: t('setting.system.wallpaperItems.bing'), value: 'bing' },
-  { title: t('setting.system.wallpaperItems.bingDaily'), value: 'bing-daily' },
-  { title: t('setting.system.wallpaperItems.none'), value: 'none' },
+  { title: t('setting.system.wallpaperItems.mediaserver'), value: 'mediaserver' },
+  { title: t('setting.system.wallpaperItems.none'), value: '' },
 ]
 
 // 预设部分Github加速站
@@ -412,12 +414,7 @@ onDeactivated(() => {
                   :label="t('setting.system.wallpaper')"
                   :hint="t('setting.system.wallpaperHint')"
                   persistent-hint
-                  :items="[
-                    { title: t('setting.system.wallpaperItems.tmdb'), value: 'tmdb' },
-                    { title: t('setting.system.wallpaperItems.bing'), value: 'bing' },
-                    { title: t('setting.system.wallpaperItems.bingDaily'), value: 'bing-daily' },
-                    { title: t('setting.system.wallpaperItems.none'), value: 'none' },
-                  ]"
+                  :items="wallpaperItems"
                 />
               </VCol>
               <VCol cols="12" md="6">
@@ -540,14 +537,11 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
-                    <VListItem @click="addDownloader('thunder')">
-                      <VListItemTitle>迅雷</VListItemTitle>
+                    <VListItem v-for="item in downloaderOptions" @click="addDownloader(item.value)">
+                      <VListItemTitle>{{ item.title }}</VListItemTitle>
                     </VListItem>
-                    <VListItem @click="addDownloader('qbittorrent')">
-                      <VListItemTitle>{{ t('setting.system.qbittorrent') }}</VListItemTitle>
-                    </VListItem>
-                    <VListItem @click="addDownloader('transmission')">
-                      <VListItemTitle>{{ t('setting.system.transmission') }}</VListItemTitle>
+                    <VListItem @click="addDownloader('custom')">
+                      <VListItemTitle>{{ t('setting.system.custom') }}</VListItemTitle>
                     </VListItem>
                   </VList>
                 </VMenu>
@@ -591,17 +585,11 @@ onDeactivated(() => {
                 <VIcon icon="mdi-plus" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
-                    <VListItem @click="addMediaServer('emby')">
-                      <VListItemTitle>{{ t('setting.system.emby') }}</VListItemTitle>
+                    <VListItem v-for="item in mediaServerOptions" @click="addMediaServer(item.value)">
+                      <VListItemTitle>{{ item.title }}</VListItemTitle>
                     </VListItem>
-                    <VListItem @click="addMediaServer('jellyfin')">
-                      <VListItemTitle>{{ t('setting.system.jellyfin') }}</VListItemTitle>
-                    </VListItem>
-                    <VListItem @click="addMediaServer('plex')">
-                      <VListItemTitle>{{ t('setting.system.plex') }}</VListItemTitle>
-                    </VListItem>
-                    <VListItem @click="addMediaServer('trimemedia')">
-                      <VListItemTitle>{{ t('setting.system.trimeMedia') }}</VListItemTitle>
+                    <VListItem @click="addMediaServer('custom')">
+                      <VListItemTitle>{{ t('setting.system.custom') }}</VListItemTitle>
                     </VListItem>
                   </VList>
                 </VMenu>
@@ -613,7 +601,7 @@ onDeactivated(() => {
     </VCol>
   </VRow>
   <!-- 高级系统设置 -->
-  <VDialog v-if="advancedDialog" v-model="advancedDialog" scrollable max-width="60rem" persistent>
+  <VDialog v-if="advancedDialog" v-model="advancedDialog" scrollable max-width="60rem">
     <VCard>
       <VCardItem>
         <VDialogCloseBtn @click="advancedDialog = false" />
@@ -758,6 +746,14 @@ onDeactivated(() => {
                     v-model="SystemSettings.Advanced.SCRAP_FOLLOW_TMDB"
                     :label="t('setting.system.scrapFollowTmdb')"
                     :hint="t('setting.system.scrapFollowTmdbHint')"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12" md="6">
+                  <VSwitch
+                    v-model="SystemSettings.Advanced.TMDB_SCRAP_ORIGINAL_IMAGE"
+                    :label="t('setting.system.scrapOriginalImage')"
+                    :hint="t('setting.system.scrapOriginalImageHint')"
                     persistent-hint
                   />
                 </VCol>

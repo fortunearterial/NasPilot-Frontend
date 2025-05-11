@@ -302,7 +302,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <VDialog v-model="dialog" max-width="42rem" scrollable>
+  <VDialog v-model="dialog" max-width="42rem" scrollable maxHeight="85vh">
     <VCard class="search-dialog">
       <!-- 搜索输入框 -->
       <VCardItem class="pa-4 pa-sm-5 search-box-container">
@@ -335,7 +335,7 @@ onMounted(() => {
         <VList lines="two" v-if="searchWord" class="search-list py-2">
           <!-- 搜索结果分组标题 -->
           <VListSubheader class="font-weight-medium text-uppercase py-2 px-4 px-sm-6">
-            {{ t('media.movie') }}
+            {{ t('common.media') }}
           </VListSubheader>
 
           <!-- 媒体搜索选项 -->

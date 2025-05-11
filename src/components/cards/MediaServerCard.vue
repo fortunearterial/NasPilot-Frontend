@@ -5,9 +5,11 @@ import emby_image from '@images/logos/emby.png'
 import jellyfin_image from '@images/logos/jellyfin.png'
 import plex_image from '@images/logos/plex.png'
 import trimemedia_image from '@images/logos/trimemedia.png'
+import custom_image from '@images/logos/mediaserver.png'
 import { api } from '@/api'
 import { cloneDeep } from 'lodash-es'
 import { useI18n } from 'vue-i18n'
+import { mediaServerDict } from '@/api/constants'
 
 // 获取i18n实例
 const { t } = useI18n()
@@ -108,8 +110,10 @@ const getIcon = computed(() => {
       return jellyfin_image
     case 'trimemedia':
       return trimemedia_image
-    default:
+    case 'plex':
       return plex_image
+    default:
+      return custom_image
   }
 })
 
@@ -183,17 +187,20 @@ onMounted(() => {
       <VCardText class="flex justify-space-between align-center gap-3">
         <div class="align-self-start flex-1">
           <div class="text-h6 mb-1">{{ mediaserver.name }}</div>
-          <div class="text-sm mt-5 flex flex-wrap">
+          <div v-if="mediaServerDict[mediaserver.type] && mediaserver.enabled" class="text-sm mt-5 flex flex-wrap">
             <span v-for="item in infoItems" :key="item.title" class="me-2 mb-1">
               <VIcon rounded :icon="item.avatar" class="me-1" />{{ item.amount }}
             </span>
+          </div>
+          <div v-else-if="!mediaServerDict[mediaserver.type]" class="text-sm mt-5 flex flex-wrap">
+            <span class="me-2 mb-1">自定义媒体服务器</span>
           </div>
         </div>
         <VImg :src="getIcon" cover class="mt-7 me-3" max-width="3rem" min-width="3rem" />
       </VCardText>
     </VCard>
-    <VDialog v-if="mediaServerInfoDialog" v-model="mediaServerInfoDialog" scrollable max-width="40rem" persistent>
-      <VCard :title="`${props.mediaserver.name} - ${t('common.config')}`" class="rounded-t">
+    <VDialog v-if="mediaServerInfoDialog" v-model="mediaServerInfoDialog" scrollable max-width="40rem">
+      <VCard :title="`${props.mediaserver.name} - ${t('common.config')}`">
         <VDialogCloseBtn v-model="mediaServerInfoDialog" />
         <VDivider />
         <VCardText>
@@ -243,8 +250,23 @@ onMounted(() => {
                   active
                 />
               </VCol>
+              <VCol cols="12">
+                <VSelect
+                  v-model="mediaServerInfo.sync_libraries"
+                  :label="t('mediaserver.syncLibraries')"
+                  :items="librariesOptions"
+                  chips
+                  multiple
+                  clearable
+                  :hint="t('mediaserver.syncLibrariesHint')"
+                  persistent-hint
+                  active
+                  append-inner-icon="mdi-refresh"
+                  @click:append-inner="loadLibrary(mediaServerInfo.name)"
+                />
+              </VCol>
             </VRow>
-            <VRow v-if="mediaServerInfo.type == 'jellyfin'">
+            <VRow v-else-if="mediaServerInfo.type == 'jellyfin'">
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="mediaServerInfo.name"
@@ -284,8 +306,23 @@ onMounted(() => {
                   active
                 />
               </VCol>
+              <VCol cols="12">
+                <VSelect
+                  v-model="mediaServerInfo.sync_libraries"
+                  :label="t('mediaserver.syncLibraries')"
+                  :items="librariesOptions"
+                  chips
+                  multiple
+                  clearable
+                  :hint="t('mediaserver.syncLibrariesHint')"
+                  persistent-hint
+                  active
+                  append-inner-icon="mdi-refresh"
+                  @click:append-inner="loadLibrary(mediaServerInfo.name)"
+                />
+              </VCol>
             </VRow>
-            <VRow v-if="mediaServerInfo.type == 'trimemedia'">
+            <VRow v-else-if="mediaServerInfo.type == 'trimemedia'">
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="mediaServerInfo.name"
@@ -327,8 +364,23 @@ onMounted(() => {
                   active
                 />
               </VCol>
+              <VCol cols="12">
+                <VSelect
+                  v-model="mediaServerInfo.sync_libraries"
+                  :label="t('mediaserver.syncLibraries')"
+                  :items="librariesOptions"
+                  chips
+                  multiple
+                  clearable
+                  :hint="t('mediaserver.syncLibrariesHint')"
+                  persistent-hint
+                  active
+                  append-inner-icon="mdi-refresh"
+                  @click:append-inner="loadLibrary(mediaServerInfo.name)"
+                />
+              </VCol>
             </VRow>
-            <VRow v-if="mediaServerInfo.type == 'plex'">
+            <VRow v-else-if="mediaServerInfo.type == 'plex'">
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="mediaServerInfo.name"
@@ -368,8 +420,6 @@ onMounted(() => {
                   active
                 />
               </VCol>
-            </VRow>
-            <VRow>
               <VCol cols="12">
                 <VSelect
                   v-model="mediaServerInfo.sync_libraries"
@@ -384,6 +434,34 @@ onMounted(() => {
                   append-inner-icon="mdi-refresh"
                   @click:append-inner="loadLibrary(mediaServerInfo.name)"
                 />
+              </VCol>
+              <VCol cols="12">
+                <VSelect
+                  v-model="mediaServerInfo.sync_libraries"
+                  :label="t('mediaserver.syncLibraries')"
+                  :items="librariesOptions"
+                  chips
+                  multiple
+                  clearable
+                  :hint="t('mediaserver.syncLibrariesHint')"
+                  persistent-hint
+                  active
+                  append-inner-icon="mdi-refresh"
+                  @click:append-inner="loadLibrary(mediaServerInfo.name)"
+                />
+              </VCol>
+            </VRow>
+            <VRow v-else>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="mediaServerInfo.type"
+                  :label="t('mediaserver.type')"
+                  :hint="t('mediaserver.customTypeHint')"
+                  persistent-hint
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField :label="t('common.name')" :hint="t('mediaserver.nameRequired')" persistent-hint />
               </VCol>
             </VRow>
           </VForm>

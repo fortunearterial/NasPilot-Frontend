@@ -78,10 +78,14 @@ const groupedDataList = ref<Map<string, Context[]>>()
 // 过滤菜单相关
 const filterMenuOpen = ref(false)
 const currentFilter = ref('site')
+
 const currentFilterTitle = computed(() => filterTitles[currentFilter.value])
 const currentFilterOptions = computed(() => {
   return filterOptions[currentFilter.value]
 })
+
+// 添加全部筛选菜单相关
+const allFilterMenuOpen = ref(false)
 
 // 初始化过滤选项
 function initOptions(data: Context) {
@@ -303,6 +307,11 @@ function toggleFilterMenu(key: string) {
   }
 }
 
+// 开关全部筛选菜单
+function toggleAllFilterMenu() {
+  allFilterMenuOpen.value = !allFilterMenuOpen.value
+}
+
 // 清除所有过滤条件
 function clearAllFilters() {
   for (const key in filterForm) {
@@ -432,6 +441,22 @@ function loadMore({ done }: { done: any }) {
             </VMenu>
           </VBtn>
 
+          <!-- 全部筛选按钮 -->
+          <VBtn
+            variant="tonal"
+            size="small"
+            color="primary"
+            class="filter-btn ms-2"
+            prepend-icon="mdi-filter-variant"
+            rounded="pill"
+            @click="toggleAllFilterMenu"
+          >
+            {{ t('torrent.allFilters') }}
+            <VChip v-if="getFilterCount > 0" size="small" color="primary" class="ms-1" variant="elevated">
+              {{ getFilterCount }}
+            </VChip>
+          </VBtn>
+
           <!-- 清除全部筛选按钮 -->
           <VBtn
             v-if="getFilterCount > 0"
@@ -502,7 +527,23 @@ function loadMore({ done }: { done: any }) {
         </div>
 
         <!-- 筛选图标按钮区域 -->
-        <div class="filter-buttons-grid w-100">
+        <div class="filter-buttons-grid w-100 mt-2">
+          <!-- 全部筛选按钮 -->
+          <VBtn variant="text" color="primary" class="filter-btn-mobile" @click="toggleAllFilterMenu">
+            <VIcon icon="mdi-filter-variant" class="filter-icon me-1"></VIcon>
+            <span class="filter-label">
+              {{ t('torrent.allFilters') }}
+            </span>
+            <VBadge
+              v-if="getFilterCount > 0"
+              :content="getFilterCount"
+              color="primary"
+              location="top end"
+              offset-x="-10"
+              offset-y="-10"
+            ></VBadge>
+          </VBtn>
+
           <VBtn
             v-for="(title, key) in filterTitles"
             v-show="filterOptions[key].length > 0"
@@ -529,6 +570,76 @@ function loadMore({ done }: { done: any }) {
     </div>
   </VCard>
 
+  <!-- 全部筛选弹窗 -->
+  <VDialog v-model="allFilterMenuOpen" max-width="50rem" max-height="90%" location="center" scrollable>
+    <VCard>
+      <VDialogCloseBtn @click="allFilterMenuOpen = false" />
+      <VCardTitle class="py-3 d-flex align-center">
+        <VIcon icon="mdi-filter-variant" class="me-2"></VIcon>
+        <span>{{ t('torrent.allFilters') }}</span>
+        <VSpacer />
+        <VBtn
+          v-if="getFilterCount > 0"
+          class="me-10"
+          variant="text"
+          size="small"
+          color="error"
+          @click="clearAllFilters"
+        >
+          {{ t('torrent.clearAll') }}
+        </VBtn>
+      </VCardTitle>
+      <VDivider />
+      <VCardText>
+        <div class="all-filters-grid">
+          <VCard
+            v-for="(title, key) in filterTitles"
+            variant="tonal"
+            :key="key"
+            class="filter-section"
+            v-show="filterOptions[key].length > 0"
+          >
+            <VCardItem class="py-2">
+              <template #prepend>
+                <VIcon :icon="getFilterIcon(key)" class="me-2"></VIcon>
+              </template>
+              <VCardTitle>{{ title }}</VCardTitle>
+              <template #append>
+                <VBtn variant="text" size="small" color="primary" @click="selectAll(key)">
+                  {{ t('torrent.selectAll') }}
+                </VBtn>
+                <VBtn
+                  v-if="filterForm[key].length > 0"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="clearFilter(key)"
+                >
+                  {{ t('torrent.clear') }}
+                </VBtn>
+              </template>
+            </VCardItem>
+            <VCardText>
+              <VChipGroup v-model="filterForm[key]" column multiple class="filter-options">
+                <VChip
+                  v-for="option in filterOptions[key]"
+                  :key="option"
+                  :value="option"
+                  filter
+                  variant="elevated"
+                  class="ma-1 filter-chip"
+                  size="small"
+                >
+                  {{ option }}
+                </VChip>
+              </VChipGroup>
+            </VCardText>
+          </VCard>
+        </div>
+      </VCardText>
+    </VCard>
+  </VDialog>
+
   <!-- 筛选弹窗 -->
   <VDialog v-model="filterMenuOpen" max-width="25rem" max-height="80%" location="center">
     <VCard>
@@ -550,7 +661,7 @@ function loadMore({ done }: { done: any }) {
         </VBtn>
       </VCardTitle>
       <VDivider />
-      <VCardText class="filter-menu-content pt-4">
+      <VCardText>
         <VChipGroup v-model="filterForm[currentFilter]" column multiple class="filter-options">
           <VChip
             v-for="option in currentFilterOptions"
@@ -567,7 +678,9 @@ function loadMore({ done }: { done: any }) {
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="elevated" color="primary" @click="filterMenuOpen = false"> {{ t('torrent.confirm') }} </VBtn>
+        <VBtn variant="elevated" color="primary" @click="filterMenuOpen = false">
+          {{ t('torrent.confirm') }}
+        </VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
@@ -633,6 +746,7 @@ function loadMore({ done }: { done: any }) {
 }
 
 .filter-menu-content {
+  max-block-size: 50vh;
   overflow-y: auto;
 }
 
@@ -738,5 +852,15 @@ function loadMore({ done }: { done: any }) {
   backdrop-filter: blur(10px);
   background-color: rgba(var(--v-theme-background), 0.95);
   inset-block-start: 0;
+}
+
+.all-filters-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.filter-section {
+  background-color: rgba(var(--v-theme-surface-variant), 0.08);
 }
 </style>

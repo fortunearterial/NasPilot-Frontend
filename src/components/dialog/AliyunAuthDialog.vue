@@ -78,6 +78,24 @@ async function checkQrcode() {
   }
 }
 
+// 重置配置
+async function handleReset() {
+  try {
+    const result: { [key: string]: any } = await api.get('/storage/reset/alipan')
+    console.log(result.success)
+    if (result.success) {
+      // 重置成功
+      alertType.value = 'success'
+      handleDone()
+    } else {
+      alertType.value = 'error'
+      text.value = result.message
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 onMounted(async () => {
   await getQrcode()
 })
@@ -89,7 +107,7 @@ onUnmounted(() => {
 
 <template>
   <VDialog width="40rem" scrollable max-height="85vh">
-    <VCard :title="t('dialog.aliyunAuth.loginTitle')" class="rounded-t">
+    <VCard :title="t('dialog.aliyunAuth.loginTitle')">
       <VDialogCloseBtn @click="emit('close')" />
       <VCardText class="pt-2 flex flex-col items-center">
         <div class="my-6 rounded text-center p-3 border">
@@ -107,6 +125,9 @@ onUnmounted(() => {
       </VCardText>
       <VCardActions>
         <VSpacer />
+        <VBtn variant="tonal" color="error" @click="handleReset" prepend-icon="mdi-restore" class="px-5 me-3">
+          {{ t('dialog.aliyunAuth.reset') }}
+        </VBtn>
         <VBtn variant="elevated" @click="handleDone" prepend-icon="mdi-check" class="px-5 me-3">
           {{ t('dialog.aliyunAuth.complete') }}
         </VBtn>

@@ -38,11 +38,23 @@ async function savaRcloneConfig() {
     console.error(e)
   }
 }
+
+// 重置配置
+async function handleReset() {
+  try {
+    const result: { [key: string]: any } = await api.get('/storage/reset/rclone')
+    if (result.success) {
+      handleDone()
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
 </script>
 
 <template>
   <VDialog width="50rem" scrollable max-height="85vh">
-    <VCard :title="t('dialog.rcloneConfig.title')" class="rounded-t">
+    <VCard :title="t('dialog.rcloneConfig.title')">
       <VDialogCloseBtn @click="emit('close')" />
       <VCardText>
         <VRow>
@@ -63,6 +75,9 @@ async function savaRcloneConfig() {
       </VCardText>
       <VCardActions>
         <VSpacer />
+        <VBtn variant="tonal" color="error" @click="handleReset" prepend-icon="mdi-restore" class="px-5 me-3">
+          {{ t('dialog.rcloneConfig.reset') }}
+        </VBtn>
         <VBtn variant="elevated" @click="handleDone" prepend-icon="mdi-check" class="px-5 me-3">
           {{ t('dialog.rcloneConfig.complete') }}
         </VBtn>

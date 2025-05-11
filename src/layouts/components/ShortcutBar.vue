@@ -46,8 +46,11 @@ const user_message = ref('')
 // 发送按钮是否可用
 const sendButtonDisabled = ref(false)
 
-// 聊天容器
-const chatContainer = ref<HTMLElement>()
+// 消息对话框引用
+const messageDialogRef = ref<any>(null)
+
+// 滚动容器引用
+const messageContentRef = ref<any>()
 
 // 定义捷径列表
 const shortcuts = [
@@ -102,11 +105,17 @@ function openDialog(dialogRef: any) {
 
 // 滚动到底部
 function scrollMessageToEnd() {
-  nextTick(() => {
-    if (chatContainer.value) {
-      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+  // 使用更长的延迟确保DOM已更新
+  setTimeout(() => {
+    try {
+      const cardText = document.querySelector('.v-dialog .v-card-text')
+      if (cardText) {
+        cardText.scrollTop = cardText.scrollHeight
+      }
+    } catch (error) {
+      console.error(error)
     }
-  })
+  }, 500) // 增加延迟时间
 }
 
 // 拼接全部日志url
@@ -194,7 +203,7 @@ onMounted(() => {
     </VCard>
   </VMenu>
   <!-- 名称测试弹窗 -->
-  <VDialog v-if="nameTestDialog" v-model="nameTestDialog" max-width="35rem" scrollable>
+  <VDialog v-if="nameTestDialog" v-model="nameTestDialog" max-width="45rem" scrollable>
     <VCard>
       <VCardItem>
         <VCardTitle>
@@ -286,7 +295,14 @@ onMounted(() => {
     </VCard>
   </VDialog>
   <!-- 消息中心弹窗 -->
-  <VDialog v-if="messageDialog" v-model="messageDialog" max-width="35rem" scrollable>
+  <VDialog
+    v-if="messageDialog"
+    v-model="messageDialog"
+    max-width="50rem"
+    scrollable
+    :fullscreen="!display.mdAndUp.value"
+    ref="messageDialogRef"
+  >
     <VCard>
       <VCardItem>
         <VCardTitle>
@@ -296,8 +312,8 @@ onMounted(() => {
         <VDialogCloseBtn @click="messageDialog = false" />
       </VCardItem>
       <VDivider />
-      <VCardText>
-        <MessageView ref="chatContainer" />
+      <VCardText ref="messageContentRef">
+        <MessageView ref="messageViewRef" @scroll="scrollMessageToEnd" />
       </VCardText>
       <VDivider />
       <VCardActions class="pa-4">
@@ -311,15 +327,14 @@ onMounted(() => {
             @keyup.enter="sendMessage"
           />
           <VBtn
+            variant="elevated"
             :disabled="sendButtonDisabled"
             @click="sendMessage"
             :loading="sendButtonDisabled"
             color="primary"
-            min-width="auto"
-            width="46"
-            height="38"
-            >{{ t('common.send') }}</VBtn
-          >
+            prepend-icon="mdi-send"
+            >{{ t('common.send') }}
+          </VBtn>
         </div>
       </VCardActions>
     </VCard>

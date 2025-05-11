@@ -202,9 +202,11 @@ onUnmounted(() => {
 
     <!-- 精简标题栏 -->
     <VCard v-if="isRefreshed" class="search-header d-flex align-center mb-3">
-      <div class="search-info-container d-flex align-center flex-wrap">
-        <div class="search-title text-primary">{{ t('resource.searchResults') }}</div>
-        <div class="search-tags d-flex flex-wrap">
+      <div class="search-info-container">
+        <div class="search-title text-moviepilot">
+          {{ t('resource.searchResults') }}
+        </div>
+        <div class="search-tags d-flex flex-wrap mt-1">
           <VChip v-if="keyword" class="search-tag" color="primary" size="small" variant="flat">
             {{ t('resource.keyword') }}: {{ keyword }}
           </VChip>
@@ -346,7 +348,7 @@ onUnmounted(() => {
 }
 
 .search-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -526,7 +528,7 @@ onUnmounted(() => {
   }
 
   .search-title {
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     white-space: nowrap;
   }
 
