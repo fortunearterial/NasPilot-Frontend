@@ -64,7 +64,7 @@ const storages = ref<StorageConf[]>([])
 // 查询存储
 async function loadStorages() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Storages')
+    const result: { [key: string]: any } = await api.get('user/config/Storages')
 
     storages.value = result.data?.value ?? []
   } catch (error) {
@@ -117,7 +117,7 @@ const directories = ref<TransferDirectoryConf[]>([])
 // 查询目录
 async function loadDirectories() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Directories')
+    const result: { [key: string]: any } = await api.get('user/config/Directories')
     directories.value = result.data?.value ?? []
   } catch (error) {
     console.log(error)

@@ -3,7 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import draggable from 'vuedraggable'
 import { VRow } from 'vuetify/lib/components/index.mjs'
-import { api } from '@/api'
+import { api, localApi } from '@/api'
 import { TransferDirectoryConf, StorageConf } from '@/api/types'
 import DirectoryCard from '@/components/cards/DirectoryCard.vue'
 import StorageCard from '@/components/cards/StorageCard.vue'
@@ -63,7 +63,7 @@ async function loadSystemSettings() {
 async function reloadSystem() {
   progressDialog.value = true
   try {
-    const result: { [key: string]: any } = await api.get('system/reload')
+    const result: { [key: string]: any } = await localApi.get('system/reload')
     if (result.success) $toast.success(t('setting.system.reloadSuccess'))
     else $toast.error(t('setting.system.reloadFailed'))
   } catch (error) {
@@ -83,7 +83,7 @@ function orderDirectoryCards() {
 // 查询存储
 async function loadStorages() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Storages')
+    const result: { [key: string]: any } = await api.get('user/config/Storages')
 
     storages.value = result.data?.value ?? []
   } catch (error) {
@@ -94,7 +94,7 @@ async function loadStorages() {
 // 保存存储
 async function saveStorages() {
   try {
-    const result: { [key: string]: any } = await api.post('system/setting/Storages', storages.value)
+    const result: { [key: string]: any } = await api.post('user/config/Storages', storages.value)
     if (result.success) $toast.success(t('setting.directory.storageSaveSuccess'))
     else $toast.error(t('setting.directory.storageSaveFailed'))
   } catch (error) {
@@ -105,7 +105,7 @@ async function saveStorages() {
 // 查询目录
 async function loadDirectories() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Directories')
+    const result: { [key: string]: any } = await api.get('user/config/Directories')
     directories.value = result.data?.value ?? []
   } catch (error) {
     console.log(error)
@@ -121,7 +121,7 @@ async function saveDirectories() {
       $toast.error(t('setting.directory.duplicateDirectoryName'))
       return
     }
-    const result: { [key: string]: any } = await api.post('system/setting/Directories', directories.value)
+    const result: { [key: string]: any } = await api.post('user/config/Directories', directories.value)
     if (result.success) {
       $toast.success(t('setting.directory.directorySaveSuccess'))
       await reloadSystem()

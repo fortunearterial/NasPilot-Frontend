@@ -3,7 +3,7 @@
 import { useToast } from 'vue-toast-notification'
 import { VRow } from 'vuetify/lib/components/index.mjs'
 import draggable from 'vuedraggable'
-import { api } from '@/api'
+import { api, localApi } from '@/api'
 import { DownloaderConf, MediaServerConf } from '@/api/types'
 import DownloaderCard from '@/components/cards/DownloaderCard.vue'
 import MediaServerCard from '@/components/cards/MediaServerCard.vue'
@@ -11,9 +11,13 @@ import { copyToClipboard } from '@/@core/utils/navigator'
 import ProgressDialog from '@/components/dialog/ProgressDialog.vue'
 import { useI18n } from 'vue-i18n'
 import { downloaderOptions, mediaServerOptions } from '@/api/constants'
+import { useUserStore } from '@/stores'
 
 // 国际化
 const { t } = useI18n()
+
+// 用户 Store
+const userStore = useUserStore()
 
 // 系统设置项
 const SystemSettings = ref<any>({
@@ -114,6 +118,18 @@ async function reloadSystem() {
   progressDialog.value = false
 }
 
+async function reloadAgentSystem() {
+  progressDialog.value = true
+  try {
+    const result: { [key: string]: any } = await api.get('system/reload')
+    if (result.success) $toast.success(t('setting.system.reloadSuccess'))
+    else $toast.error(t('setting.system.reloadFailed'))
+  } catch (error) {
+    console.log(error)
+  }
+  progressDialog.value = false
+}
+
 // 调用API保存下载器设置
 async function saveDownloaderSetting() {
   try {
@@ -128,7 +144,7 @@ async function saveDownloaderSetting() {
     else $toast.error(t('setting.system.downloaderSaveFailed'))
 
     await loadDownloaderSetting()
-    await reloadSystem()
+    await reloadAgentSystem()
   } catch (error) {
     console.log(error)
   }
@@ -153,7 +169,7 @@ function handleDefaultDownloaders(enabledDownloaders: any[], downloaders: any[])
 // 调用API查询媒体服务器设置
 async function loadMediaServerSetting() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/MediaServers')
+    const result: { [key: string]: any } = await api.get('user/config/MediaServers')
     mediaServers.value = result.data?.value ?? []
   } catch (error) {
     console.log(error)
@@ -163,12 +179,12 @@ async function loadMediaServerSetting() {
 // 调用API保存媒体服务器设置
 async function saveMediaServerSetting() {
   try {
-    const result: { [key: string]: any } = await api.post('system/setting/MediaServers', mediaServers.value)
+    const result: { [key: string]: any } = await api.post('user/config/MediaServers', mediaServers.value)
     if (result.success) $toast.success(t('setting.system.mediaServerSaveSuccess'))
     else $toast.error(t('setting.system.mediaServerSaveFailed'))
 
     await loadMediaServerSetting()
-    await reloadSystem()
+    await reloadAgentSystem()
   } catch (error) {
     console.log(error)
   }
@@ -370,6 +386,8 @@ onMounted(() => {
   loadDownloaderSetting()
   loadMediaServerSetting()
   loadSystemSettings()
+
+  console.info(userStore.superUser)
 })
 
 onActivated(async () => {
@@ -389,7 +407,7 @@ onDeactivated(() => {
     :indeterminate="true"
   />
 
-  <VRow>
+  <VRow v-if="userStore.superUser">
     <VCol cols="12">
       <VCard>
         <VCardItem>

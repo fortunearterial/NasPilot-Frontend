@@ -254,7 +254,7 @@ async function removeSubscribe() {
 // 查询下载目录
 async function loadDownloadDirectories() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Directories')
+    const result: { [key: string]: any } = await api.get('user/config/Directories')
     if (result.success && result.data?.value) {
       downloadDirectories.value = result.data.value
     }

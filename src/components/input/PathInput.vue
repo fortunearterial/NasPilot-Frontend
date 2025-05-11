@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api } from '@/api'
+import { api, localApi } from '@/api'
 import { FileItem } from '@/api/types'
 
 const props = defineProps({
@@ -39,7 +39,7 @@ const openedDirs = ref<FileItem[]>([])
 
 // 调用API查询子目录
 async function fetchDirs(item: any) {
-  return api
+  return localApi
     .post('/storage/list', item)
     .then((data: any) => {
       data = data.filter((i: any) => i.type === 'dir')

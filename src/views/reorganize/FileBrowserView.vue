@@ -36,7 +36,7 @@ const storages = ref<StorageConf[]>([])
 // 查询存储
 async function loadStorages() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Storages')
+    const result: { [key: string]: any } = await api.get('user/config/Storages')
 
     storages.value = result.data?.value ?? []
   } catch (error) {
@@ -104,7 +104,7 @@ function findCommonPath(paths: string[]): string {
 // 查询下载目录
 async function loadDownloadDirectories() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Directories')
+    const result: { [key: string]: any } = await api.get('user/config/Directories')
     if (result.success && result.data?.value) {
       downloadDirectories.value = result.data.value
       const path = findCommonPath(downloadDirectories.value.map(item => item.download_path) as string[])

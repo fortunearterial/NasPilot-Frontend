@@ -221,7 +221,7 @@ onUnmounted(() => {
                 />
               </VCol>
             </VRow>
-            <VRow v-if="downloaderInfo.type == 'qbittorrent'">
+            <VRow v-else-if="downloaderInfo.type == 'qbittorrent'">
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="downloaderInfo.name"

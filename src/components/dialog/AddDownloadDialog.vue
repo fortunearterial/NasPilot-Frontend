@@ -49,7 +49,7 @@ const buttonText = computed(() =>
 // 加载目录设置
 async function loadDirectories() {
   try {
-    const result: { [key: string]: any } = await api.get('system/setting/Directories')
+    const result: { [key: string]: any } = await api.get('user/config/Directories')
     directories.value = result.data?.value ?? []
   } catch (error) {
     console.log(error)

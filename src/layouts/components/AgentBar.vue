@@ -4,8 +4,10 @@ import { api, localApi } from '@/api'
 
 const { t } = useI18n()
 
+// 从 provide 中获取全局设置
+const globalSettings: any = inject('globalSettings')
+
 // 系统环境变量
-const systemEnv = ref<any>({})
 const localSystemEnv = ref<any>({})
 
 // 是否在线
@@ -17,36 +19,31 @@ const ping = ref(0)
 // 弹窗
 const appsMenu = ref(false)
 
-// 查询系统环境变量
-async function querySystemEnv() {
-  try {
-    const result: { [key: string]: any } = await api.get('system/env')
-
-    systemEnv.value = result.data
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 // 查询客户端在线状态
 async function queryClientStatus() {
-  try {
-    let date = new Date()
-    const result: { [key: string]: any } = await localApi.get('system/env')
+  setInterval(async () => {
+    try {
+      let date = new Date()
+      const result: { [key: string]: any } = await localApi.get('system/global', {
+        params: {
+          token: 'naspilot',
+        },
+      })
 
-    localSystemEnv.value = result.data
-    isOnline.value = true
-    ping.value = new Date().getTime() - date.getTime()
-  } catch (error) {
-    console.log(error)
-    isOnline.value = false
-    ping.value = 0
-  }
+      localSystemEnv.value = result.data
+      isOnline.value = true
+      ping.value = new Date().getTime() - date.getTime()
+    } catch (error) {
+      console.log(error)
+      isOnline.value = false
+      ping.value = 0
+    }
+  }, 5000)
 }
 
 // 下载 Agent
 function downloadAgent() {
-  window.open(`https://naspilot.oss-cn-shanghai.aliyuncs.com/naspilot-${systemEnv?.VERSION}.zip`, '_blank')
+  window.open(`https://naspilot.oss-cn-shanghai.aliyuncs.com/naspilot-${globalSettings?.VERSION}.zip`, '_blank')
 }
 
 // 启动 Agent
@@ -55,7 +52,6 @@ function startAgent() {
 }
 
 onMounted(() => {
-  querySystemEnv()
   queryClientStatus()
 })
 </script>
@@ -92,12 +88,12 @@ onMounted(() => {
             </template>
             <div>
               <div class="text-body-1 text-high-emphasis break-words whitespace-break-spaces">
-                {{ t('agent.title') }}
+                {{ t('agent.title') }} {{ localSystemEnv?.VERSION }}
               </div>
               <div class="text-caption mt-1.5">
                 {{ isOnline ? t('agent.online') : t('agent.offline') }}
               </div>
-              <div class="text-sm text-primary mt-1.5">PING: {{ ping }} ms</div>
+              <div v-if="isOnline" class="text-sm text-primary mt-1.5">PING: {{ ping }} ms</div>
             </div>
           </VListItem>
         </div>
@@ -116,7 +112,7 @@ onMounted(() => {
             </VAvatar>
             <div>
               <div class="text-body-1 text-high-emphasis font-weight-medium">{{ t('agent.download') }}</div>
-              <div class="text-caption text-medium-emphasis">{{ systemEnv?.VERSION }}</div>
+              <div class="text-caption text-medium-emphasis">{{ globalSettings?.VERSION }}</div>
             </div>
           </VCard>
           <VCard

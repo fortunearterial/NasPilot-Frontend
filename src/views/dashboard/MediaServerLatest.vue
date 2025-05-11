@@ -17,7 +17,7 @@ const mediaServers = ref<MediaServerConf[]>([])
 // 调用API查询媒体服务器设置
 async function loadMediaServerSetting() {
   try {
-    const response: { data: { value: MediaServerConf[] } } = await api.get('system/setting/MediaServers')
+    const response: { data: { value: MediaServerConf[] } } = await api.get('user/config/MediaServers')
     mediaServers.value = response.data?.value ?? []
   } catch (error) {
     console.log(t('dashboard.errors.loadMediaServer'), error)
