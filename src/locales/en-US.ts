@@ -174,7 +174,7 @@ export default {
   settingTabs: {
     system: {
       title: 'System',
-      description: 'Basic settings, downloaders (Qbittorrent, Transmission), media servers (Emby, Jellyfin, Plex)',
+      description: 'Basic settings, downloaders (Thunder, Qbittorrent, Transmission), media servers (Emby, Jellyfin, Plex)',
     },
     directory: {
       title: 'Storage & Directories',
@@ -974,6 +974,7 @@ export default {
       copyFailed: 'Copy failed: browser may not support or user blocked!',
       copyError: 'Copy failed!',
       reloading: 'Applying configuration...',
+      thunder: 'Thunder',
       qbittorrent: 'Qbittorrent',
       transmission: 'Transmission',
       emby: 'Emby',

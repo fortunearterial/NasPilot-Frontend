@@ -40,6 +40,10 @@ export const storageRemoteDict = storageAttributes.reduce((dict, item) => {
 
 export const downloaderOptions = [
   {
+    value: 'thunder',
+    title: i18n.global.t('setting.system.thunder'),
+  },
+  {
     value: 'qbittorrent',
     title: i18n.global.t('setting.system.qbittorrent'),
   },

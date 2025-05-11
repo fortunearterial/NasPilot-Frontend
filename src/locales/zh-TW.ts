@@ -175,7 +175,7 @@ export default {
   settingTabs: {
     system: {
       title: '系統',
-      description: '基礎設置、下載器（Qbittorrent、Transmission）、媒體服務器（Emby、Jellyfin、Plex）',
+      description: '基礎設置、下載器（迅雷、Qbittorrent、Transmission）、媒體服務器（Emby、Jellyfin、Plex）',
     },
     directory: {
       title: '存儲 & 目錄',
@@ -973,6 +973,7 @@ export default {
       copyFailed: '複製失敗：可能是瀏覽器不支持或被用戶阻止！',
       copyError: '複製失敗！',
       reloading: '正在應用配置...',
+      thunder: '迅雷',
       qbittorrent: 'Qbittorrent',
       transmission: 'Transmission',
       emby: 'Emby',
@@ -1293,8 +1294,6 @@ export default {
     scheduler: {
       title: '定時作業',
       subtitle: '包含系统内置服务以及插件提供的服务，手动执行不会影响作业正常的时间表。',
-      scheduledTasks: '定時作業',
-      scheduledTasksDesc: '包含系統內置服務以及插件提供的服務，手動執行不會影響作業正常的時間表。',
       provider: '提供者',
       taskName: '任務名稱',
       taskStatus: '任務狀態',
