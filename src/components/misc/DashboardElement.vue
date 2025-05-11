@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '@/api'
+import { api } from '@/api'
 import { DashboardItem } from '@/api/types'
 import AnalyticsMediaStatistic from '@/views/dashboard/AnalyticsMediaStatistic.vue'
 import AnalyticsScheduler from '@/views/dashboard/AnalyticsScheduler.vue'

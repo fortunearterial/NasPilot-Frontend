@@ -7,6 +7,7 @@ import UserNofification from '@/layouts/components/UserNotification.vue'
 import SearchBar from '@/layouts/components/SearchBar.vue'
 import ShortcutBar from '@/layouts/components/ShortcutBar.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
+import AgentBar from '@/layouts/components/AgentBar.vue'
 import { useUserStore } from '@/stores'
 import { getNavMenus } from '@/router/i18n-menu'
 import { NavMenu } from '@/@layouts/types'
@@ -77,6 +78,8 @@ onMounted(() => {
         <SearchBar />
         <!-- 👉 Spacer -->
         <VSpacer />
+        <!-- 👉 Agent Bar -->
+        <AgentBar />
         <!-- 👉 Shortcuts -->
         <ShortcutBar v-if="superUser" />
         <!-- 👉 Notification -->

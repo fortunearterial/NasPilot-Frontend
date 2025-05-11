@@ -342,6 +342,13 @@ export default {
       usernameHint: '只有對應的用戶登錄後才會推送消息',
     },
   },
+  agent: {
+    title: '客戶端',
+    online: '在線',
+    offline: '離線',
+    download: '下載客戶端',
+    start: '啟動客戶端',
+  },
   shortcut: {
     title: '捷徑',
     recognition: {

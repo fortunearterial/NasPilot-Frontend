@@ -1,4 +1,4 @@
-import api from '@/api'
+import { api } from '@/api'
 import {
   __federation_method_setRemote,
   __federation_method_getRemote,

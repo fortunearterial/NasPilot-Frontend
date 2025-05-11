@@ -174,7 +174,8 @@ export default {
   settingTabs: {
     system: {
       title: 'System',
-      description: 'Basic settings, downloaders (Thunder, Qbittorrent, Transmission), media servers (Emby, Jellyfin, Plex)',
+      description:
+        'Basic settings, downloaders (Thunder, Qbittorrent, Transmission), media servers (Emby, Jellyfin, Plex)',
     },
     directory: {
       title: 'Storage & Directories',
@@ -342,6 +343,13 @@ export default {
       username: 'Login Username',
       usernameHint: 'Only push messages to the corresponding logged-in user',
     },
+  },
+  agent: {
+    title: 'Agent',
+    online: 'Online',
+    offline: 'Offline',
+    download: 'Download Agent',
+    start: 'Start Agent',
   },
   shortcut: {
     title: 'Shortcuts',

@@ -341,6 +341,13 @@ export default {
       usernameHint: '只有对应的用户登录后才会推送消息',
     },
   },
+  agent: {
+    title: '客户端',
+    online: '在线',
+    offline: '离线',
+    download: '下载客户端',
+    start: '启动客户端',
+  },
   shortcut: {
     title: '捷径',
     recognition: {
@@ -971,6 +978,7 @@ export default {
       copyFailed: '复制失败：可能是浏览器不支持或被用户阻止！',
       copyError: '复制失败！',
       reloading: '正在应用配置...',
+      thunder: '迅雷',
       qbittorrent: 'Qbittorrent',
       transmission: 'Transmission',
       emby: 'Emby',

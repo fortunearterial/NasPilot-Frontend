@@ -1,4 +1,4 @@
-import api from '@/api'
+import { api } from '@/api'
 export async function fetchGlobalSettings() {
   try {
     const result: { [key: string]: any } = await api.get('system/global', {
