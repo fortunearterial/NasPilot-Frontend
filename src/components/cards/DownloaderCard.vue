@@ -213,9 +213,37 @@ onUnmounted(() => {
               <VCol cols="12" md="6">
                 <VTextField
                   v-model="downloaderInfo.name"
-                  label="名称"
-                  placeholder="必填；不可与其他名称重名"
-                  hint="下载器的别名"
+                  :label="t('downloader.name')"
+                  :placeholder="t('downloader.nameRequired')"
+                  :hint="t('downloader.name')"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.config.device_name"
+                  :label="t('downloader.ext.device_name')"
+                  :hint="t('downloader.ext.device_name_hint')"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.config.username"
+                  :label="t('downloader.username')"
+                  :hint="t('downloader.username')"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.config.password"
+                  type="password"
+                  :label="t('downloader.password')"
+                  :hint="t('downloader.password')"
                   persistent-hint
                   active
                 />

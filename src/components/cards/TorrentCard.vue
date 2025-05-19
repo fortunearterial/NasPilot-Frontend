@@ -259,7 +259,14 @@ onMounted(() => {
           <VChip v-if="torrent?.size" color="primary" size="x-small" variant="elevated" class="rounded-sm mr-2">
             {{ formatFileSize(torrent.size) }}
           </VChip>
-          <VBtn icon size="small" variant="text" color="primary" @click.stop="openTorrentDetail()">
+          <VBtn
+            v-if="torrent?.page_url"
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            @click.stop="openTorrentDetail()"
+          >
             <VIcon icon="mdi-information-outline"></VIcon>
           </VBtn>
         </div>
@@ -337,6 +344,7 @@ onMounted(() => {
                   </span>
                   <span>
                     <VIcon
+                      v-if="item.torrent_info?.page_url"
                       @click.stop="openTorrentDetail(item)"
                       size="small"
                       color="secondary"

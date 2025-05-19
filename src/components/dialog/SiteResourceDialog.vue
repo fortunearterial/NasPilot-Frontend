@@ -249,7 +249,7 @@ onMounted(() => {
                 <VIcon icon="mdi-dots-vertical" />
                 <VMenu activator="parent" close-on-content-click>
                   <VList>
-                    <VListItem @click="openTorrentDetail(item.page_url || '')">
+                    <VListItem v-if="item.page_url" @click="openTorrentDetail(item.page_url || '')">
                       <template #prepend>
                         <VIcon icon="mdi-information" />
                       </template>

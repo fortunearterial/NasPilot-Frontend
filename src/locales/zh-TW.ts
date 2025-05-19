@@ -2112,6 +2112,10 @@ export default {
     nameRequired: '名稱不能為空',
     nameDuplicate: '名稱已存在',
     defaultChanged: '存在預設下載器，已替換',
+    ext: {
+      device_name: '遠程設備名稱',
+      device_name_hint: '手機迅雷，下載-遠程設備中，下拉設備列表可查看',
+    },
   },
   filterRule: {
     title: '過濾規則',

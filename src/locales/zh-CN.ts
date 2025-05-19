@@ -2110,6 +2110,10 @@ export default {
     nameRequired: '不能为空，且不能重名',
     nameDuplicate: '名称已存在',
     defaultChanged: '存在默认下载器，已替换',
+    ext: {
+      device_name: '远程设备名称',
+      device_name_hint: '手机迅雷，下载-远程设备中，下拉设备列表可查看',
+    },
   },
   filterRule: {
     title: '过滤规则',

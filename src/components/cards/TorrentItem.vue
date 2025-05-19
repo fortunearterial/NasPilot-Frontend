@@ -207,7 +207,7 @@ onMounted(() => {
               {{ formatFileSize(torrent.size) }}
             </VChip>
 
-            <VBtn icon size="small" variant="text" color="primary" @click.stop="openTorrentDetail">
+            <VBtn v-if="torrent?.page_url" icon size="small" variant="text" color="primary" @click.stop="openTorrentDetail">
               <VIcon icon="mdi-information-outline"></VIcon>
             </VBtn>
           </div>

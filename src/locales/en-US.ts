@@ -2134,6 +2134,9 @@ export default {
     nameRequired: 'Name cannot be empty',
     nameDuplicate: 'Name already exists',
     defaultChanged: 'Default downloader exists, has been replaced',
+    ext: {
+      device_name: 'Remote Device Name',
+    },
   },
   filterRule: {
     title: 'Filter Rule',
