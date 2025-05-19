@@ -30,6 +30,7 @@ const SystemSettings = ref<any>({
     RECOGNIZE_SOURCE: 'themoviedb',
     GITHUB_TOKEN: null,
     OCR_HOST: null,
+    CUSTOMIZE_WALLPAPER_API_URL: null,
   },
   // 高级系统设置
   Advanced: {
@@ -55,6 +56,7 @@ const SystemSettings = ref<any>({
     DOH_ENABLE: false,
     DOH_RESOLVERS: null,
     DOH_DOMAINS: null,
+    SECURITY_IMAGE_DOMAINS: [],
     // 日志
     DEBUG: false,
     LOG_LEVEL: 'INFO',
@@ -94,6 +96,29 @@ const tmdbLanguageItems = [
   { title: t('setting.system.tmdbLanguage.zhTW'), value: 'zh-TW' },
   { title: t('setting.system.tmdbLanguage.en'), value: 'en' },
 ]
+
+// 日志等级
+const logLevelItems = [
+  { title: t('setting.system.logLevelItems.debug'), value: 'DEBUG' },
+  { title: t('setting.system.logLevelItems.info'), value: 'INFO' },
+  { title: t('setting.system.logLevelItems.warning'), value: 'WARNING' },
+  { title: t('setting.system.logLevelItems.error'), value: 'ERROR' },
+  { title: t('setting.system.logLevelItems.critical'), value: 'CRITICAL' },
+]
+
+// 安全域名添加变量
+const newSecurityDomain = ref('')
+
+// 添加安全域名
+function addSecurityDomain() {
+  if (
+    newSecurityDomain.value &&
+    !SystemSettings.value.Advanced.SECURITY_IMAGE_DOMAINS.includes(newSecurityDomain.value)
+  ) {
+    SystemSettings.value.Advanced.SECURITY_IMAGE_DOMAINS.push(newSecurityDomain.value)
+    newSecurityDomain.value = ''
+  }
+}
 
 // 调用API查询下载器设置
 async function loadDownloaderSetting() {
@@ -269,6 +294,7 @@ const wallpaperItems = [
   { title: t('setting.system.wallpaperItems.tmdb'), value: 'tmdb' },
   { title: t('setting.system.wallpaperItems.bing'), value: 'bing' },
   { title: t('setting.system.wallpaperItems.mediaserver'), value: 'mediaserver' },
+  { title: t('setting.system.wallpaperItems.customize'), value: 'customize' },
   { title: t('setting.system.wallpaperItems.none'), value: '' },
 ]
 
@@ -310,15 +336,6 @@ const pipProxyDisplay = computed({
     SystemSettings.value.Advanced.PIP_PROXY = val === null ? '' : val
   },
 })
-
-// 日志等级
-const logLevelItems = [
-  { title: t('setting.system.logLevelItems.debug'), value: 'DEBUG' },
-  { title: t('setting.system.logLevelItems.info'), value: 'INFO' },
-  { title: t('setting.system.logLevelItems.warning'), value: 'WARNING' },
-  { title: t('setting.system.logLevelItems.error'), value: 'ERROR' },
-  { title: t('setting.system.logLevelItems.critical'), value: 'CRITICAL' },
-]
 
 // 创建随机字符串
 function createRandomString() {
@@ -426,14 +443,30 @@ onDeactivated(() => {
                   persistent-hint
                 />
               </VCol>
+
               <VCol cols="12" md="6">
-                <VSelect
-                  v-model="SystemSettings.Basic.WALLPAPER"
-                  :label="t('setting.system.wallpaper')"
-                  :hint="t('setting.system.wallpaperHint')"
-                  persistent-hint
-                  :items="wallpaperItems"
-                />
+                <VRow>
+                  <VCol cols="12" :md="SystemSettings.Basic.WALLPAPER === 'customize' ? 6 : 12">
+                    <VSelect
+                      v-model="SystemSettings.Basic.WALLPAPER"
+                      :label="t('setting.system.wallpaper')"
+                      :hint="t('setting.system.wallpaperHint')"
+                      persistent-hint
+                      :items="wallpaperItems"
+                    />
+                  </VCol>
+
+                  <VCol v-if="SystemSettings.Basic.WALLPAPER === 'customize'" cols="12" md="6">
+                    <VTextField
+                      v-model="SystemSettings.Basic.CUSTOMIZE_WALLPAPER_API_URL"
+                      :label="t('setting.system.customizeWallpaperApi')"
+                      :hint="t('setting.system.customizeWallpaperApiHint')"
+                      :placeholder="t('setting.system.customizeWallpaperApi')"
+                      persistent-hint
+                      :rules="[v => !!v || t('setting.system.customizeWallpaperApiRequired')]"
+                    />
+                  </VCol>
+                </VRow>
               </VCol>
               <VCol cols="12" md="6">
                 <VSelect
@@ -838,6 +871,46 @@ onDeactivated(() => {
                     :hint="t('setting.system.dohDomainsHint')"
                     persistent-hint
                   />
+                </VCol>
+              </VRow>
+              <VRow>
+                <VCol cols="12">
+                  <!-- 安全域名 -->
+                  <VCard>
+                    <VCardItem>
+                      <VCardTitle>{{ t('setting.system.securityImageDomains') }}</VCardTitle>
+                      <VCardSubtitle>{{ t('setting.system.securityImageDomainsHint') }}</VCardSubtitle>
+                    </VCardItem>
+                    <VCardText>
+                      <div class="d-flex flex-wrap gap-2 mb-3">
+                        <VChip
+                          v-for="(domain, index) in SystemSettings.Advanced.SECURITY_IMAGE_DOMAINS"
+                          :key="index"
+                          closable
+                          @click:close="SystemSettings.Advanced.SECURITY_IMAGE_DOMAINS.splice(index, 1)"
+                        >
+                          {{ domain }}
+                        </VChip>
+                        <VChip v-if="SystemSettings.Advanced.SECURITY_IMAGE_DOMAINS.length === 0" color="warning">
+                          {{ t('setting.system.noSecurityImageDomains') }}
+                        </VChip>
+                      </div>
+                      <div class="d-flex align-center gap-2">
+                        <VTextField
+                          v-model="newSecurityDomain"
+                          :placeholder="t('setting.system.securityImageDomainAdd')"
+                          hide-details
+                          density="compact"
+                        >
+                          <template #append>
+                            <VBtn icon color="primary" @click="addSecurityDomain" :disabled="!newSecurityDomain">
+                              <VIcon icon="mdi-plus" />
+                            </VBtn>
+                          </template>
+                        </VTextField>
+                      </div>
+                    </VCardText>
+                  </VCard>
                 </VCol>
               </VRow>
             </div>

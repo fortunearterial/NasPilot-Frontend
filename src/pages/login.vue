@@ -10,6 +10,7 @@ import logo from '@images/logo.png'
 import { urlBase64ToUint8Array } from '@/@core/utils/navigator'
 import { SUPPORTED_LOCALES, SupportedLocale } from '@/types/i18n'
 import { getCurrentLocale, setI18nLanguage } from '@/plugins/i18n'
+import { useTheme } from 'vuetify'
 
 // 国际化
 const { t } = useI18n()
@@ -42,11 +43,23 @@ const usernameInput = ref()
 
 // 语言选择菜单
 const langMenu = ref(false)
+
 // 当前语言
 const currentLocale = ref(getCurrentLocale())
 
+// 当前主题
+const vuetifyTheme = useTheme()
+
+// 判断是否为透明主题
+const isTransparentTheme = computed(() => {
+  return vuetifyTheme.name.value === 'transparent'
+})
+
 // 可用的语言列表
 const locales = Object.values(SUPPORTED_LOCALES)
+
+// 登录按钮 loading
+const loading = ref(false)
 
 // 切换语言
 async function switchLanguage(locale: SupportedLocale) {
@@ -103,6 +116,8 @@ async function afterLogin(superuser: boolean) {
   router.push(authStore.originalPath ?? '/')
   // 订阅推送通知
   if (superuser) await subscribeForPushNotifications()
+  // 登录按钮 loading
+  loading.value = false
 }
 
 // 登录获取token事件
@@ -113,6 +128,10 @@ function login() {
   if (!form.value.username || !form.value.password || (isOTP.value && !form.value.otp_password)) {
     return
   }
+
+  // 登录按钮 loading
+  loading.value = true
+
   // 用户名密码
   const formData = new FormData()
 
@@ -155,6 +174,8 @@ function login() {
       else if (error.response.status === 403) errorMessage.value = t('login.permissionDenied')
       else if (error.response.status === 500) errorMessage.value = t('login.serverError')
       else errorMessage.value = `${t('login.loginFailed')} ${error.response.status}，${t('login.checkCredentials')}`
+      // 登录按钮 loading
+      loading.value = false
     })
 }
 
@@ -182,7 +203,12 @@ onMounted(async () => {
   <div class="relative flex min-h-screen flex-col items-center justify-center">
     <!-- 登录表单 -->
     <div class="auth-wrapper d-flex align-center justify-center">
-      <VCard class="auth-card px-7 py-3 w-full h-full" max-width="24rem" border>
+      <VCard
+        class="auth-card px-7 py-3 w-full h-full"
+        :class="{ 'glass-effect': !isTransparentTheme }"
+        max-width="24rem"
+        border
+      >
         <VCardItem class="justify-center">
           <template #prepend>
             <div class="d-flex pe-0">
@@ -258,7 +284,9 @@ onMounted(async () => {
               </VCol>
               <VCol cols="12">
                 <!-- login button -->
-                <VBtn block type="submit" @click="login" prepend-icon="mdi-login"> {{ t('login.login') }} </VBtn>
+                <VBtn block type="submit" @click="login" prepend-icon="mdi-login" :loading="loading">
+                  {{ t('login.login') }}
+                </VBtn>
                 <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-3">
                   {{ errorMessage }}
                 </VAlert>
@@ -291,5 +319,10 @@ onMounted(async () => {
   position: absolute;
   inset-block-start: 8px;
   inset-inline-end: 8px;
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px) !important;
+  background: rgba(var(--v-theme-surface), 0.7) !important;
 }
 </style>

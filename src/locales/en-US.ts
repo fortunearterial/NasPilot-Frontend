@@ -71,6 +71,7 @@ export default {
     sendEvent: 'Send Event',
     sendMessage: 'Send Message',
     transferFile: 'Transfer File',
+    invokePlugin: 'Invoke Plugin',
   },
   qualityOptions: {
     all: 'All',
@@ -279,6 +280,9 @@ export default {
     nameHint: 'Name of notification channel',
     type: 'Type',
     typeHint: 'Type of notification channel',
+    customTypeHint: 'Custom notification type, used for plugin implementation scenarios',
+    customTypePlaceholder: 'custom',
+    nameRequired: 'Please enter name',
     enabled: 'Enabled',
     config: 'Configuration',
     wechat: {
@@ -435,6 +439,8 @@ export default {
       forceResume: 'Force Resume',
       firstLastPiece: 'First Last Piece',
       onlyLack: 'Only Download Lack Resource',
+      categoryPlaceholder: 'Use comma to separate multiple',
+      savePathPlaceholder: 'Leave empty for auto',
     },
     addSubscribe: {
       title: 'Add Subscribe',
@@ -541,6 +547,14 @@ export default {
       include: 'Include (Keywords, Regex)',
       exclude: 'Exclude (Keywords, Regex)',
       ruleGroups: 'Filter Rule Groups',
+    },
+    invokePlugin: {
+      title: 'Invoke Plugin',
+      subtitle: 'Call plugin to perform specific actions',
+      plugin: 'Plugin',
+      actionid: 'Action ID',
+      actionParams: 'Action Parameters',
+      loadPluginSettingFailed: 'Failed to load plugin settings',
     },
     title: 'Workflow',
     noWorkflow: 'No Workflow',
@@ -1080,9 +1094,18 @@ export default {
         bing: 'Bing Daily Wallpaper',
         mediaserver: 'Media Server',
         none: 'No Wallpaper',
+        customize: 'Customize',
       },
       mb: 'MB',
       hour: 'hour',
+      customizeWallpaperApi: 'Customize Wallpaper Api',
+      customizeWallpaperApiHint:
+        'It will get the image file extension format images that are allowed in settings in the content returned by the API.',
+      customizeWallpaperApiRequired: 'Required field; please enter Wallpaper API',
+      securityImageDomains: 'Security Image Domains',
+      securityImageDomainsHint: 'Allowed image domains whitelist for caching, used to control trusted image sources',
+      noSecurityImageDomains: 'No security domains',
+      securityImageDomainAdd: 'Add domain, e.g.: image.tmdb.org',
     },
     site: {
       siteSync: 'Site Synchronization',
@@ -1174,6 +1197,7 @@ export default {
       synologyChat: 'SynologyChat',
       voceChat: 'VoceChat',
       webPush: 'WebPush',
+      custom: 'Custom Notification',
     },
     words: {
       customIdentifiers: 'Custom Identifiers',
@@ -1186,7 +1210,7 @@ export default {
         'Word to replace => Replacement\n' +
         'Front word <> Back word >> Episode offset (EP)\n' +
         'Word to replace => Replacement && Front word <> Back word >> Episode offset (EP)\n' +
-        'Replacement format supports: &#123;tmdbid/doubanid=xxx;type=movie/tv;s=xxx;e=xxx&#125; to directly specify TMDBID/Douban ID, where s and e are season and episode numbers (optional)',
+        'Replacement format supports: &#123;[tmdbid/doubanid=xxx;type=movie/tv;s=xxx;e=xxx]&#125; to directly specify TMDBID/Douban ID, where s and e are season and episode numbers (optional)',
       identifierSaveSuccess: 'Custom identifiers saved successfully',
       identifierSaveFailed: 'Failed to save custom identifiers!',
 

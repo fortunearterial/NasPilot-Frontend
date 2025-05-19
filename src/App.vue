@@ -4,12 +4,8 @@ import { checkPrefersColorSchemeIsDark } from '@/@core/utils'
 import { ensureRenderComplete, removeEl } from './@core/utils/dom'
 import { api } from '@/api'
 import { useAuthStore } from '@/stores/auth'
-import { useI18n } from 'vue-i18n'
 import { getBrowserLocale, setI18nLanguage } from './plugins/i18n'
 import { SupportedLocale } from '@/types/i18n'
-
-// 国际化
-const { t } = useI18n()
 
 // 生效主题
 const { global: globalTheme } = useTheme()
@@ -21,15 +17,15 @@ globalTheme.name.value = themeValue === 'auto' ? autoTheme : themeValue
 const localeValue = getBrowserLocale()
 setI18nLanguage(localeValue as SupportedLocale)
 
-// 从 provide 中获取全局设置
-const globalSettings: any = inject('globalSettings')
-
 // 显示状态
 const show = ref(false)
 
 // 检查是否登录
 const authStore = useAuthStore()
 const isLogin = computed(() => authStore.token)
+
+// 生成背景图片key
+const loginStateKey = computed(() => (isLogin.value ? 'logged-in' : 'logged-out'))
 
 // 背景图片
 const backgroundImages = ref<string[]>([])
@@ -78,6 +74,7 @@ function updateHtmlThemeAttribute(themeName: string) {
 async function fetchBackgroundImages() {
   try {
     backgroundImages.value = await api.get(`/login/wallpapers`)
+    activeImageIndex.value = 0
   } catch (e) {
     console.error(e)
   }
@@ -85,6 +82,7 @@ async function fetchBackgroundImages() {
 
 // 开始背景图片轮换
 function startBackgroundRotation() {
+  // 清除轮换定时器
   if (backgroundRotationTimer) clearInterval(backgroundRotationTimer)
 
   if (backgroundImages.value.length > 1) {
@@ -106,7 +104,6 @@ function startBackgroundRotation() {
 function preloadImage(url: string): Promise<boolean> {
   return new Promise(resolve => {
     const img = new Image()
-    const imageUrl = getImgUrl(url)
 
     img.onload = () => resolve(true)
     img.onerror = () => resolve(false)
@@ -117,7 +114,7 @@ function preloadImage(url: string): Promise<boolean> {
       resolve(false)
     }, 5000) // 5秒超时
 
-    img.src = imageUrl
+    img.src = url
 
     // 如果图片已经缓存，onload可能不会触发
     if (img.complete) {
@@ -125,28 +122,6 @@ function preloadImage(url: string): Promise<boolean> {
       resolve(true)
     }
   })
-}
-
-// 计算图片地址
-function getImgUrl(url: string) {
-  // 使用图片缓存
-  if (globalSettings.GLOBAL_IMAGE_CACHE && isLogin.value)
-    return `${import.meta.env.VITE_SERVER_API_BASE_URL}system/cache/image?url=${encodeURIComponent(url)}`
-  return url
-}
-
-// 处理页面可见性变化
-function handleVisibilityChange() {
-  if (document.visibilityState === 'visible') {
-    // 如果已有背景图片数据，直接重启轮换
-    if (backgroundImages.value.length > 0) {
-      startBackgroundRotation()
-    }
-    // 如果没有背景图片数据，重新获取
-    else {
-      fetchBackgroundImages().then(() => startBackgroundRotation())
-    }
-  }
 }
 
 // 添加logo动画效果并延迟移除加载界面
@@ -167,29 +142,61 @@ function animateAndRemoveLoader() {
   }
 }
 
-onMounted(() => {
+// 加载背景图片
+async function loadBackgroundImages() {
+  await fetchBackgroundImages()
+    .then(() => {
+      startBackgroundRotation()
+    })
+    .catch(() => {
+      // 3秒后重试
+      setTimeout(() => {
+        loadBackgroundImages()
+      }, 3000)
+    })
+}
+
+onMounted(async () => {
   // 初始化data-theme属性
   updateHtmlThemeAttribute(globalTheme.name.value)
 
-  // 加载背景图片并开始轮换
-  fetchBackgroundImages().then(() => startBackgroundRotation())
+  // 默认隐藏页面
+  show.value = false
 
-  // 添加页面可见性变化监听
-  document.addEventListener('visibilitychange', handleVisibilityChange)
+  // 加载背景图片
+  await loadBackgroundImages()
 
+  // 移除加载动画
   ensureRenderComplete(() => {
     nextTick(() => {
       setTimeout(() => {
-        // 移除加载动画
+        // 移除加载动画，显示页面
         animateAndRemoveLoader()
       }, 1500)
     })
+  })
+
+  // 添加页面可见性变化监听
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      loadBackgroundImages()
+    }
+  })
+
+  // 添加PWA的页面恢复事件监听
+  window.addEventListener('pageshow', event => {
+    // persisted属性为true表示页面是从bfcache中恢复的
+    if (event.persisted) {
+      loadBackgroundImages()
+    }
   })
 })
 
 onUnmounted(() => {
   // 移除页面可见性监听
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('visibilitychange', () => {})
+  // 移除PWA的页面恢复事件监听
+  window.removeEventListener('pageshow', () => {})
 
   // 清除轮换定时器
   if (backgroundRotationTimer) {
@@ -202,20 +209,18 @@ onUnmounted(() => {
 <template>
   <div class="app-wrapper">
     <!-- 透明主题背景 -->
-    <template v-if="backgroundImages.length > 0 && (isTransparentTheme || !isLogin)">
-      <div class="background-container">
-        <div
-          v-for="(imageUrl, index) in backgroundImages"
-          :key="index"
-          class="background-image"
-          :class="{ 'active': index === activeImageIndex }"
-          :style="{ backgroundImage: `url(${getImgUrl(imageUrl)})` }"
-        ></div>
-        <!-- 全局磨砂层 -->
-        <div v-if="isLogin" class="global-blur-layer"></div>
-      </div>
-    </template>
-
+    <div v-if="backgroundImages.length > 0 && (isTransparentTheme || !isLogin)" class="background-container">
+      <div
+        v-for="(imageUrl, index) in backgroundImages"
+        :key="`bg-${index}-${loginStateKey}`"
+        class="background-image"
+        :class="{ 'active': index === activeImageIndex }"
+        :style="{ 'backgroundImage': `url(${imageUrl})` }"
+      ></div>
+      <!-- 全局磨砂层 -->
+      <div v-if="isLogin && isTransparentTheme" class="global-blur-layer"></div>
+    </div>
+    <!-- 页面内容 -->
     <VApp v-show="show" :class="{ 'transparent-app': isTransparentTheme }">
       <RouterView />
     </VApp>

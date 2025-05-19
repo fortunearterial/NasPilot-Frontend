@@ -71,6 +71,7 @@ export default {
     sendEvent: '发送事件',
     sendMessage: '发送消息',
     transferFile: '整理文件',
+    invokePlugin: '调用插件',
   },
   qualityOptions: {
     all: '全部',
@@ -277,6 +278,9 @@ export default {
     nameHint: '通知渠道名称',
     type: '类型',
     typeHint: '通知渠道类型',
+    customTypeHint: '自定义通知类型，用于插件实现场景',
+    customTypePlaceholder: 'custom',
+    nameRequired: '请输入名称',
     enabled: '启用',
     config: '配置',
     wechat: {
@@ -432,6 +436,8 @@ export default {
       forceResume: '强制继续',
       firstLastPiece: '优先首尾文件',
       onlyLack: '仅下载缺失资源',
+      categoryPlaceholder: '多个使用,分隔',
+      savePathPlaceholder: '留空自动',
     },
     addSubscribe: {
       title: '添加订阅',
@@ -538,6 +544,14 @@ export default {
       include: '包含（关键字、正则式）',
       exclude: '排除（关键字、正则式）',
       ruleGroups: '过滤规则组',
+    },
+    invokePlugin: {
+      title: '调用插件',
+      subtitle: '调用插件执行特定操作',
+      plugin: '插件',
+      actionid: '动作ID',
+      actionParams: '动作参数',
+      loadPluginSettingFailed: '加载插件设置失败',
     },
     title: '工作流',
     noWorkflow: '没有工作流',
@@ -1070,9 +1084,17 @@ export default {
         bing: 'Bing每日壁纸',
         mediaserver: '媒体服务器',
         none: '无壁纸',
+        customize: '自定义',
       },
       mb: 'MB',
       hour: '小时',
+      customizeWallpaperApi: '自定义壁纸API地址',
+      customizeWallpaperApiHint: '会获取API返回内容中所有允许的安全域名地址的图片，需要同步设置安全域名地址',
+      customizeWallpaperApiRequired: '必填项；请输入自定义壁纸API',
+      securityImageDomains: '安全图片域名',
+      securityImageDomainsHint: '允许缓存的图片域名白名单，用于控制可信任的图片来源',
+      noSecurityImageDomains: '暂无安全域名',
+      securityImageDomainAdd: '添加域名，如：image.tmdb.org',
     },
     site: {
       siteSync: '站点同步',
@@ -1162,6 +1184,7 @@ export default {
       synologyChat: 'SynologyChat',
       voceChat: 'VoceChat',
       webPush: 'WebPush',
+      custom: '自定义通知',
     },
     words: {
       customIdentifiers: '自定义识别词',
@@ -1174,7 +1197,7 @@ export default {
         '被替换词 => 替换词\n' +
         '前定位词 <> 后定位词 >> 集偏移量（EP）\n' +
         '被替换词 => 替换词 && 前定位词 <> 后定位词 >> 集偏移量（EP）\n' +
-        '其中替换词支持格式：&#123;tmdbid/doubanid=xxx;type=movie/tv;s=xxx;e=xxx&#125; 直接指定TMDBID/豆瓣ID识别，其中s、e为季数和集数（可选）',
+        '其中替换词支持格式：&#123;[tmdbid/doubanid=xxx;type=movie/tv;s=xxx;e=xxx]&#125; 直接指定TMDBID/豆瓣ID识别，其中s、e为季数和集数（可选）',
       identifierSaveSuccess: '自定义识别词保存成功',
       identifierSaveFailed: '自定义识别词保存失败！',
 

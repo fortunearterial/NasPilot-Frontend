@@ -582,9 +582,9 @@ export interface NotExistMediaInfo {
 
 // 插件
 export interface Plugin {
-  id?: string
+  id: string
   // 插件名称
-  plugin_name?: string
+  plugin_name: string
   // 插件描述
   plugin_desc?: string
   // 插件图标
@@ -649,7 +649,7 @@ export interface DashboardItem {
   // 页面元素
   elements: RenderProps[]
   // 渲染方式
-  render_mode: string
+  render_mode?: string
 }
 
 // 种子信息
