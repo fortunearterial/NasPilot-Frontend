@@ -2136,6 +2136,9 @@ export default {
     ext: {
       device_name: '远程设备名称',
       device_name_hint: '手机迅雷，下载-远程设备中，下拉设备列表可查看',
+      sms_code: '短信验证码',
+      sms_code_hint: '短信验证码',
+      sms_code_required: '首次登录需要短信验证码',
     },
   },
   filterRule: {

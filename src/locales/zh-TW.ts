@@ -2138,6 +2138,9 @@ export default {
     ext: {
       device_name: '遠程設備名稱',
       device_name_hint: '手機迅雷，下載-遠程設備中，下拉設備列表可查看',
+      sms_code: '短信驗證碼',
+      sms_code_hint: '短信驗證碼',
+      sms_code_required: '首次登錄需要簡訊驗證碼',
     },
   },
   filterRule: {

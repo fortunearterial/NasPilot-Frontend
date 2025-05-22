@@ -2160,6 +2160,10 @@ export default {
     defaultChanged: 'Default downloader exists, has been replaced',
     ext: {
       device_name: 'Remote Device Name',
+      device_name_hint: 'Mobile Xunlei, in Download - Remote Devices, pull down the device list to view.',
+      sms_code: 'SMS Code',
+      sms_code_hint: 'SMS Code',
+      sms_code_required: 'SMS verification code is required for the first login.',
     },
   },
   filterRule: {

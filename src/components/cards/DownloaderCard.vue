@@ -40,6 +40,9 @@ const emit = defineEmits(['close', 'done', 'change'])
 // 提示框
 const $toast = useToast()
 
+// 是否正在加载
+const loading = ref(false)
+
 // timeout定时器
 let timeoutTimer: NodeJS.Timeout | undefined = undefined
 
@@ -106,6 +109,43 @@ function saveDownloaderInfo() {
     $toast.error(t('downloader.nameDuplicate'))
     return
   }
+  // 如果是迅雷，需要验证码
+  if (downloaderInfo.value.type === 'thunder') {
+    loading.value = true
+    if (!downloaderInfo.value.config.session_id) {
+      api
+        .post('thunder/test/initiate', {
+          username: downloaderInfo.value.config.username,
+          password: downloaderInfo.value.config.password,
+        })
+        .then((res: any) => {
+          loading.value = false
+          if (!res.success) {
+            $toast.warning(t(res.message))
+            downloaderInfo.value.config.session_id = res.data.session_id
+            return
+          }
+          saveDownloaderInfoCallback()
+        })
+    } else {
+      api
+        .post('thunder/test/complete', {
+          session_id: downloaderInfo.value.config.session_id,
+          sms_code: downloaderInfo.value.config.sms_code,
+        })
+        .then((res: any) => {
+          loading.value = false
+          if (res.success) {
+            downloaderInfo.value.config.session_id = ''
+            saveDownloaderInfoCallback()
+          }
+        })
+    }
+  } else {
+    saveDownloaderInfoCallback()
+  }
+}
+function saveDownloaderInfoCallback() {
   // 默认下载器去重
   if (downloaderInfo.value.default) {
     props.downloaders.forEach(item => {
@@ -244,6 +284,16 @@ onUnmounted(() => {
                   type="password"
                   :label="t('downloader.password')"
                   :hint="t('downloader.password')"
+                  persistent-hint
+                  active
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="downloaderInfo.config.sms_code"
+                  v-if="downloaderInfo.config.session_id"
+                  :label="t('downloader.ext.sms_code')"
+                  :hint="t('downloader.ext.sms_code_hint')"
                   persistent-hint
                   active
                 />
@@ -390,7 +440,13 @@ onUnmounted(() => {
           </VForm>
         </VCardText>
         <VCardActions class="pt-3">
-          <VBtn @click="saveDownloaderInfo" variant="elevated" prepend-icon="mdi-content-save" class="px-5">
+          <VBtn
+            @click="saveDownloaderInfo"
+            variant="elevated"
+            prepend-icon="mdi-content-save"
+            class="px-5"
+            :loading="loading"
+          >
             {{ t('common.save') }}
           </VBtn>
         </VCardActions>
