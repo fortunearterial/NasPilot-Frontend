@@ -16,13 +16,6 @@ function getPercentage() {
   return props.info?.progress ?? 0
 }
 
-// 速度
-function getSpeedText() {
-  return `${formatFileSize(props.info?.size || 0)} ↑ ${props.info?.upspeed}/s ↓ ${props.info?.dlspeed}/s ${
-    props.info?.left_time
-  }`
-}
-
 // 下载状态
 const isDownloading = ref(props.info?.state === 'downloading')
 
@@ -89,8 +82,9 @@ async function deleteDownload() {
       {{ props.info?.title }}
     </VCardSubtitle>
 
-    <VCardText class="text-subtitle-1 pt-3 pb-1" :class="getTextClass()">
-      {{ getSpeedText() }}
+    <VCardText class="text-subtitle-1 pt-3 pb-1 d-flex justify-space-between" :class="getTextClass()">
+      <span>{{ `${formatFileSize(props.info?.size || 0)} / ${props.info?.left_time}` }}</span>
+      <span>{{ `↓ ${props.info?.dlspeed}/s | ↑ ${props.info?.upspeed}/s` }}</span>
     </VCardText>
 
     <VCardText v-if="getPercentage() > 0" :class="getTextClass()">

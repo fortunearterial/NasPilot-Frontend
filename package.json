@@ -1,6 +1,6 @@
 {
   "name": "naspilot",
-  "version": "2.4.9.001",
+  "version": "2.4.9.002",
   "private": true,
   "type": "module",
   "bin": "dist/service.js",
