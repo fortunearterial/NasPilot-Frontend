@@ -222,6 +222,7 @@ async function removeSubscribe() {
 async function handleCheckSubscribe() {
   try {
     const result = await checkSubscribe(props.media?.season)
+    console.debug('handleCheckSubscribe', result)
     if (result) isSubscribed.value = true
   } catch (error) {
     console.error(error)
@@ -481,8 +482,18 @@ onBeforeUnmount(() => {
             </p>
             <div v-if="props.media?.collection_id" class="mb-3" @click.stop=""></div>
             <div v-else class="flex align-center justify-between">
-              <IconBtn icon="mdi-magnify" color="white" @click.stop="clickSearch" />
-              <IconBtn icon="mdi-heart" :color="isSubscribed ? 'error' : 'white'" @click.stop="handleSubscribe" />
+              <IconBtn
+                icon="mdi-magnify"
+                color="white"
+                @click.stop="clickSearch"
+                :title="t('media.actions.searchResource')"
+              />
+              <IconBtn
+                icon="mdi-heart"
+                :color="isSubscribed ? 'error' : 'white'"
+                @click.stop="handleSubscribe"
+                :title="isSubscribed ? t('common.unsubscribe') : t('common.subscribe')"
+              />
             </div>
           </VCardText>
           <!-- 类型角标 -->

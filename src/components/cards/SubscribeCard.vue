@@ -183,7 +183,7 @@ const dropdownItems = computed(() => [
     },
   },
   {
-    title: t('common.search'),
+    title: t('common.server_search'),
     value: 2,
     props: {
       prependIcon: 'mdi-magnify',
